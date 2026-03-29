@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 
 // List all active repos for the logged in user
@@ -106,5 +106,23 @@ export const disconnectRepo = mutation({
     if (!repo || repo.userId !== profile.userId) return;
 
     await ctx.db.patch(repoId, { isActive: false });
+  },
+});
+
+export const getRepoById = internalQuery({
+  args: { repoId: v.id("repos") },
+  handler: async (ctx, { repoId }) => {
+    return await ctx.db.get(repoId);
+  },
+});
+
+export const listAllActiveRepos = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("repos")
+      // Cannot use field filter with index efficiently without multiple indices, so we just use the index we have
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .collect();
   },
 });
