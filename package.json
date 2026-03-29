@@ -33,6 +33,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.15.2",
 		"globals": "^17.4.0",
+		"lucide-svelte": "^1.0.1",
 		"phosphor-svelte": "^3.1.0",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
@@ -51,11 +52,11 @@
 	"dependencies": {
 		"@auth/core": "^0.37.4",
 		"@convex-dev/auth": "^0.0.91",
+		"@mmailaender/convex-auth-svelte": "^0.1.3",
 		"canvas-confetti": "^1.9.4",
 		"convex": "^1.34.1",
 		"convex-svelte": "^0.0.12",
 		"dodopayments": "^2.25.1",
-		"layerchart": "^1.0.13",
-		"lucide-svelte": "^1.0.1"
+		"layerchart": "^1.0.13"
 	}
 }

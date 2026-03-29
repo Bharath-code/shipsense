@@ -6,15 +6,15 @@ const GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
 
 export const fetchUserReposFromGithub = action({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<any[]> => {
     // We would need the user's Github Token.
     // In Convex actions, we can query internal DB to get the user's token.
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthenticated");
 
-    const tokens = await ctx.runQuery(internal.users.getGithubToken, {
+    const tokens = (await ctx.runQuery(internal.users.getGithubToken, {
       subject: identity.subject,
-    });
+    })) as any;
 
     if (!tokens || !tokens.accessToken) {
       throw new Error("No GitHub access token found");
@@ -53,7 +53,7 @@ export const fetchUserReposFromGithub = action({
       throw new Error(`GitHub API error: ${response.statusText}`);
     }
 
-    const json = await response.json();
+    const json = (await response.json()) as any;
     return json.data.viewer.repositories.nodes.map((repo: any) => ({
       githubRepoId: repo.databaseId,
       owner: repo.owner.login,

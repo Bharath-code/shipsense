@@ -1,12 +1,16 @@
 <script lang="ts">
   import { useQuery } from "convex-svelte";
-  import { api } from "$lib/convex/_generated/api";
-  import { useAuthActions } from "@convex-dev/auth/svelte";
+  import { useAuth } from "@mmailaender/convex-auth-svelte/svelte";
+  import { api } from "$convex/_generated/api";
   import Button from "$lib/components/ui/button/button.svelte";
-  import GithubIcon from "lucide-svelte/icons/github";
-  import LogOutIcon from "lucide-svelte/icons/log-out";
+  import { LogOut as LogOutIcon, LayoutDashboard, Database, CreditCard, Settings } from "lucide-svelte";
 
-  const { signOut } = useAuthActions();
+  const { signOut } = useAuth();
+
+  async function handleSignOut() {
+    await signOut();
+    window.location.href = "/";
+  }
 
   let { children } = $props();
 </script>
@@ -26,7 +30,7 @@
           <a href="/dashboard/settings" class="text-sm font-medium text-zinc-300 hover:text-white transition-colors">Settings</a>
         </nav>
         <div class="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onclick={() => signOut({ redirectTo: "/" })} title="Log out">
+          <Button variant="ghost" size="icon" onclick={handleSignOut} title="Log out">
             <LogOutIcon class="h-4 w-4 text-zinc-500 hover:text-white" />
           </Button>
         </div>

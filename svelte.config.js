@@ -13,7 +13,14 @@ const config = {
 			return isExternalLibrary ? undefined : true;
 		}
 	},
-	kit: { adapter: adapter() }
+	kit: { 
+		adapter: adapter({
+			runtime: 'nodejs22.x'
+		}),
+		alias: {
+			"$convex": "convex"
+		}
+	}
 };
 
 export default config;

@@ -1,13 +1,11 @@
 <script lang="ts">
   import { useQuery, useConvexClient } from "convex-svelte";
-  import { api } from "$lib/convex/_generated/api";
+  import { api } from "$convex/_generated/api";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import StarIcon from "lucide-svelte/icons/star";
-  import GitForkIcon from "lucide-svelte/icons/git-fork";
-  import SearchIcon from "lucide-svelte/icons/search";
+  import { Star as StarIcon, GitFork as GitForkIcon, Search as SearchIcon } from "lucide-svelte";
 
   // Data fetching
   const activeReposQuery = useQuery(api.repos.listMyRepos, {});
@@ -22,7 +20,7 @@
     loadingGithub = true;
     connectError = null;
     try {
-      githubRepos = await client.action(api.github.fetchUserReposFromGithub)();
+      githubRepos = (await client.action(api.github.fetchUserReposFromGithub, {})) || [];
     } catch (err: any) {
       console.error(err);
       connectError = err.message || "Failed to fetch repositories";
@@ -33,7 +31,7 @@
 
   async function connectRepo(repo: any) {
     try {
-      await client.mutation(api.repos.connectRepo)({
+      await client.mutation(api.repos.connectRepo, {
         githubRepoId: repo.githubRepoId,
         owner: repo.owner,
         name: repo.name,

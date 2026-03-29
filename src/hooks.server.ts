@@ -1,4 +1,3 @@
-import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { type Handle, redirect } from "@sveltejs/kit";
 
 // For SvelteKit, we'll manually check the cookie since convexAuthNextjsToken is tailored for Next.js.

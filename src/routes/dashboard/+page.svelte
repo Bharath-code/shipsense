@@ -1,7 +1,9 @@
 <script lang="ts">
   import { useQuery } from "convex-svelte";
-  import { api } from "$lib/convex/_generated/api";
+  import { api } from "$convex/_generated/api";
   import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "$lib/components/ui/card";
+  import { Badge } from "$lib/components/ui/badge";
+  import { Activity, Rocket, Zap, Clock } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import ArrowRightIcon from "lucide-svelte/icons/arrow-right";
 
