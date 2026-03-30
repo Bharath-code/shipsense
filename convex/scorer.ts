@@ -1,4 +1,4 @@
-import { internalMutation } from './_generated/server';
+import { internalMutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 
 export function computeRepoScore(snapshot: {
@@ -50,5 +50,16 @@ export const calculateScore = internalMutation({
 			scoreExplanation: 'Calculated based on standard heuristics.',
 			trend: 'stable'
 		});
+	}
+});
+
+export const getLatestScore = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		return await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.first();
 	}
 });

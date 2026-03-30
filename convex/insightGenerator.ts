@@ -16,19 +16,30 @@ const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/mo
 export const generateInsights = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
-		// 1. Fetch repo data
 		const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
 		if (!repo) return;
 
-		// 2. Fetch latest snapshot and score
 		const plan = (await ctx.runQuery(internal.billing.getMyPlan, {
 			userId: repo.userId
 		})) as PlanType;
 		const planConfig = getPlanConfig(plan);
 
-		const metrics = { stars: 100, openIssues: 12, prsOpen: 4 }; // Metrics fetching placeholder
+		const latestSnapshot = await ctx.runQuery(internal.collector.getLatestSnapshot, { repoId });
+		const latestScore = await ctx.runQuery(internal.scorer.getLatestScore, { repoId });
+		if (!latestSnapshot || !latestScore) return;
 
-		// 3. Setup Gemini prompt
+		const metrics = {
+			stars: latestSnapshot.stars,
+			forks: latestSnapshot.forks,
+			openIssues: latestSnapshot.issuesOpen,
+			prsOpen: latestSnapshot.prsOpen,
+			prsMerged7d: latestSnapshot.prsMerged7d,
+			contributors14d: latestSnapshot.contributors14d,
+			commitGapHours: latestSnapshot.commitGapHours,
+			healthScore: latestScore.healthScore,
+			scoreExplanation: latestScore.scoreExplanation
+		};
+
 		const prompt = buildInsightPrompt(repo.name, repo.description || 'No description', metrics);
 
 		const apiKey = process.env.GEMINI_API_KEY;
@@ -48,7 +59,8 @@ export const generateInsights = internalAction({
 		});
 
 		if (!response.ok) {
-			console.error('Gemini API error');
+			const errorText = await response.text();
+			console.error('Gemini API error', response.status, errorText);
 			return;
 		}
 

@@ -1,8 +1,41 @@
-import { internalAction, internalMutation } from './_generated/server';
+import { internalAction, internalMutation, internalQuery } from './_generated/server';
+import type { Id } from './_generated/dataModel';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
 
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
+
+type RepoGraphQLResponse = {
+	data?: {
+		repository?: {
+			stargazerCount: number;
+			forkCount: number;
+			issues: { totalCount: number };
+			pullRequests: { totalCount: number };
+			mergedPRs?: {
+				nodes?: Array<{ updatedAt: string }>;
+			};
+			defaultBranchRef?: {
+				target?: {
+					history?: {
+						nodes?: Array<{ committedDate: string }>;
+					};
+				};
+			};
+		};
+	};
+};
+
+type CollectorRepo = {
+	userId: string;
+	owner: string;
+	name: string;
+	fullName: string;
+};
+
+type GithubTokenResult = {
+	accessToken: string;
+} | null;
 
 // Fetch full data for a single repo
 export function processMergedPRs(nodes: any[], referenceTimeMs: number): number {
@@ -22,17 +55,17 @@ export function processCommitGap(commits: any[], referenceTimeMs: number): numbe
 
 export const fetchRepoData = internalAction({
 	args: { repoId: v.id('repos') },
-	handler: async (ctx, { repoId }) => {
-		const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
+	handler: async (ctx, { repoId }): Promise<Id<'repoSnapshots'> | null> => {
+		const repo: CollectorRepo | null = await ctx.runQuery(internal.repos.getRepoById, { repoId });
 		if (!repo) throw new Error('Repo not found');
 
-		const tokens = await ctx.runQuery(internal.users.getGithubToken, {
+		const tokens: GithubTokenResult = await ctx.runQuery(internal.users.getGithubToken, {
 			subject: repo.userId.toString()
 		});
 
 		if (!tokens || !tokens.accessToken) {
 			console.warn('No token for user', repo.userId);
-			return;
+			return null;
 		}
 
 		// Detailed query to get PRs, Issues, and commits
@@ -61,7 +94,7 @@ export const fetchRepoData = internalAction({
       }
     `;
 
-		const response = await fetch(GITHUB_GRAPHQL_URL, {
+		const response: Response = await fetch(GITHUB_GRAPHQL_URL, {
 			method: 'POST',
 			headers: {
 				Authorization: `Bearer ${tokens.accessToken}`,
@@ -75,13 +108,13 @@ export const fetchRepoData = internalAction({
 
 		if (!response.ok) {
 			console.error(`Failed to fetch repo data for ${repo.fullName}`);
-			return;
+			return null;
 		}
 
-		const json = await response.json();
-		const data = json.data.repository;
+		const json: RepoGraphQLResponse = await response.json();
+		const data = json.data?.repository;
 
-		if (!data) return;
+		if (!data) return null;
 
 		const now = Date.now();
 		const prsMerged7d = processMergedPRs(data.mergedPRs?.nodes || [], now);
@@ -89,7 +122,7 @@ export const fetchRepoData = internalAction({
 		const commitGapHours = processCommitGap(commits, now);
 
 		// Capture Snapshot
-		await ctx.runMutation(internal.collector.saveSnapshot, {
+		return await ctx.runMutation(internal.collector.saveSnapshot, {
 			repoId,
 			stars: data.stargazerCount,
 			starsLast7d: 0, // Simplified for now
@@ -122,5 +155,16 @@ export const saveSnapshot = internalMutation({
 			...args,
 			capturedAt: Date.now()
 		});
+	}
+});
+
+export const getLatestSnapshot = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		return await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.first();
 	}
 });

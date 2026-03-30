@@ -1,10 +1,20 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { useQuery } from 'convex-svelte';
+	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Badge } from '$lib/components/ui/badge';
-	import { ArrowLeft, GitBranch, Star, Activity, GitFork, Lock, Globe } from 'lucide-svelte';
+	import {
+		ArrowLeft,
+		GitBranch,
+		Star,
+		Activity,
+		GitFork,
+		Lock,
+		Globe,
+		Trash2
+	} from 'lucide-svelte';
 
 	import InsightCard from '$lib/components/dashboard/InsightCard.svelte';
 	import TaskChecklist from '$lib/components/dashboard/TaskChecklist.svelte';
@@ -14,12 +24,31 @@
 
 	// Using Id<"repos"> string from URL dynamically
 	let repoId = $derived($page.params.repoId);
+	const client = useConvexClient();
 
 	// Raw casting as we're passing convex string Ids
 	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
 
 	let repo = $derived(repoQuery.data);
 	let isLoading = $derived(repoQuery.isLoading);
+	let isDisconnecting = $state(false);
+
+	async function disconnectRepo() {
+		if (!repo || isDisconnecting) return;
+
+		const confirmed = window.confirm(
+			`Disconnect ${repo.name}? ShipSense will stop tracking this repository.`
+		);
+		if (!confirmed) return;
+
+		isDisconnecting = true;
+		try {
+			await client.mutation(api.repos.disconnectRepo, { repoId: repoId as any });
+			await goto('/dashboard');
+		} finally {
+			isDisconnecting = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -39,7 +68,19 @@
 			Back to Ecosystem
 		</Button>
 
-		<div class="flex items-center gap-2">
+		<div class="flex items-center gap-3">
+			{#if repo}
+				<Button
+					variant="destructive"
+					size="sm"
+					class="rounded-full px-4"
+					disabled={isDisconnecting}
+					onclick={disconnectRepo}
+				>
+					<Trash2 class="mr-2 h-4 w-4" />
+					{isDisconnecting ? 'Disconnecting...' : 'Disconnect Repo'}
+				</Button>
+			{/if}
 			{#if repo}
 				<div
 					class="h-2 w-2 animate-pulse rounded-full bg-success shadow-[0_0_8px_rgba(var(--success-rgb),0.6)]"

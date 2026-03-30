@@ -1,4 +1,4 @@
-import { internalAction, internalMutation } from './_generated/server';
+import { internalAction, internalMutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
 
@@ -27,12 +27,18 @@ export function determineTasks(isPrivate: boolean, commitGapHours: number) {
 export const generateTasks = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
-		// 1. Fetch repo data
 		const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
 		if (!repo) return;
 
-		// Use placeholder snapshot logic to evaluate tasks
-		const commitGapHours = 48;
+		const latestSnapshot = await ctx.runQuery(internal.collector.getLatestSnapshot, { repoId });
+		if (!latestSnapshot) return;
+
+		const existingTasks = await ctx.runQuery(internal.taskGenerator.getOpenTasks, { repoId });
+		for (const task of existingTasks) {
+			await ctx.runMutation(internal.taskGenerator.completeTaskInternal, { taskId: task._id });
+		}
+
+		const commitGapHours = latestSnapshot.commitGapHours;
 		const isPrivate = repo.isPrivate;
 
 		const generatedTasks = determineTasks(isPrivate, commitGapHours);
@@ -79,5 +85,25 @@ export const createTask = internalMutation({
 				createdAt: Date.now()
 			});
 		}
+	}
+});
+
+export const getOpenTasks = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		return await ctx.db
+			.query('repoTasks')
+			.withIndex('by_repoId_isCompleted', (q) => q.eq('repoId', repoId).eq('isCompleted', false))
+			.collect();
+	}
+});
+
+export const completeTaskInternal = internalMutation({
+	args: { taskId: v.id('repoTasks') },
+	handler: async (ctx, { taskId }) => {
+		await ctx.db.patch(taskId, {
+			isCompleted: true,
+			completedAt: Date.now()
+		});
 	}
 });

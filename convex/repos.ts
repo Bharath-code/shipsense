@@ -2,6 +2,7 @@ import { mutation, query, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { getPlanConfig, type PlanType } from './plan';
+import { internal } from './_generated/api';
 
 // List all active repos for the logged in user
 export const listMyRepos = query({
@@ -42,8 +43,8 @@ export const connectRepo = mutation({
 		owner: v.string(),
 		name: v.string(),
 		fullName: v.string(),
-		description: v.optional(v.string()),
-		language: v.optional(v.string()),
+		description: v.union(v.string(), v.null()),
+		language: v.union(v.string(), v.null()),
 		starsCount: v.number(),
 		forksCount: v.number(),
 		isPrivate: v.boolean()
@@ -84,16 +85,21 @@ export const connectRepo = mutation({
 			if (!existing.isActive) {
 				await ctx.db.patch(existing._id, { isActive: true, connectedAt: Date.now() });
 			}
+			await ctx.scheduler.runAfter(0, internal.orchestrator.syncRepoNow, { repoId: existing._id });
 			return existing._id;
 		}
 
-		// Insert new repo
-		return await ctx.db.insert('repos', {
+		const repoId = await ctx.db.insert('repos', {
 			...args,
+			description: args.description ?? undefined,
+			language: args.language ?? undefined,
 			userId,
 			connectedAt: Date.now(),
 			isActive: true
 		});
+
+		await ctx.scheduler.runAfter(0, internal.orchestrator.syncRepoNow, { repoId });
+		return repoId;
 	}
 });
 

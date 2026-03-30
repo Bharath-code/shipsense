@@ -4,7 +4,7 @@ export type PlanType = 'free' | 'indie' | 'builder';
 
 export interface PlanConfig {
 	maxRepos: number;
-	aiModel: 'gemini-1.5-flash' | 'gemini-1.5-pro';
+	aiModel: 'gemini-3-flash' | 'gemini-3.1-pro';
 	emailReports: boolean;
 	priorityTasks: boolean;
 	teamSupport: boolean;
@@ -12,22 +12,22 @@ export interface PlanConfig {
 
 export const PLAN_CONFIG: Record<PlanType, PlanConfig> = {
 	free: {
-		maxRepos: 1,
-		aiModel: 'gemini-1.5-flash',
+		maxRepos: 10,
+		aiModel: 'gemini-3-flash',
 		emailReports: false,
 		priorityTasks: false,
 		teamSupport: false
 	},
 	indie: {
 		maxRepos: 5,
-		aiModel: 'gemini-1.5-flash',
+		aiModel: 'gemini-3-flash',
 		emailReports: true,
 		priorityTasks: true,
 		teamSupport: false
 	},
 	builder: {
 		maxRepos: 50, // "Unlimited" for single founder, high limit for safety
-		aiModel: 'gemini-1.5-pro',
+		aiModel: 'gemini-3.1-pro',
 		emailReports: true,
 		priorityTasks: true,
 		teamSupport: true
