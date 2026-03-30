@@ -5,6 +5,20 @@ import { internal } from './_generated/api';
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
 // Fetch full data for a single repo
+export function processMergedPRs(nodes: any[], referenceTimeMs: number): number {
+	if (!nodes) return 0;
+	const sevenDaysAgo = referenceTimeMs - 7 * 24 * 60 * 60 * 1000;
+	return nodes.filter((pr: any) => new Date(pr.updatedAt).getTime() > sevenDaysAgo).length;
+}
+
+export function processCommitGap(commits: any[], referenceTimeMs: number): number {
+	let commitGapHours = 24 * 30; // default to 30 days if no commits
+	if (commits.length > 0) {
+		commitGapHours = (referenceTimeMs - new Date(commits[0].committedDate).getTime()) / (1000 * 60 * 60);
+	}
+	return commitGapHours;
+}
+
 export const fetchRepoData = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
@@ -68,19 +82,10 @@ export const fetchRepoData = internalAction({
 
 		if (!data) return;
 
-		// Process merged PRs in last 7 days
-		const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-		const prsMerged7d = data.mergedPRs.nodes.filter(
-			(pr: any) => new Date(pr.updatedAt).getTime() > sevenDaysAgo
-		).length;
-
-		// Process commit gap
+		const now = Date.now();
+		const prsMerged7d = processMergedPRs(data.mergedPRs?.nodes || [], now);
 		const commits = data.defaultBranchRef?.target?.history?.nodes || [];
-		let commitGapHours = 24 * 30; // default to 30 days if no commits
-		if (commits.length > 0) {
-			commitGapHours =
-				(Date.now() - new Date(commits[0].committedDate).getTime()) / (1000 * 60 * 60);
-		}
+		const commitGapHours = processCommitGap(commits, now);
 
 		// Capture Snapshot
 		await ctx.runMutation(internal.collector.saveSnapshot, {

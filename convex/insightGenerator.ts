@@ -2,6 +2,14 @@ import { internalAction, internalMutation } from './_generated/server';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
 
+export function buildInsightPrompt(repoName: string, repoDescription: string, metrics: any) {
+	return `You are a growth advisor for indie hackers. 
+    Analyze this repository: ${repoName} (${repoDescription})
+    Metrics: ${JSON.stringify(metrics)}
+    Provide a JSON response with:
+    { "summary": "short text", "risk": "low/medium/high", "actions": ["action1", "action2"] }`;
+}
+
 const GEMINI_API_URL =
 	'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
@@ -17,11 +25,7 @@ export const generateInsights = internalAction({
 		const metrics = { stars: 100, openIssues: 12, prsOpen: 4 };
 
 		// 3. Setup Gemini prompt
-		const prompt = `You are a growth advisor for indie hackers. 
-    Analyze this repository: ${repo.name} (${repo.description})
-    Metrics: ${JSON.stringify(metrics)}
-    Provide a JSON response with:
-    { "summary": "short text", "risk": "low/medium/high", "actions": ["action1", "action2"] }`;
+		const prompt = buildInsightPrompt(repo.name, repo.description || 'No description', metrics);
 
 		const apiKey = process.env.GEMINI_API_KEY;
 		if (!apiKey) {
