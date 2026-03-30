@@ -14,7 +14,8 @@ export function processMergedPRs(nodes: any[], referenceTimeMs: number): number 
 export function processCommitGap(commits: any[], referenceTimeMs: number): number {
 	let commitGapHours = 24 * 30; // default to 30 days if no commits
 	if (commits.length > 0) {
-		commitGapHours = (referenceTimeMs - new Date(commits[0].committedDate).getTime()) / (1000 * 60 * 60);
+		commitGapHours =
+			(referenceTimeMs - new Date(commits[0].committedDate).getTime()) / (1000 * 60 * 60);
 	}
 	return commitGapHours;
 }

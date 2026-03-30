@@ -33,7 +33,7 @@ export function calculateNewStreak(
 			broken: true
 		};
 	}
-	
+
 	// diffDays === 0
 	return { currentStreak, longestStreak, broken: false };
 }

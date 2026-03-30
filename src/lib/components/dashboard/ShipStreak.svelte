@@ -48,116 +48,120 @@
 	});
 </script>
 
-<Card class="border-border bg-card shadow-sm transition-colors">
-	<CardContent class="p-6">
-		{#if isLoading}
-			<div class="flex h-full animate-pulse flex-col items-center justify-center space-y-4 py-6">
-				<div class="h-16 w-16 rounded-full bg-muted"></div>
-				<div class="h-4 w-24 rounded bg-muted"></div>
+<div class="group overflow-hidden rounded-[2rem] glass-panel border-white/10 p-8 shadow-2xl">
+	{#if isLoading}
+		<div class="flex h-full animate-pulse flex-col items-center justify-center space-y-6 py-8">
+			<div class="h-24 w-24 rounded-full bg-white/10"></div>
+			<div class="h-4 w-32 rounded-full bg-white/10"></div>
+		</div>
+	{:else if !streak}
+		<div class="flex flex-col items-center justify-center space-y-4 py-8 text-center">
+			<div
+				class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-muted-foreground"
+			>
+				<Flame class="h-8 w-8" />
 			</div>
-		{:else if !streak}
-			<div class="flex flex-col items-center justify-center space-y-3 py-4 text-center">
-				<div
-					class="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground"
-				>
-					<Flame class="h-6 w-6" />
-				</div>
-				<div>
-					<h3 class="font-medium text-muted-foreground">No streak data</h3>
-					<p class="mt-1 text-xs text-muted-foreground/60">Make a commit to start tracking.</p>
-				</div>
+			<div>
+				<h3 class="text-xl font-bold text-white/80">No commitment history</h3>
+				<p class="mt-1 text-sm text-muted-foreground/60">Push code to ignite your streak.</p>
 			</div>
-		{:else}
-			<div class="flex flex-col items-center justify-between gap-6 md:flex-row">
-				<!-- Main Streak Readout -->
-				<div class="flex flex-col items-center justify-center">
-					<div class="group relative">
-						<div
-							class="absolute inset-0 rounded-full bg-primary/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100"
-						></div>
-						<div
-							class={`relative z-10 flex h-24 w-24 flex-col items-center justify-center rounded-full border-4 bg-card shadow-sm transition-colors duration-300 ${streak.currentStreak > 0 ? 'border-primary' : 'border-border'}`}
-						>
-							<span
-								class="bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-3xl font-black text-transparent"
-								>{streak.currentStreak}</span
-							>
-							<span
-								class="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase transition-colors hover:text-primary"
-								>Days</span
-							>
-						</div>
-
-						{#if streak.currentStreak > 0}
-							<div
-								class="absolute -top-2 -right-2 rounded-full border border-border bg-card p-1.5 shadow-lg"
-							>
-								<Flame
-									class={`h-4 w-4 ${streakStatus().color} animate-pulse`}
-									fill={streak.currentStreak > 2 ? 'currentColor' : 'none'}
-								/>
-							</div>
-						{/if}
-					</div>
+		</div>
+	{:else}
+		<div class="flex flex-col items-center justify-between gap-10 lg:flex-row">
+			<!-- Main Streak Readout -->
+			<div class="flex flex-col items-center justify-center space-y-4">
+				<div class="relative">
+					<!-- Radial Glow -->
+					<div
+						class="absolute inset-0 rounded-full bg-primary/20 opacity-0 blur-3xl transition-opacity duration-1000 group-hover:opacity-100"
+					></div>
 
 					<div
-						class={`rounded-full border px-3 py-1 text-xs font-semibold ${streakStatus().bg} inline-flex items-center gap-1.5`}
+						class={`relative z-10 flex h-32 w-32 scale-100 flex-col items-center justify-center rounded-full border-4 bg-white/5 shadow-2xl transition-all duration-500 group-hover:scale-105 ${
+							streak.currentStreak > 0
+								? 'border-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]'
+								: 'border-white/10'
+						}`}
 					>
-						{#if streakStatus().text === 'Streak inactive'}
-							<AlertCircle class="h-3 w-3" />
-						{:else if streakStatus().text === 'Building momentum'}
-							<Zap class="h-3 w-3" />
-						{:else}
-							<Flame class="h-3 w-3" />
-						{/if}
-						{streakStatus().text}
+						<span
+							class="bg-gradient-to-br from-white to-white/40 bg-clip-text text-5xl leading-none font-black text-transparent"
+						>
+							{streak.currentStreak}
+						</span>
+						<span
+							class="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+						>
+							Days
+						</span>
 					</div>
+
+					{#if streak.currentStreak > 0}
+						<div
+							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-slate-900 shadow-xl"
+						>
+							<Flame
+								class={`h-6 w-6 ${streakStatus().color} animate-pulse`}
+								fill={streak.currentStreak > 2 ? 'currentColor' : 'none'}
+							/>
+						</div>
+					{/if}
 				</div>
 
-				<!-- Vertical Divider -->
-				<div class="hidden h-24 w-px bg-border md:block"></div>
-				<div class="h-px w-full bg-border md:hidden"></div>
+				<div
+					class={`rounded-full border px-4 py-1.5 text-xs font-bold tracking-tight shadow-lg ${
+						streakStatus().bg
+					} flex items-center gap-2`}
+				>
+					{#if streakStatus().icon}
+						{@const StatusIcon = streakStatus().icon}
+						<StatusIcon class="h-3.5 w-3.5 shrink-0" />
+					{/if}
+					{streakStatus().text}
+				</div>
+			</div>
 
-				<!-- Details -->
-				<div class="w-full flex-1 space-y-4">
-					<div class="grid grid-cols-2 gap-3 border-b border-border pb-3">
-						<div>
-							<p
-								class="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase"
-							>
-								<Trophy class="h-3 w-3 text-primary" />
-								Longest
-							</p>
-							<p class="text-xl font-bold text-foreground">
-								{streak.longestStreak}
-								<span class="text-xs font-normal text-muted-foreground">days</span>
-							</p>
-						</div>
+			<!-- Divider -->
+			<div class="hidden h-32 w-px bg-white/10 lg:block"></div>
+			<div class="h-px w-full bg-white/10 lg:hidden"></div>
 
-						<div>
-							<p
-								class="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase"
-							>
-								<Calendar class="h-3 w-3 text-primary" />
-								Last Commit
-							</p>
-							<p class="truncate text-sm font-medium text-foreground" title={streak.lastCommitDate}>
-								{streak.lastCommitDate || 'Never'}
-							</p>
-						</div>
+			<!-- Details -->
+			<div class="w-full flex-1 space-y-6 text-center lg:text-left">
+				<div class="grid grid-cols-2 gap-6">
+					<div class="space-y-2">
+						<p
+							class="flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
+						>
+							<Trophy class="h-3 w-3 text-warning/60" /> Hall of Fame
+						</p>
+						<p class="text-3xl font-black text-white/90">
+							{streak.longestStreak}
+							<span class="text-sm font-medium tracking-normal text-muted-foreground">days</span>
+						</p>
 					</div>
 
-					<div class="pt-1">
-						<p class="text-xs leading-relaxed text-muted-foreground">
-							{#if streak.currentStreak > 0}
-								You're building momentum! Keep pushing daily to maintain your active streak.
-							{:else}
-								Your streak has reset. Don't worry, every legendary developer starts from day one.
-							{/if}
+					<div class="space-y-2">
+						<p
+							class="flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
+						>
+							<Calendar class="h-3 w-3 text-primary/60" /> Last Ship
+						</p>
+						<p
+							class="truncate text-base font-bold text-white/80"
+							title={streak.lastCommitDate || 'Never'}
+						>
+							{streak.lastCommitDate || 'Never'}
 						</p>
 					</div>
 				</div>
+
+				<p class="text-sm leading-relaxed text-muted-foreground/80 italic">
+					{#if streak.currentStreak > 0}
+						"The momentum is real. Every commit is a brick in your legacy."
+					{:else}
+						"A fresh start is just an opportunity to build something stronger."
+					{/if}
+				</p>
 			</div>
-		{/if}
-	</CardContent>
-</Card>
+		</div>
+	{/if}
+</div>

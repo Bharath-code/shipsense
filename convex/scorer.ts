@@ -18,9 +18,7 @@ export function computeRepoScore(snapshot: {
 	const prScore = Math.min((snapshot.prsMerged7d / 5) * 10, 10);
 	const contributorScore = Math.min((snapshot.contributors14d / 3) * 10, 10);
 
-	const healthScore = Math.round(
-		starScore + commitScore + issueScore + prScore + contributorScore
-	);
+	const healthScore = Math.round(starScore + commitScore + issueScore + prScore + contributorScore);
 
 	return {
 		healthScore,

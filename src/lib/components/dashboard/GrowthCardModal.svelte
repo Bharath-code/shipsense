@@ -42,103 +42,121 @@
 		class="overflow-hidden border-border bg-background p-0 text-foreground shadow-2xl sm:max-w-md"
 	>
 		<!-- Growth Card Canvas (The part that gets shared) -->
-		<div id="growth-card" class="relative overflow-hidden bg-zinc-950 p-8">
-			<!-- Avant-garde background elements -->
+		<div class="relative overflow-hidden glass-panel bg-slate-950 p-10 select-none">
+			<!-- Advanced background architecture -->
 			<div
-				class="pointer-events-none absolute -top-32 -right-32 h-64 w-64 rounded-full bg-indigo-500/20 blur-[64px]"
+				class="pointer-events-none absolute -top-40 -right-40 h-80 w-80 animate-pulse rounded-full bg-primary/20 blur-[100px]"
 			></div>
 			<div
-				class="pointer-events-none absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-emerald-500/10 blur-[64px]"
+				class="pointer-events-none absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-indigo-500/10 blur-[100px]"
+			></div>
+			<div
+				class="pointer-events-none absolute top-1/2 left-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 opacity-10"
+				style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 24px 24px;"
 			></div>
 
 			<!-- Card Content -->
 			<div class="relative z-10 flex h-full flex-col">
 				<!-- Brand Header -->
-				<div class="mb-8 flex items-center justify-between opacity-80">
-					<div class="flex items-center gap-2">
+				<div class="mb-10 flex items-center justify-between opacity-60">
+					<div class="flex items-center gap-3">
 						<div
-							class="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-indigo-500 to-purple-600"
+							class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/20 bg-white/10"
 						>
-							<span class="text-[10px] font-black tracking-tighter text-white">SS</span>
+							<span class="text-xs font-black tracking-tighter text-white">SS</span>
 						</div>
-						<span class="text-xs font-bold tracking-widest text-zinc-400 uppercase"
-							>ShipSense.dev</span
+						<span class="text-[10px] font-black tracking-[0.3em] text-white uppercase"
+							>ShipSense Intelligence</span
 						>
 					</div>
-					<span class="font-mono text-[10px] text-zinc-500">#{new Date().getFullYear()}</span>
+					<span class="font-mono text-[10px] tracking-widest text-white/40 uppercase"
+						>Snapshot // {new Date().getFullYear()}</span
+					>
 				</div>
 
 				<!-- Repo Info -->
-				<div class="mb-8 space-y-1">
-					<p class="flex items-center gap-1.5 text-sm font-medium text-indigo-400">
-						<Star class="h-3 w-3 fill-indigo-400" /> TOP REPOSITORY
-					</p>
-					<h2
-						class="px-0.5 text-3xl leading-tight font-black tracking-tight break-words text-white"
+				<div class="mb-12 space-y-2">
+					<div
+						class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1"
 					>
+						<Star class="h-3 w-3 fill-primary text-primary" />
+						<span class="text-[10px] font-black tracking-widest text-primary uppercase"
+							>ELITE REPOSITORY</span
+						>
+					</div>
+					<h2 class="text-4xl leading-none font-black tracking-tighter text-white">
 						{repo?.name || 'Loading...'}
 					</h2>
-					<p class="mt-1 text-sm text-zinc-400">{repo?.owner}</p>
+					<p class="text-lg font-medium text-white/40">{repo?.owner}</p>
 				</div>
 
 				<!-- Metrics Grid -->
-				<div class="mb-4 grid grid-cols-2 gap-4">
+				<div class="mb-6 grid grid-cols-2 gap-6">
 					<div
-						class="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-900/80 p-4"
+						class="group/m relative flex flex-col items-center justify-center space-y-2 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl"
 					>
-						<div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
-						<span class="mb-2 text-[10px] font-bold tracking-wider text-zinc-500 uppercase"
-							>Health Score</span
+						<div
+							class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 transition-opacity group-hover/m:opacity-100"
+						></div>
+						<span
+							class="relative z-10 text-[10px] font-black tracking-[0.2em] text-white/40 uppercase"
+							>Health Index</span
 						>
-						<div class="relative z-10 flex items-end gap-1">
-							<span class="text-4xl font-black tracking-tighter text-white">{latestScore}</span>
-							<span class="mb-1 text-sm font-bold text-blue-400">/100</span>
+						<div class="relative z-10 flex items-baseline gap-1">
+							<span class="text-5xl font-black text-white">{latestScore}</span>
+							<span class="text-xs font-bold text-primary/60">/ 100</span>
 						</div>
 					</div>
 
 					<div
-						class="relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-900/80 p-4"
+						class="group/s relative flex flex-col items-center justify-center space-y-2 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl"
 					>
-						<div class="absolute inset-0 bg-gradient-to-b from-rose-500/5 to-transparent"></div>
+						<div
+							class="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 transition-opacity group-hover/s:opacity-100"
+						></div>
 						<span
-							class="mb-2 flex items-center gap-1 text-[10px] font-bold tracking-wider text-zinc-500 uppercase"
-							><Flame class="h-3 w-3 text-rose-500" /> Active Streak</span
+							class="relative z-10 flex items-center gap-2 text-[10px] font-black tracking-[0.2em] text-white/40 uppercase"
+							><Flame class="h-3 w-3 text-rose-500" /> Ship Streak</span
 						>
-						<div class="relative z-10 flex items-end gap-1">
-							<span class="text-4xl font-black tracking-tighter text-white">{streak}</span>
-							<span class="mb-1 text-sm font-bold tracking-wider text-rose-500 uppercase">Days</span
-							>
+						<div class="relative z-10 flex items-baseline gap-2">
+							<span class="text-5xl font-black text-white">{streak}</span>
+							<span class="text-xs font-bold text-rose-500/60 uppercase">Days</span>
 						</div>
 					</div>
 				</div>
 
-				<!-- Lower Metrics -->
-				<div class="mt-4 flex items-center justify-center gap-6 border-t border-zinc-800/50 pt-4">
-					<div class="flex items-center gap-1.5 text-zinc-400">
-						<Star class="h-4 w-4" />
-						<span class="font-bold text-zinc-200">{repo?.starsCount || 0}</span>
+				<!-- Lower Footer -->
+				<div class="mt-6 flex items-center justify-between border-t border-white/10 px-2 pt-8">
+					<div class="flex items-center gap-8">
+						<div class="flex items-center gap-3">
+							<Star class="h-5 w-5 text-white/20" />
+							<span class="text-lg font-black text-white/80">{repo?.starsCount || 0}</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<GitFork class="h-5 w-5 text-white/20" />
+							<span class="text-lg font-black text-white/80">{repo?.forksCount || 0}</span>
+						</div>
 					</div>
-					<div class="flex items-center gap-1.5 text-zinc-400">
-						<GitFork class="h-4 w-4" />
-						<span class="font-bold text-zinc-200">{repo?.forksCount || 0}</span>
+					<div class="font-mono text-[10px] tracking-widest text-white/20 uppercase">
+						verified by shipsense
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Modal Actions -->
-		<div class="flex flex-col gap-3 border-t border-border bg-muted/50 p-6 sm:flex-row">
+		<div class="grid grid-cols-1 gap-4 border-t border-white/10 bg-black/40 p-10 sm:grid-cols-2">
 			<Button
 				variant="default"
-				class="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+				class="h-14 rounded-2xl bg-white text-base font-black text-black transition-all hover:bg-white/90 active:scale-95"
 				onclick={downloadCard}
 			>
-				<Download class="mr-2 h-4 w-4" />
-				Save PNG
+				<Download class="mr-3 h-5 w-5" />
+				SVG PERSIST
 			</Button>
 			<Button
 				variant="outline"
-				class="w-full border-border bg-background text-foreground hover:bg-muted"
+				class="h-14 rounded-2xl border-white/10 bg-white/5 text-base font-black text-white transition-all hover:bg-white/10 active:scale-95"
 				onclick={() => {
 					window.open(
 						`https://twitter.com/intent/tweet?text=Just hit a ${streak} day commit streak on ${repo?.name}! My repo Health Score is ${latestScore}/100 🚀&url=https://shipsense.dev`,
@@ -148,17 +166,17 @@
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
-					width="16"
-					height="16"
+					width="20"
+					height="20"
 					viewBox="0 0 24 24"
 					fill="currentColor"
-					class="mr-2 h-4 w-4"
+					class="mr-3 h-5 w-5 text-white"
 				>
 					<path
 						d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
 					/>
 				</svg>
-				Post to X
+				INTEL SHARE
 			</Button>
 		</div>
 	</Dialog.Content>

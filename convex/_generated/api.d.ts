@@ -18,6 +18,7 @@ import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as insightGenerator from "../insightGenerator.js";
 import type * as orchestrator from "../orchestrator.js";
+import type * as plan from "../plan.js";
 import type * as repos from "../repos.js";
 import type * as scorer from "../scorer.js";
 import type * as streakTracker from "../streakTracker.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   insightGenerator: typeof insightGenerator;
   orchestrator: typeof orchestrator;
+  plan: typeof plan;
   repos: typeof repos;
   scorer: typeof scorer;
   streakTracker: typeof streakTracker;

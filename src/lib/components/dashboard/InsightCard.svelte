@@ -13,78 +13,106 @@
 	let isLoading = $derived(insightsQuery.isLoading);
 </script>
 
-<Card class="border-border bg-card shadow-sm transition-colors">
-	<CardHeader class="border-b border-border pb-3">
-		<div class="flex items-center gap-2">
-			<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-				<Sparkles class="h-4 w-4" />
+<div class="overflow-hidden rounded-[2rem] glass-panel border-white/10 p-8 shadow-2xl">
+	<div class="mb-8 flex items-center justify-between border-b border-white/5 pb-6">
+		<div class="flex items-center gap-4">
+			<div
+				class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]"
+			>
+				<Sparkles class="h-6 w-6" />
 			</div>
 			<div>
-				<CardTitle class="text-base font-semibold">AI Insights</CardTitle>
-				<p class="text-xs text-muted-foreground">Powered by Gemini</p>
+				<h3 class="text-xl font-bold text-white/90">AI Insights</h3>
+				<p class="text-sm font-medium tracking-widest text-muted-foreground/60 uppercase">
+					Intelligence Layer
+				</p>
 			</div>
 		</div>
-	</CardHeader>
+		<Badge
+			variant="outline"
+			class="rounded-full border-white/10 bg-white/5 px-4 py-1 text-[10px] font-bold tracking-widest text-white/40 uppercase"
+		>
+			Beta 1.0
+		</Badge>
+	</div>
 
-	<CardContent class="space-y-6 pt-5">
+	<div class="space-y-8">
 		{#if isLoading}
-			<div class="animate-pulse space-y-3">
-				<div class="h-4 w-3/4 rounded bg-muted"></div>
-				<div class="h-4 w-full rounded bg-muted"></div>
-				<div class="h-4 w-5/6 rounded bg-muted"></div>
+			<div class="animate-pulse space-y-4">
+				<div class="h-4 w-3/4 rounded-full bg-white/10"></div>
+				<div class="h-4 w-full rounded-full bg-white/10"></div>
+				<div class="h-4 w-5/6 rounded-full bg-white/10"></div>
 			</div>
 		{:else if !insights}
-			<div class="flex flex-col items-center py-6 text-center text-muted-foreground">
-				<Activity class="h-8 w-8 py-1 opacity-20" />
-				<p class="mt-2 text-sm">No insights generated yet.</p>
-				<p class="text-xs">Check back soon.</p>
+			<div class="flex flex-col items-center py-12 text-center text-muted-foreground">
+				<Activity class="h-12 w-12 py-1 opacity-20" />
+				<p class="mt-4 text-lg font-medium text-white/40">No insights generated yet.</p>
+				<p class="text-sm">Check back in 24 hours.</p>
 			</div>
 		{:else}
 			<!-- Summary -->
-			<div>
-				<h4 class="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-					Summary
+			<div class="space-y-3">
+				<h4 class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
+					Growth Summary
 				</h4>
-				<p
-					class="text-sm leading-relaxed text-foreground transition-colors group-hover:text-primary"
-				>
+				<p class="text-lg leading-relaxed text-white/80 transition-colors">
 					{insights.summary}
 				</p>
 			</div>
 
 			<!-- Risk Assessment -->
-			<div class="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3">
-				{#if insights.risk.toLowerCase().includes('high') || insights.risk
-						.toLowerCase()
-						.includes('critical')}
-					<div class="mt-0.5 text-destructive"><AlertTriangle class="h-4 w-4" /></div>
-				{:else if insights.risk.toLowerCase().includes('medium')}
-					<div class="mt-0.5 text-warning"><AlertTriangle class="h-4 w-4" /></div>
-				{:else}
-					<div class="mt-0.5 text-success"><CheckCircle class="h-4 w-4" /></div>
-				{/if}
-				<div>
-					<h4 class="text-xs font-semibold text-muted-foreground">Risk Assessment</h4>
-					<p class="mt-1 text-sm text-foreground">{insights.risk}</p>
+			<div
+				class="group relative overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:bg-white/[0.04]"
+			>
+				<div class="relative z-10 flex items-start gap-4">
+					{#if insights.risk.toLowerCase().includes('high') || insights.risk
+							.toLowerCase()
+							.includes('critical')}
+						<div
+							class="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive shadow-[0_0_15px_rgba(var(--destructive-rgb),0.2)]"
+						>
+							<AlertTriangle class="h-5 w-5" />
+						</div>
+					{:else if insights.risk.toLowerCase().includes('medium')}
+						<div
+							class="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-warning shadow-[0_0_15px_rgba(var(--warning-rgb),0.2)]"
+						>
+							<AlertTriangle class="h-5 w-5" />
+						</div>
+					{:else}
+						<div
+							class="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success shadow-[0_0_15px_rgba(var(--success-rgb),0.2)]"
+						>
+							<CheckCircle class="h-5 w-5" />
+						</div>
+					{/if}
+					<div>
+						<h4 class="text-sm font-bold text-white/90">Health Risk Warning</h4>
+						<p class="mt-1 text-base text-muted-foreground/80">{insights.risk}</p>
+					</div>
 				</div>
 			</div>
 
 			<!-- Recommended Actions -->
 			{#if insights.actions && insights.actions.length > 0}
-				<div>
-					<h4 class="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-						Recommended Actions
+				<div class="space-y-4">
+					<h4 class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
+						Next Strategic Moves
 					</h4>
-					<ul class="space-y-2">
+					<div class="grid gap-3">
 						{#each insights.actions as action}
-							<li class="flex items-start gap-2 text-sm text-foreground">
-								<span class="mt-1 shrink-0 text-primary">•</span>
-								<span>{action}</span>
-							</li>
+							<div
+								class="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.01] p-4 text-sm text-white/80 transition-all hover:bg-white/[0.03]"
+							>
+								<div
+									class="h-1.5 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]"
+								></div>
+								{action}
+							</div>
 						{/each}
-					</ul>
+					</div>
 				</div>
 			{/if}
 		{/if}
-	</CardContent>
-</Card>
+	</div>
+</div>

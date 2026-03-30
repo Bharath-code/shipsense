@@ -1,6 +1,7 @@
 import { mutation, query, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { getPlanConfig, type PlanType } from './plan';
 
 // List all active repos for the logged in user
 export const listMyRepos = query({
@@ -9,10 +10,29 @@ export const listMyRepos = query({
 		const userId = await getAuthUserId(ctx);
 		if (!userId) return [];
 
-		return await ctx.db
+		const repos = await ctx.db
 			.query('repos')
 			.withIndex('by_userId_isActive', (q) => q.eq('userId', userId).eq('isActive', true))
 			.collect();
+
+		// Enrich each repo with its latest health score and momentum
+		const enrichedRepos = await Promise.all(
+			repos.map(async (repo) => {
+				const latestScore = await ctx.db
+					.query('repoScores')
+					.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repo._id))
+					.order('desc')
+					.first();
+
+				return {
+					...repo,
+					healthScore: latestScore?.healthScore ?? 0,
+					momentum: latestScore?.trend === 'up' ? 5 : latestScore?.trend === 'down' ? -5 : 0 // Placeholder logic for momentum display
+				};
+			})
+		);
+
+		return enrichedRepos;
 	}
 });
 
@@ -45,11 +65,12 @@ export const connectRepo = mutation({
 			.withIndex('by_userId_isActive', (q) => q.eq('userId', userId).eq('isActive', true))
 			.collect();
 
-		if (profile.plan === 'free' && existingRepos.length >= 1) {
-			throw new Error('Free plan limited to 1 repository. Upgrade to Indie plan.');
-		}
-		if (profile.plan === 'indie' && existingRepos.length >= 5) {
-			throw new Error('Indie plan limited to 5 repositories. Upgrade to Builder plan.');
+		const planConfig = getPlanConfig(profile.plan as PlanType);
+
+		if (existingRepos.length >= planConfig.maxRepos) {
+			throw new Error(
+				`${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)} plan is limited to ${planConfig.maxRepos} repository. Upgrade your plan to add more.`
+			);
 		}
 
 		// See if repo is already added but inactive

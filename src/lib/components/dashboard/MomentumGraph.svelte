@@ -25,97 +25,110 @@
 	}
 </script>
 
-<Card class="border-border bg-card shadow-sm transition-colors">
-	<CardHeader class="border-b border-border pb-3">
-		<div class="flex items-center justify-between">
-			<div class="flex items-center gap-2">
-				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-					<TrendingUp class="h-4 w-4" />
-				</div>
-				<div>
-					<CardTitle class="text-base font-semibold">Momentum Engine</CardTitle>
-					<p class="text-xs text-muted-foreground">Last 7 snapshots (health score trend)</p>
-				</div>
+<div class="group relative flex flex-col rounded-[2rem] glass-panel border-white/10 p-8 shadow-2xl">
+	<div class="mb-10 flex items-center justify-between">
+		<div class="flex items-center gap-4">
+			<div
+				class="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]"
+			>
+				<Activity class="h-6 w-6" />
 			</div>
-
-			{#if history.length > 0}
-				<div class="flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1">
-					<Activity class="h-3 w-3 text-success" />
-					<span class="text-xs font-semibold text-foreground"
-						>{history[history.length - 1]?.healthScore || 0}</span
-					>
-				</div>
-			{/if}
+			<div>
+				<h3 class="text-xl font-bold text-white/90">Momentum Engine</h3>
+				<p class="text-xs font-medium tracking-tight text-muted-foreground/60">
+					Last 7 health snapshots
+				</p>
+			</div>
 		</div>
-	</CardHeader>
 
-	<CardContent class="pt-6">
+		{#if history.length > 0}
+			<div
+				class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-inner"
+			>
+				<div class="h-2 w-2 animate-pulse rounded-full bg-success"></div>
+				<span class="text-sm font-black text-white/90">
+					{history[history.length - 1]?.healthScore || 0}
+				</span>
+			</div>
+		{/if}
+	</div>
+
+	<div class="relative flex-1">
 		{#if isLoading}
-			<div class="flex h-40 animate-pulse items-end justify-between gap-2">
-				{#each [1, 2, 3, 4, 5, 6, 7] as idx}
+			<div class="flex h-48 items-end justify-between gap-3 px-2">
+				{#each [1, 2, 3, 4, 5, 6, 7] as _}
 					<div
-						class="w-full rounded-t-sm bg-muted"
-						style={`height: ${Math.random() * 80 + 20}%`}
+						class="w-full animate-pulse rounded-2xl bg-white/5"
+						style={`height: ${Math.random() * 60 + 20}%`}
 					></div>
 				{/each}
 			</div>
 		{:else if history.length === 0}
-			<div class="flex h-40 flex-col items-center justify-center text-center">
-				<div
-					class="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-border bg-muted/50 text-muted-foreground"
-				>
-					<BarChart2 class="h-5 w-5" />
+			<div class="flex h-48 flex-col items-center justify-center space-y-4 text-center">
+				<div class="rounded-3xl border border-dashed border-white/10 bg-white/5 p-5 text-white/20">
+					<BarChart2 class="h-10 w-10" />
 				</div>
-				<p class="text-sm font-medium text-muted-foreground">Waiting for first snapshot</p>
-				<p class="mt-1 text-xs text-muted-foreground/60">Data will populate after analysis runs.</p>
+				<div class="space-y-1">
+					<p class="text-sm font-bold text-white/60">Waiting for first engine fire</p>
+					<p class="max-w-[200px] text-xs leading-relaxed text-muted-foreground/40 italic">
+						"Analysis data will populate here after the next synchronization."
+					</p>
+				</div>
 			</div>
 		{:else}
-			<div class="relative flex h-48 flex-col">
-				<!-- Y Axis Lines -->
+			<div class="relative flex h-64 flex-col">
+				<!-- Y Axis Grid Lines -->
 				<div
-					class="pointer-events-none absolute inset-x-0 top-0 bottom-0 flex flex-col justify-between pb-6"
+					class="pointer-events-none absolute inset-x-0 top-0 bottom-12 flex flex-col justify-between"
 				>
-					<div class="w-full border-t border-dashed border-border/80"></div>
-					<div class="w-full border-t border-dashed border-border/50"></div>
-					<div class="w-full border-t border-dashed border-border/30"></div>
-					<div class="w-full space-y-0 border-t border-border"></div>
+					<div class="w-full border-t border-white/5"></div>
+					<div class="w-full border-t border-white/5"></div>
+					<div class="w-full border-t border-white/5"></div>
 				</div>
 
 				<!-- Bars Container -->
 				<div
-					class="relative z-10 mb-6 flex flex-1 items-end justify-between gap-1 px-1 pt-4 pb-0 sm:gap-2"
+					class="relative z-10 flex flex-1 items-end justify-between gap-2 px-2 pt-6 pb-12 sm:gap-4"
 				>
 					{#each history as point, i}
-						<div class="group relative flex h-full w-full flex-col justify-end">
-							<!-- Bar -->
+						<div class="group/bar relative flex h-full w-full flex-col justify-end">
+							<!-- Bar Glow (Hidden by default, shows on hover) -->
 							<div
-								class="w-full rounded-t-sm border-t border-primary/50 bg-gradient-to-t from-primary/50 via-primary/80 to-primary transition-all duration-500 ease-out hover:brightness-125"
+								class="absolute bottom-0 left-1/2 w-4/5 -translate-x-1/2 rounded-t-3xl bg-primary/30 opacity-0 blur-2xl transition-opacity duration-500 group-hover/bar:opacity-100"
+								style={`height: ${(point.healthScore / maxScore) * 100}%`}
+							></div>
+
+							<!-- The Bar -->
+							<div
+								class="relative w-full overflow-hidden rounded-t-3xl border-t border-white/20 bg-gradient-to-t from-primary/10 via-primary/30 to-primary/60 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/bar:brightness-125"
 								style={`height: ${(point.healthScore / maxScore) * 100}%`}
 							>
-								<!-- Score Tooltip on hover -->
-								<div
-									class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded border border-border bg-popover px-2 py-1 text-[10px] font-bold text-popover-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-								>
-									{point.healthScore}
-								</div>
+								<!-- Internal Shimmer -->
+								<div class="absolute inset-x-0 top-0 h-1 bg-white/20"></div>
 							</div>
-						</div>
-					{/each}
-				</div>
 
-				<!-- X Axis Labels -->
-				<div class="absolute inset-x-0 bottom-0 flex h-6 justify-between px-1">
-					{#each history as point}
-						<div class="w-full text-center">
-							<span
-								class="text-[9px] font-medium tracking-wider whitespace-nowrap text-muted-foreground uppercase"
+							<!-- Floating Tooltip -->
+							<div
+								class="pointer-events-none absolute -top-12 left-1/2 flex -translate-x-1/2 -translate-y-2 flex-col items-center opacity-0 transition-all duration-300 group-hover/bar:-translate-y-4 group-hover/bar:opacity-100"
 							>
-								{formatDate(point.calculatedAt)}
-							</span>
+								<div class="rounded-xl border border-white/20 bg-slate-950 px-3 py-1.5 shadow-2xl">
+									<span class="text-xs font-black text-white">{point.healthScore}</span>
+								</div>
+								<div class="h-2 w-px bg-white/20"></div>
+							</div>
+
+							<!-- X Label -->
+							<div class="absolute inset-x-0 -bottom-8 flex justify-center">
+								<span
+									class="text-[9px] font-black tracking-widest text-muted-foreground/40 uppercase"
+								>
+									{formatDate(point.calculatedAt)}
+								</span>
+							</div>
 						</div>
 					{/each}
 				</div>
 			</div>
 		{/if}
-	</CardContent>
-</Card>
+	</div>
+</div>

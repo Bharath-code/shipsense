@@ -1,4 +1,4 @@
-import { internalMutation, query } from './_generated/server';
+import { internalMutation, query, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 
 // Map product ID → plan name (set DODO_*_PRODUCT_ID in Convex env vars)
@@ -63,7 +63,7 @@ export const changePlan = internalMutation({
 });
 
 // Query for current user plan (used in feature gates)
-export const getMyPlan = query({
+export const getMyPlan = internalQuery({
 	args: { userId: v.id('users') },
 	handler: async (ctx, { userId }) => {
 		const profile = await ctx.db

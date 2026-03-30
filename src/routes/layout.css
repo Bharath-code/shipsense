@@ -210,3 +210,25 @@
 		display: none;
 	}
 }
+
+@utility glass-panel {
+	@apply border border-white/10 bg-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] backdrop-blur-xl;
+}
+
+@utility glass-card {
+	@apply border border-white/5 bg-white/[0.02] backdrop-blur-md transition-all duration-300 hover:border-white/10 hover:bg-white/[0.05] hover:shadow-[0_0_30px_rgba(255,255,255,0.05)];
+}
+
+@keyframes float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-20px);
+	}
+}
+
+@utility animate-float {
+	animation: float 10s ease-in-out infinite;
+}

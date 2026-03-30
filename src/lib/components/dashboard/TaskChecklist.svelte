@@ -16,84 +16,84 @@
 	let isLoading = $derived(tasksQuery.isLoading);
 </script>
 
-<Card class="border-border bg-card shadow-sm transition-colors">
-	<CardHeader class="border-b border-border pb-3">
-		<div class="flex items-center gap-2">
-			<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-				<ListTodo class="h-4 w-4" />
+<div class="group flex flex-col rounded-[2rem] glass-panel border-white/10 p-8 shadow-2xl">
+	<div class="mb-8 flex items-center justify-between">
+		<div class="flex items-center gap-4">
+			<div
+				class="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]"
+			>
+				<ListTodo class="h-6 w-6" />
 			</div>
 			<div>
-				<CardTitle class="text-base font-semibold">Priority Tasks</CardTitle>
-				<p class="text-xs text-muted-foreground">Deterministic actionable steps</p>
+				<h3 class="text-xl font-bold text-white/90">Priority Delta</h3>
+				<p class="text-xs font-medium tracking-tight text-muted-foreground/60">
+					Deterministic actionable steps
+				</p>
 			</div>
 		</div>
-	</CardHeader>
+	</div>
 
-	<CardContent class="pt-5">
+	<div class="flex-1 overflow-y-auto">
 		{#if isLoading}
 			<div class="space-y-4">
 				{#each [1, 2, 3] as _}
-					<div class="flex items-center space-x-3">
-						<div class="h-5 w-5 animate-pulse rounded-full bg-muted"></div>
-						<div class="h-4 w-full animate-pulse rounded bg-muted"></div>
+					<div class="flex items-center space-x-4">
+						<div class="h-6 w-6 animate-pulse rounded-full bg-white/5"></div>
+						<div class="h-5 w-full animate-pulse rounded-xl bg-white/5"></div>
 					</div>
 				{/each}
 			</div>
 		{:else if tasks.length === 0}
-			<div class="flex flex-col items-center justify-center space-y-3 py-8 text-center">
-				<div class="rounded-full bg-muted p-3 text-success/50">
-					<CheckCircle2 class="h-6 w-6" />
+			<div class="flex flex-col items-center justify-center space-y-4 py-8 text-center">
+				<div class="rounded-full bg-white/5 p-4 text-success/40">
+					<CheckCircle2 class="h-8 w-8" />
 				</div>
 				<div>
-					<h4 class="mb-1 text-sm font-medium text-foreground">You're all caught up!</h4>
-					<p class="max-w-[200px] text-xs text-muted-foreground">
-						No pending tasks for this repository right now.
+					<h4 class="text-lg font-bold text-white/80">Clear Horizon</h4>
+					<p class="max-w-[180px] text-xs leading-relaxed text-muted-foreground/60 italic">
+						"The best way to predict the future is to ship it."
 					</p>
 				</div>
 			</div>
 		{:else}
-			<div class="space-y-3">
+			<div class="space-y-4">
 				{#each tasks as task (task._id)}
 					<div
-						class="group flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-3 transition-all hover:bg-muted/30"
+						class="group flex items-start gap-4 rounded-3xl border border-white/5 bg-white/5 p-5 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-xl"
 						transition:fade={{ duration: 200 }}
 					>
-						<!-- Checkbox alternative -->
 						<button
-							class="mt-0.5 shrink-0"
+							class="mt-1 shrink-0 transition-transform active:scale-95"
 							aria-label="Mark task as complete"
 							onclick={() => client.mutation(api.dashboard.completeTask, { taskId: task._id })}
 						>
 							<Circle
-								class="h-5 w-5 text-muted-foreground/50 transition-colors hover:fill-success/10 hover:text-success"
+								class="h-6 w-6 text-muted-foreground/30 transition-colors group-hover:text-success/50"
 							/>
 						</button>
 
-						<div class="flex-1">
-							<p class="mt-0.5 text-sm leading-snug text-foreground">{task.taskText}</p>
+						<div class="flex-1 space-y-3">
+							<p class="text-sm leading-relaxed font-medium text-white/80">
+								{task.taskText}
+							</p>
 
-							<div class="mt-2 flex items-center gap-2">
+							<div class="flex items-center gap-3">
 								<span
-									class={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+									class={`rounded-lg border px-2.5 py-1 text-[9px] font-black tracking-widest uppercase transition-colors ${
 										task.taskType === 'commit'
 											? 'border-primary/20 bg-primary/10 text-primary'
 											: task.taskType === 'pr'
-												? 'border-blue-500/20 bg-blue-500/10 text-blue-500'
-												: task.taskType === 'issue'
-													? 'border-warning/20 bg-warning/10 text-warning'
-													: 'border-border bg-muted text-muted-foreground'
+												? 'border-blue-500/20 bg-blue-500/10 text-blue-400'
+												: 'border-white/10 bg-white/5 text-muted-foreground'
 									}`}
 								>
-									{task.taskType.toUpperCase()}
+									{task.taskType}
 								</span>
 
 								{#if task.priority === 1}
-									<span class="flex items-center text-[10px] font-medium text-destructive">
-										<span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-destructive"></span> High Priority
-									</span>
-								{:else if task.priority === 2}
-									<span class="flex items-center text-[10px] font-medium text-warning">
-										<span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-warning"></span> Medium Priority
+									<span class="flex items-center gap-1.5 text-[10px] font-bold text-destructive/80">
+										<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive"></span>
+										CRITICAL
 									</span>
 								{/if}
 							</div>
@@ -102,5 +102,5 @@
 				{/each}
 			</div>
 		{/if}
-	</CardContent>
-</Card>
+	</div>
+</div>
