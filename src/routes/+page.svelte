@@ -1,176 +1,184 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { ArrowRight as ArrowRightIcon } from 'lucide-svelte';
 	import ThemeToggle from '$lib/components/dashboard/ThemeToggle.svelte';
+	import { ArrowRight, Sparkles, BarChart3, LineChart, Cpu, Fingerprint } from 'lucide-svelte';
 </script>
 
 <svelte:head>
-	<title>ShipSense | The Growth Engine for Indie Hackers</title>
+	<title>ShipSense | Elegant Telemetry</title>
+	<style>
+		@keyframes float {
+			0%, 100% { transform: translateY(0) scale(1); }
+			50% { transform: translateY(-20px) scale(1.05); }
+		}
+		@keyframes float-delayed {
+			0%, 100% { transform: translateY(0) scale(1); }
+			50% { transform: translateY(20px) scale(0.95); }
+		}
+		.animate-float {
+			animation: float 12s ease-in-out infinite;
+		}
+		.animate-float-delayed {
+			animation: float-delayed 15s ease-in-out infinite;
+		}
+		
+		/* Glassmorphic utilities */
+		.glass-panel {
+			background: linear-gradient(145deg, hsl(var(--card)/0.6), hsl(var(--card)/0.2));
+			backdrop-filter: blur(40px);
+			-webkit-backdrop-filter: blur(40px);
+			border: 1px solid hsl(var(--border)/0.5);
+			box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+		}
+		
+		.glass-nav {
+			background: linear-gradient(180deg, hsl(var(--background)/0.8), hsl(var(--background)/0.3));
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+			border: 1px solid hsl(var(--border)/0.4);
+		}
+	</style>
 </svelte:head>
 
-<div
-	class="min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary/20"
->
-	<!-- Navigation -->
-	<header class="sticky top-0 z-50 w-full border-b border-border bg-background/50 backdrop-blur-xl">
-		<div class="container mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-			<div class="flex items-center gap-2 font-mono font-bold tracking-tighter">
-				<div
-					class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground"
-				>
-					S
+<div class="relative min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/20 selection:text-primary transition-colors duration-500 font-mono">
+	
+	<!-- Ambient Background Glows -->
+	<div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+		<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] animate-float"></div>
+		<div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-success/20 blur-[150px] animate-float-delayed"></div>
+		<div class="absolute top-[30%] left-[60%] w-[30%] h-[30%] rounded-full bg-warning/10 blur-[100px] animate-float"></div>
+	</div>
+
+	<!-- Pill Navigation -->
+	<div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+		<header class="glass-nav rounded-full px-4 sm:px-6 py-3 flex items-center justify-between w-full max-w-4xl shadow-xl transition-all duration-500">
+			<div class="flex items-center gap-2 font-bold tracking-tight text-lg">
+				<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground shadow-lg">
+					<Fingerprint size={16} />
 				</div>
-				ShipSense
+				<span class="hidden sm:inline-block">ShipSense</span>
 			</div>
-			<nav class="flex items-center gap-4">
-				<a
-					href="#features"
-					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-					>Features</a
-				>
-				<a
-					href="#pricing"
-					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-					>Pricing</a
-				>
-				<Button
-					href="/auth/login"
-					variant="ghost"
-					class="text-muted-foreground hover:text-foreground">Sign In</Button
-				>
-				<ThemeToggle />
-				<Button href="/auth/login" class="bg-primary text-primary-foreground hover:bg-primary/90"
-					>Get Started</Button
-				>
+			<nav class="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
+				<a href="#vision" class="text-foreground/70 hover:text-foreground transition-colors duration-300">Vision</a>
+				<a href="#capabilities" class="text-foreground/70 hover:text-foreground transition-colors duration-300">Capabilities</a>
+				<a href="#pricing" class="text-foreground/70 hover:text-foreground transition-colors duration-300">Pricing</a>
 			</nav>
-		</div>
-	</header>
-
-	<main>
-		<!-- Hero Section -->
-		<section class="relative overflow-hidden py-24 md:py-32 lg:py-40">
-			<div
-				class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--color-primary)_/_10%,_transparent_70%)] opacity-50"
-			></div>
-
-			<div class="relative z-10 container mx-auto max-w-5xl px-4 text-center">
-				<div
-					class="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium tracking-wide text-muted-foreground uppercase"
-				>
-					<span class="relative flex h-2 w-2">
-						<span
-							class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
-						></span>
-						<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-					</span>
-					Currently in Beta
-				</div>
-
-				<h1 class="mb-6 text-5xl leading-[1.1] font-extrabold tracking-tighter md:text-7xl">
-					Intelligence for <br class="hidden md:block" />
-					<span
-						class="bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent"
-						>Open Source Founders</span
-					>
-				</h1>
-
-				<p class="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-					Monitor your GitHub repo health, track shipping streaks, and get AI-driven workflows to
-					grow your developer ecosystem.
-				</p>
-
-				<div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
-					<Button
-						href="/auth/login"
-						size="lg"
-						class="h-12 w-full bg-primary px-8 text-base text-primary-foreground hover:bg-primary/90 sm:w-auto"
-					>
-						Start Tracking Free
-						<ArrowRightIcon class="ml-2 h-4 w-4" />
-					</Button>
-					<Button
-						href="https://github.com/shipsense"
-						target="_blank"
-						variant="outline"
-						size="lg"
-						class="h-12 w-full border-border px-8 hover:bg-muted sm:w-auto"
-					>
-						<svg class="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-							<path
-								fill-rule="evenodd"
-								d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.987 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.696 1.027 1.59 1.027 2.683 0 3.842-2.337 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						View our GitHub
-					</Button>
-				</div>
+			<div class="flex items-center gap-3">
+				<ThemeToggle />
+				<Button href="/auth/login" class="rounded-full bg-foreground text-background hover:bg-foreground/90 hover:scale-105 active:scale-95 transition-all duration-300 px-6 font-medium shadow-md">
+					Sign In
+				</Button>
 			</div>
-		</section>
+		</header>
+	</div>
 
-		<!-- Value Prop / Workflow -->
-		<section id="features" class="border-t border-border bg-muted/20 py-24">
-			<div class="container mx-auto max-w-7xl px-4">
-				<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-					<div class="rounded-2xl border border-border bg-card p-6 shadow-sm">
-						<div
-							class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary"
-						>
-							<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-								></path></svg
-							>
-						</div>
-						<h3 class="mb-2 text-xl font-bold">Health Scores</h3>
-						<p class="text-sm leading-relaxed text-muted-foreground">
-							We aggregate stars, issues, PR velocity, and active contributors into one
-							deterministic health score.
-						</p>
+	<main class="relative z-10 pt-32 pb-24">
+		<!-- Hero Area -->
+		<section class="container mx-auto px-6 max-w-6xl py-20 lg:py-32 flex flex-col items-center text-center">
+			
+			<div class="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 mb-8 animate-float-delayed">
+				<Sparkles size={14} class="text-primary" />
+				<span class="text-xs font-semibold tracking-wide text-foreground/80 lowercase">ShipSense 1.0 is now in Beta</span>
+			</div>
+			
+			<h1 class="text-5xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tight leading-[1.05] mb-8 max-w-5xl">
+				Effortless intelligence for your <br class="hidden md:block"/>
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-foreground to-primary border-transparent">open-source ecosystem.</span>
+			</h1>
+
+			<p class="text-lg md:text-2xl font-normal text-foreground/60 max-w-3xl mb-12 leading-relaxed tracking-normal">
+				Understand your repository health. Nurture your active contributors. Build infinite shipping streaks with deeply integrated telemetry and AI orchestration.
+			</p>
+
+			<div class="flex flex-col sm:flex-row items-center gap-6 w-full max-w-md mx-auto sm:max-w-none sm:w-auto">
+				<Button href="/auth/login" class="rounded-full w-full sm:w-auto h-14 px-8 text-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] transition-all duration-500 hover:scale-105 font-semibold">
+					Start Tracking Free
+					<ArrowRight class="ml-2 w-5 h-5" />
+				</Button>
+				<Button href="https://github.com/shipsense" target="_blank" variant="ghost" class="rounded-full w-full sm:w-auto h-14 px-8 text-lg hover:bg-foreground/5 transition-all duration-300 font-semibold border border-transparent hover:border-border/50">
+					View Documentation
+				</Button>
+			</div>
+			
+			<!-- Hero Dashboard Preview (Glass Panel) -->
+			<div class="mt-24 w-full max-w-5xl h-[400px] glass-panel rounded-[2rem] p-4 flex flex-col relative overflow-hidden group hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)] transition-all duration-700">
+				<div class="absolute inset-0 bg-gradient-to-b from-transparent to-background/20 mix-blend-overlay"></div>
+				<!-- Top Bar -->
+				<div class="flex items-center gap-2 mb-6 px-4 pt-2">
+					<div class="w-2.5 h-2.5 rounded-full bg-destructive/80"></div>
+					<div class="w-2.5 h-2.5 rounded-full bg-warning/80"></div>
+					<div class="w-2.5 h-2.5 rounded-full bg-success/80"></div>
+					<div class="ml-4 h-6 w-48 rounded-full bg-foreground/10 backdrop-blur-sm"></div>
+				</div>
+				<!-- Content Grid Mock -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 px-4 pb-2">
+					<div class="col-span-2 rounded-2xl bg-gradient-to-br from-foreground/5 to-transparent border border-foreground/10 p-6 flex flex-col">
+						<div class="h-6 w-32 rounded-lg bg-foreground/10 mb-4"></div>
+						<div class="flex-1 rounded-xl bg-gradient-to-tr from-primary/10 via-primary/5 to-transparent border border-primary/20"></div>
 					</div>
-					<div class="rounded-2xl border border-border bg-card p-6 shadow-sm">
-						<div
-							class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary"
-						>
-							<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M13 10V3L4 14h7v7l9-11h-7z"
-								></path></svg
-							>
-						</div>
-						<h3 class="mb-2 text-xl font-bold">AI Action Plans</h3>
-						<p class="text-sm leading-relaxed text-muted-foreground">
-							Google Gemini powers our AI agent to read your metrics and suggest exact actions to
-							grow your repo.
-						</p>
-					</div>
-					<div class="rounded-2xl border border-border bg-card p-6 shadow-sm">
-						<div
-							class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary"
-						>
-							<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-								></path></svg
-							>
-						</div>
-						<h3 class="mb-2 text-xl font-bold">Shipping Streaks</h3>
-						<p class="text-sm leading-relaxed text-muted-foreground">
-							Gamify your open source journey. Build long commit streaks and get beautiful shareable
-							momentum charts.
-						</p>
+					<div class="col-span-1 rounded-2xl bg-gradient-to-br from-foreground/5 to-transparent border border-foreground/10 p-6 flex flex-col gap-4">
+						<div class="h-6 w-24 rounded-lg bg-foreground/10 mb-2"></div>
+						<div class="h-12 rounded-xl bg-foreground/5 border border-foreground/5"></div>
+						<div class="h-12 rounded-xl bg-foreground/5 border border-foreground/5"></div>
+						<div class="h-12 rounded-xl bg-foreground/5 border border-foreground/5"></div>
 					</div>
 				</div>
 			</div>
+			
 		</section>
+
+		<!-- Capabilities Framework -->
+		<section id="capabilities" class="container mx-auto px-6 max-w-6xl py-24 relative">
+			<div class="text-center mb-16">
+				<h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-4">Core Capabilities</h2>
+				<p class="text-lg text-foreground/60 max-w-2xl mx-auto tracking-normal">A unified engine designed specifically for modern open-source maintenance.</p>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+				
+				<!-- Card 1 -->
+				<div class="glass-panel rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] group">
+					<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 text-primary shadow-sm border border-primary/20 group-hover:scale-110 transition-transform duration-500">
+						<BarChart3 size={24} strokeWidth={1.5} />
+					</div>
+					<h3 class="text-2xl font-semibold mb-3 tracking-tight">Repository Growth Cards</h3>
+					<p class="text-foreground/60 leading-relaxed tracking-normal">
+						Instantly parse your repository's pulse. Growth Cards aggregate stars, PR velocity, and active contributors into a focused, deterministic health score without the noise.
+					</p>
+				</div>
+
+				<!-- Card 2 -->
+				<div class="glass-panel rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] group">
+					<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center mb-6 text-success shadow-sm border border-success/20 group-hover:scale-110 transition-transform duration-500">
+						<Cpu size={24} strokeWidth={1.5} />
+					</div>
+					<h3 class="text-2xl font-semibold mb-3 tracking-tight">AI Insight Cards</h3>
+					<p class="text-foreground/60 leading-relaxed tracking-normal">
+						Stop guessing what to ship next. Powered by Google Gemini, Insight Cards analyze your telemetry to suggest exact, high-leverage workflows tailored to your ecosystem.
+					</p>
+				</div>
+
+				<!-- Card 3 -->
+				<div class="glass-panel rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] group">
+					<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-warning/20 to-warning/5 flex items-center justify-center mb-6 text-warning shadow-sm border border-warning/20 group-hover:scale-110 transition-transform duration-500">
+						<LineChart size={24} strokeWidth={1.5} />
+					</div>
+					<h3 class="text-2xl font-semibold mb-3 tracking-tight">Ship Streaks</h3>
+					<p class="text-foreground/60 leading-relaxed tracking-normal">
+						Gamify your open-source journey. The Ship Streak engine tracks your daily operational output, building unbroken commit chains and cementing your shipping momentum.
+					</p>
+				</div>
+
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<footer class="container mx-auto px-6 max-w-6xl py-12 text-center text-foreground/40 mt-12 border-t border-foreground/10 relative z-10">
+			<div class="flex items-center justify-center gap-2 mb-4">
+				<Fingerprint size={20} class="opacity-50" />
+			</div>
+			<p class="text-sm font-medium tracking-wide">ShipSense © {new Date().getFullYear()}. Crafted for open source maintainers.</p>
+		</footer>
+
 	</main>
 </div>
