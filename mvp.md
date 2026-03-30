@@ -20,10 +20,11 @@ User opens dashboard → sees:
 Repo Health Score: 68 / 100
 
 Yesterday:
-+ 12 stars
-+ 3 issues opened
-+ 1 PR merged
-Last commit: 2 days ago ⚠️
+
+- 12 stars
+- 3 issues opened
+- 1 PR merged
+  Last commit: 2 days ago ⚠️
 
 Insight:
 Star velocity slowing.
@@ -114,13 +115,14 @@ Store snapshot.
 Table:
 
 repo_metrics
+
 - repo_id
 - timestamp
 - stars
 - open_issues
 - prs_open
 - last_commit_at
-🔵 Step 2 — Change Detection Agent
+  🔵 Step 2 — Change Detection Agent
 
 Runs after collector.
 
@@ -134,6 +136,7 @@ PR response time
 Creates:
 
 repo_signals
+
 - signal_type
 - severity
 - metadata

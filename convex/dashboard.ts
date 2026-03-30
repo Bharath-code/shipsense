@@ -1,113 +1,115 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { query, mutation } from './_generated/server';
+import { v } from 'convex/values';
+import { getAuthUserId } from '@convex-dev/auth/server';
 
 export const getRepoDetails = query({
-  args: { repoId: v.id("repos") },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
 
-    const repo = await ctx.db.get(args.repoId);
-    if (!repo || repo.userId !== userId) return null;
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
 
-    return repo;
-  },
+		return repo;
+	}
 });
 
 export const getRepoInsights = query({
-  args: { repoId: v.id("repos") },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
 
-    // Verify ownership
-    const repo = await ctx.db.get(args.repoId);
-    if (!repo || repo.userId !== userId) return null;
+		// Verify ownership
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
 
-    // Get the latest insight
-    const insights = await ctx.db
-      .query("repoInsights")
-      .withIndex("by_repoId_generatedAt", (q) => q.eq("repoId", args.repoId))
-      .order("desc")
-      .first();
+		// Get the latest insight
+		const insights = await ctx.db
+			.query('repoInsights')
+			.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
 
-    return insights;
-  },
+		return insights;
+	}
 });
 
 export const getRepoTasks = query({
-  args: { repoId: v.id("repos") },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return [];
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return [];
 
-    // Verify ownership
-    const repo = await ctx.db.get(args.repoId);
-    if (!repo || repo.userId !== userId) return [];
+		// Verify ownership
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return [];
 
-    const tasks = await ctx.db
-      .query("repoTasks")
-      .withIndex("by_repoId_isCompleted", (q) => q.eq("repoId", args.repoId).eq("isCompleted", false))
-      .order("desc")
-      .collect();
+		const tasks = await ctx.db
+			.query('repoTasks')
+			.withIndex('by_repoId_isCompleted', (q) =>
+				q.eq('repoId', args.repoId).eq('isCompleted', false)
+			)
+			.order('desc')
+			.collect();
 
-    return tasks;
-  },
+		return tasks;
+	}
 });
 
 export const completeTask = mutation({
-  args: { taskId: v.id("repoTasks") },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Unauthenticated");
+	args: { taskId: v.id('repoTasks') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) throw new Error('Unauthenticated');
 
-    const task = await ctx.db.get(args.taskId);
-    if (!task || task.userId !== userId) throw new Error("Unauthorized");
+		const task = await ctx.db.get(args.taskId);
+		if (!task || task.userId !== userId) throw new Error('Unauthorized');
 
-    await ctx.db.patch(args.taskId, {
-      isCompleted: true,
-      completedAt: Date.now(),
-    });
-  },
+		await ctx.db.patch(args.taskId, {
+			isCompleted: true,
+			completedAt: Date.now()
+		});
+	}
 });
 
 export const getRepoStreak = query({
-  args: { repoId: v.id("repos") },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
 
-    // Verify ownership
-    const repo = await ctx.db.get(args.repoId);
-    if (!repo || repo.userId !== userId) return null;
+		// Verify ownership
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
 
-    const streak = await ctx.db
-      .query("shipStreaks")
-      .withIndex("by_repoId", (q) => q.eq("repoId", args.repoId))
-      .first();
+		const streak = await ctx.db
+			.query('shipStreaks')
+			.withIndex('by_repoId', (q) => q.eq('repoId', args.repoId))
+			.first();
 
-    return streak;
-  },
+		return streak;
+	}
 });
 
 export const getRepoScoreHistory = query({
-  args: { repoId: v.id("repos") },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return [];
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return [];
 
-    // Verify ownership
-    const repo = await ctx.db.get(args.repoId);
-    if (!repo || repo.userId !== userId) return [];
+		// Verify ownership
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return [];
 
-    // Get last 7 scores
-    const scores = await ctx.db
-      .query("repoScores")
-      .withIndex("by_repoId_calculatedAt", (q) => q.eq("repoId", args.repoId))
-      .order("desc")
-      .take(7);
+		// Get last 7 scores
+		const scores = await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.take(7);
 
-    return scores.reverse(); // chronological
-  },
+		return scores.reverse(); // chronological
+	}
 });

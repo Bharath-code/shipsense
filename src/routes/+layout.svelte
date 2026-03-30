@@ -1,25 +1,27 @@
 <script lang="ts">
-  import "./layout.css";
-  import { ModeWatcher } from "mode-watcher";
-  import { setupConvex } from "convex-svelte";
-  import { setupConvexAuth } from "@mmailaender/convex-auth-svelte/svelte";
-  import { PUBLIC_CONVEX_URL } from "$env/static/public";
+	import './layout.css';
+	import { ModeWatcher } from 'mode-watcher';
+	import { setupConvex } from 'convex-svelte';
+	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 
-  // Initialize core Convex client
-  setupConvex(PUBLIC_CONVEX_URL);
-  
-  // Initialize Auth glue
-  setupConvexAuth({ convexUrl: PUBLIC_CONVEX_URL });
+	// Initialize core Convex client
+	setupConvex(PUBLIC_CONVEX_URL);
 
-  let { children } = $props();
+	// Initialize Auth glue
+	setupConvexAuth({ convexUrl: PUBLIC_CONVEX_URL });
+
+	let { children } = $props();
 </script>
 
 <svelte:head>
-  <title>ShipSense | AI Repo Growth Intelligence</title>
+	<title>ShipSense | AI Repo Growth Intelligence</title>
 </svelte:head>
 
 <ModeWatcher />
 
-<div class="min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary/20">
-  {@render children()}
+<div
+	class="min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary/20"
+>
+	{@render children()}
 </div>

@@ -1,4 +1,4 @@
-import { type Handle } from "@sveltejs/kit";
+import { type Handle } from '@sveltejs/kit';
 
 // @convex-dev/auth sets the JWT cookie CLIENT-SIDE after the OAuth redirect.
 // Checking for it here in a server hook creates a race condition:
@@ -8,5 +8,5 @@ import { type Handle } from "@sveltejs/kit";
 // Auth-guarding is handled client-side in dashboard/+layout.svelte via useAuth().
 
 export const handle: Handle = async ({ event, resolve }) => {
-  return resolve(event);
+	return resolve(event);
 };

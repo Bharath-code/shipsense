@@ -1,27 +1,27 @@
-import { internalAction, internalMutation } from "./_generated/server";
-import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { internalAction, internalMutation } from './_generated/server';
+import { v } from 'convex/values';
+import { internal } from './_generated/api';
 
-const GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
+const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
 // Fetch full data for a single repo
 export const fetchRepoData = internalAction({
-  args: { repoId: v.id("repos") },
-  handler: async (ctx, { repoId }) => {
-    const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
-    if (!repo) throw new Error("Repo not found");
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
+		if (!repo) throw new Error('Repo not found');
 
-    const tokens = await ctx.runQuery(internal.users.getGithubToken, {
-      subject: repo.userId.toString(),
-    });
+		const tokens = await ctx.runQuery(internal.users.getGithubToken, {
+			subject: repo.userId.toString()
+		});
 
-    if (!tokens || !tokens.accessToken) {
-      console.warn("No token for user", repo.userId);
-      return;
-    }
+		if (!tokens || !tokens.accessToken) {
+			console.warn('No token for user', repo.userId);
+			return;
+		}
 
-    // Detailed query to get PRs, Issues, and commits
-    const query = `
+		// Detailed query to get PRs, Issues, and commits
+		const query = `
       query($owner: String!, $name: String!) {
         repository(owner: $owner, name: $name) {
           stargazerCount
@@ -46,74 +46,75 @@ export const fetchRepoData = internalAction({
       }
     `;
 
-    const response = await fetch(GITHUB_GRAPHQL_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${tokens.accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query,
-        variables: { owner: repo.owner, name: repo.name },
-      }),
-    });
+		const response = await fetch(GITHUB_GRAPHQL_URL, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${tokens.accessToken}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				query,
+				variables: { owner: repo.owner, name: repo.name }
+			})
+		});
 
-    if (!response.ok) {
-      console.error(`Failed to fetch repo data for ${repo.fullName}`);
-      return;
-    }
+		if (!response.ok) {
+			console.error(`Failed to fetch repo data for ${repo.fullName}`);
+			return;
+		}
 
-    const json = await response.json();
-    const data = json.data.repository;
+		const json = await response.json();
+		const data = json.data.repository;
 
-    if (!data) return;
+		if (!data) return;
 
-    // Process merged PRs in last 7 days
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const prsMerged7d = data.mergedPRs.nodes.filter((pr: any) => 
-      new Date(pr.updatedAt).getTime() > sevenDaysAgo
-    ).length;
+		// Process merged PRs in last 7 days
+		const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+		const prsMerged7d = data.mergedPRs.nodes.filter(
+			(pr: any) => new Date(pr.updatedAt).getTime() > sevenDaysAgo
+		).length;
 
-    // Process commit gap
-    const commits = data.defaultBranchRef?.target?.history?.nodes || [];
-    let commitGapHours = 24 * 30; // default to 30 days if no commits
-    if (commits.length > 0) {
-      commitGapHours = (Date.now() - new Date(commits[0].committedDate).getTime()) / (1000 * 60 * 60);
-    }
+		// Process commit gap
+		const commits = data.defaultBranchRef?.target?.history?.nodes || [];
+		let commitGapHours = 24 * 30; // default to 30 days if no commits
+		if (commits.length > 0) {
+			commitGapHours =
+				(Date.now() - new Date(commits[0].committedDate).getTime()) / (1000 * 60 * 60);
+		}
 
-    // Capture Snapshot
-    await ctx.runMutation(internal.collector.saveSnapshot, {
-      repoId,
-      stars: data.stargazerCount,
-      starsLast7d: 0, // Simplified for now
-      issuesOpen: data.issues.totalCount,
-      prsOpen: data.pullRequests.totalCount,
-      prsMerged7d,
-      contributors14d: 1, // Requires REST API to get accurately, defaulting to 1
-      commitGapHours,
-      medianIssueResponseHours: 12, // Simplified for now
-      forks: data.forkCount,
-    });
-  },
+		// Capture Snapshot
+		await ctx.runMutation(internal.collector.saveSnapshot, {
+			repoId,
+			stars: data.stargazerCount,
+			starsLast7d: 0, // Simplified for now
+			issuesOpen: data.issues.totalCount,
+			prsOpen: data.pullRequests.totalCount,
+			prsMerged7d,
+			contributors14d: 1, // Requires REST API to get accurately, defaulting to 1
+			commitGapHours,
+			medianIssueResponseHours: 12, // Simplified for now
+			forks: data.forkCount
+		});
+	}
 });
 
 export const saveSnapshot = internalMutation({
-  args: {
-    repoId: v.id("repos"),
-    stars: v.number(),
-    starsLast7d: v.number(),
-    issuesOpen: v.number(),
-    prsOpen: v.number(),
-    prsMerged7d: v.number(),
-    contributors14d: v.number(),
-    commitGapHours: v.number(),
-    medianIssueResponseHours: v.number(),
-    forks: v.number(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("repoSnapshots", {
-      ...args,
-      capturedAt: Date.now()
-    });
-  }
+	args: {
+		repoId: v.id('repos'),
+		stars: v.number(),
+		starsLast7d: v.number(),
+		issuesOpen: v.number(),
+		prsOpen: v.number(),
+		prsMerged7d: v.number(),
+		contributors14d: v.number(),
+		commitGapHours: v.number(),
+		medianIssueResponseHours: v.number(),
+		forks: v.number()
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.insert('repoSnapshots', {
+			...args,
+			capturedAt: Date.now()
+		});
+	}
 });
