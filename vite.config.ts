@@ -1,9 +1,16 @@
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
+import path from 'path';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	server: {
+		fs: {
+			// Allow serving files from the convex directory (for $convex alias)
+			allow: ['..']
+		}
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

@@ -1,23 +1,25 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 const GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
 
 export const fetchUserReposFromGithub = action({
   args: {},
   handler: async (ctx): Promise<any[]> => {
-    // We would need the user's Github Token.
-    // In Convex actions, we can query internal DB to get the user's token.
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthenticated");
 
+    // @convex-dev/auth encodes subject as "userId|sessionId"
+    const userId = identity.subject.split("|")[0];
+
     const tokens = (await ctx.runQuery(internal.users.getGithubToken, {
-      subject: identity.subject,
+      subject: userId,
     })) as any;
 
     if (!tokens || !tokens.accessToken) {
-      throw new Error("No GitHub access token found");
+      throw new Error("No GitHub access token found for user: " + userId);
     }
 
     const query = `

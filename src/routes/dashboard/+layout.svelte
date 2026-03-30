@@ -1,19 +1,45 @@
 <script lang="ts">
-  import { useQuery } from "convex-svelte";
   import { useAuth } from "@mmailaender/convex-auth-svelte/svelte";
-  import { api } from "$convex/_generated/api";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   import Button from "$lib/components/ui/button/button.svelte";
-  import { LogOut as LogOutIcon, LayoutDashboard, Database, CreditCard, Settings } from "lucide-svelte";
+  import { LogOut as LogOutIcon } from "lucide-svelte";
 
-  const { signOut } = useAuth();
+  const auth = useAuth();
+
+  // Track whether we've ever seen isAuthenticated = true in this session.
+  // This prevents a false redirect during the brief "settling" window after
+  // OAuth completes (isLoading briefly false before token is stored).
+  let wasAuthenticated = $state(false);
+
+  $effect(() => {
+    if (auth.isAuthenticated) {
+      wasAuthenticated = true;
+    }
+  });
+
+  $effect(() => {
+    // Skip redirect if:
+    // 1. Still loading auth state
+    // 2. URL has OAuth params (code exchange in progress)
+    // 3. We've confirmed auth at some point in this session
+    const url = $page.url;
+    const inOAuthCallback = url.searchParams.has("code") || url.searchParams.has("state");
+
+    if (!auth.isLoading && !auth.isAuthenticated && !inOAuthCallback && !wasAuthenticated) {
+      goto("/auth/login");
+    }
+  });
 
   async function handleSignOut() {
-    await signOut();
-    window.location.href = "/";
+    wasAuthenticated = false;
+    await auth.signOut();
+    window.location.href = "/auth/login";
   }
 
   let { children } = $props();
 </script>
+
 
 <div class="flex flex-col min-h-screen bg-black text-white">
   <header class="sticky top-0 z-50 w-full border-b border-zinc-800 bg-black/50 backdrop-blur-xl">

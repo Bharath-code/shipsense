@@ -1,27 +1,18 @@
 import { mutation, query, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // List all active repos for the logged in user
 export const listMyRepos = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await ctx.auth.getUserIdentity();
-    if (!userId) {
-      throw new Error("Unauthenticated");
-    }
-
-    // Get internal user ID
-    const user = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId.subject as any))
-      .unique();
-
-    if (!user) return [];
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
 
     return await ctx.db
       .query("repos")
       .withIndex("by_userId_isActive", (q) =>
-        q.eq("userId", user.userId).eq("isActive", true)
+        q.eq("userId", userId).eq("isActive", true)
       )
       .collect();
   },
@@ -40,21 +31,21 @@ export const connectRepo = mutation({
     isPrivate: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const userId = await ctx.auth.getUserIdentity();
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthenticated");
-    
+
     // Check plan limits
     const profile = await ctx.db
       .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId.subject as any))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .unique();
-      
+
     if (!profile) throw new Error("Profile not found");
 
     const existingRepos = await ctx.db
       .query("repos")
-      .withIndex("by_userId_isActive", (q) => 
-        q.eq("userId", profile.userId).eq("isActive", true)
+      .withIndex("by_userId_isActive", (q) =>
+        q.eq("userId", userId).eq("isActive", true)
       )
       .collect();
 
@@ -69,7 +60,7 @@ export const connectRepo = mutation({
     const existing = await ctx.db
       .query("repos")
       .withIndex("by_githubRepoId", (q) => q.eq("githubRepoId", args.githubRepoId))
-      .filter((q) => q.eq(q.field("userId"), profile.userId))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .unique();
 
     if (existing) {
@@ -82,7 +73,7 @@ export const connectRepo = mutation({
     // Insert new repo
     return await ctx.db.insert("repos", {
       ...args,
-      userId: profile.userId,
+      userId,
       connectedAt: Date.now(),
       isActive: true,
     });
@@ -92,18 +83,11 @@ export const connectRepo = mutation({
 export const disconnectRepo = mutation({
   args: { repoId: v.id("repos") },
   handler: async (ctx, { repoId }) => {
-    const userId = await ctx.auth.getUserIdentity();
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthenticated");
 
-    const profile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId.subject as any))
-      .unique();
-
-    if (!profile) return;
-
     const repo = await ctx.db.get(repoId);
-    if (!repo || repo.userId !== profile.userId) return;
+    if (!repo || repo.userId !== userId) return;
 
     await ctx.db.patch(repoId, { isActive: false });
   },
@@ -121,7 +105,6 @@ export const listAllActiveRepos = internalQuery({
   handler: async (ctx) => {
     return await ctx.db
       .query("repos")
-      // Cannot use field filter with index efficiently without multiple indices, so we just use the index we have
       .filter((q) => q.eq(q.field("isActive"), true))
       .collect();
   },
