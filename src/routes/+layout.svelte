@@ -1,5 +1,6 @@
 <script lang="ts">
   import "./layout.css";
+  import { ModeWatcher } from "mode-watcher";
   import { setupConvex } from "convex-svelte";
   import { setupConvexAuth } from "@mmailaender/convex-auth-svelte/svelte";
   import { PUBLIC_CONVEX_URL } from "$env/static/public";
@@ -17,6 +18,8 @@
   <title>ShipSense | AI Repo Growth Intelligence</title>
 </svelte:head>
 
-<div class="min-h-screen bg-black text-white selection:bg-zinc-800">
+<ModeWatcher />
+
+<div class="min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary/20">
   {@render children()}
 </div>

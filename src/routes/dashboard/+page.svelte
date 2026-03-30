@@ -21,42 +21,42 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-      <p class="text-zinc-400 mt-2">Overview of your active repositories and growth scores.</p>
+      <p class="text-muted-foreground mt-2">Overview of your active repositories and growth scores.</p>
     </div>
     
-    <Button href="/dashboard/connect" class="bg-white text-black hover:bg-zinc-200">
+    <Button href="/dashboard/connect" class="bg-primary text-primary-foreground hover:bg-primary/90">
       <span class="mr-2">Connect Repository</span>
       <ArrowRightIcon class="h-4 w-4" />
     </Button>
   </div>
 
   {#if isLoading}
-    <div class="flex justify-center p-12 text-zinc-500">Loading your repositories...</div>
+    <div class="flex justify-center p-12 text-muted-foreground italic">Loading your repositories...</div>
   {:else if repos.length === 0}
-    <div class="flex flex-col items-center justify-center p-12 border border-dashed border-zinc-800 rounded-lg bg-zinc-950/50">
-      <div class="h-12 w-12 rounded-full bg-zinc-900 flex items-center justify-center mb-4">
-        <svg class="h-6 w-6 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <div class="flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-lg bg-card/50">
+      <div class="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
+        <svg class="h-6 w-6 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-white mb-2">No repositories connected</h3>
-      <p class="text-zinc-400 text-center max-w-sm mb-6">
+      <h3 class="text-lg font-medium text-foreground mb-2">No repositories connected</h3>
+      <p class="text-muted-foreground text-center max-w-sm mb-6">
         Get started by connecting a GitHub repository to track its health score and unlock growth insights.
       </p>
-      <Button href="/dashboard/connect" class="bg-white text-black hover:bg-zinc-200">
+      <Button href="/dashboard/connect" class="bg-primary text-primary-foreground hover:bg-primary/90">
         Connect your first repo
       </Button>
     </div>
   {:else}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each repos as repo}
-        <a href={`/dashboard/${repo._id}`} class="block focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-xl">
-          <Card class="border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition-colors h-full">
+        <a href={`/dashboard/${repo._id}`} class="block focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-xl">
+          <Card class="border-border bg-card hover:border-primary/50 transition-colors h-full">
             <CardHeader>
               <div class="flex items-center justify-between">
                 <CardTitle class="text-lg">{repo.name}</CardTitle>
                 <!-- Placeholder for health score badge to be added in Phase 3 -->
-                <div class="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center font-bold text-xs">
+                <div class="h-8 w-8 rounded-full bg-success/10 text-success border border-success/20 flex items-center justify-center font-bold text-xs">
                   --
                 </div>
               </div>
@@ -65,12 +65,12 @@
           <CardContent>
             <div class="grid grid-cols-2 gap-4 text-sm mt-4">
               <div>
-                <span class="text-zinc-500 block text-xs">Stars</span>
-                <span class="font-medium text-white">{repo.starsCount}</span>
+                <span class="text-muted-foreground block text-xs">Stars</span>
+                <span class="font-medium text-foreground">{repo.starsCount}</span>
               </div>
               <div>
-                <span class="text-zinc-500 block text-xs">Forks</span>
-                <span class="font-medium text-white">{repo.forksCount}</span>
+                <span class="text-muted-foreground block text-xs">Forks</span>
+                <span class="font-medium text-foreground">{repo.forksCount}</span>
               </div>
             </div>
           </CardContent>

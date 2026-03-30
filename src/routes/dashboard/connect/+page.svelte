@@ -71,23 +71,23 @@
 <div class="space-y-6">
   <div>
     <h1 class="text-3xl font-bold tracking-tight">Connect Repository</h1>
-    <p class="text-zinc-400 mt-2">Select the GitHub repositories you want ShipSense to track and monitor.</p>
+    <p class="text-muted-foreground mt-2">Select the GitHub repositories you want ShipSense to track and monitor.</p>
   </div>
 
   {#if connectError}
-    <div class="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-md">
+    <div class="bg-destructive/10 border border-destructive/50 text-destructive p-4 rounded-md">
       {connectError}
     </div>
   {/if}
 
   <div class="flex items-center space-x-2">
     <div class="relative flex-1 max-w-sm">
-      <SearchIcon class="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-      <Input
+      <SearchIcon class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <input
         type="text"
         placeholder="Filter repositories..."
         bind:value={searchQuery}
-        class="pl-9 bg-zinc-900 border-zinc-800"
+        class="flex h-9 w-full rounded-md border border-border bg-card px-3 py-1 pl-9 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
       />
     </div>
     <Button variant="outline" onclick={loadGithubRepos} disabled={loadingGithub}>
@@ -97,29 +97,29 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {#if loadingGithub && githubRepos.length === 0}
-      <Card class="border-zinc-800 bg-zinc-900/50">
-        <CardContent class="p-6 flex justify-center text-zinc-500">
+      <Card class="border-border bg-muted/20">
+        <CardContent class="p-6 flex justify-center text-muted-foreground italic">
           Loading repositories from GitHub...
         </CardContent>
       </Card>
     {:else if filteredRepos.length === 0}
-      <Card class="border-zinc-800 bg-zinc-900/50">
-        <CardContent class="p-6 flex justify-center text-zinc-500">
+      <Card class="border-border bg-muted/20">
+        <CardContent class="p-6 flex justify-center text-muted-foreground italic">
           No repositories found.
         </CardContent>
       </Card>
     {:else}
       {#each filteredRepos as repo}
-        <Card class="border-zinc-800 bg-zinc-950 flex flex-col">
+        <Card class="border-border bg-card flex flex-col hover:border-primary/50 transition-colors">
           <CardHeader class="pb-2">
             <div class="flex justify-between items-start">
-              <CardTitle class="text-base font-semibold truncate hover:text-white text-zinc-200">
+              <CardTitle class="text-base font-semibold truncate text-foreground">
                 {repo.name}
               </CardTitle>
               {#if repo.isPrivate}
-                <Badge variant="outline" class="text-xs border-zinc-700 bg-zinc-800 text-zinc-300">Private</Badge>
+                <Badge variant="outline" class="text-xs border-border bg-muted text-muted-foreground">Private</Badge>
               {:else}
-                <Badge variant="outline" class="text-xs border-zinc-700 text-zinc-400">Public</Badge>
+                <Badge variant="outline" class="text-xs border-border text-muted-foreground">Public</Badge>
               {/if}
             </div>
             <CardDescription class="text-xs line-clamp-2 min-h-[2rem]">
@@ -127,7 +127,7 @@
             </CardDescription>
           </CardHeader>
           <CardContent class="pb-4 flex-1">
-            <div class="flex items-center gap-4 text-xs text-zinc-500">
+            <div class="flex items-center gap-4 text-xs text-muted-foreground/80">
               {#if repo.language}
                 <div class="flex items-center gap-1">
                   <span class="w-2 h-2 rounded-full bg-blue-500"></span>
@@ -140,9 +140,9 @@
           </CardContent>
           <div class="p-4 pt-0 mt-auto">
             {#if activeRepoIds.includes(repo.githubRepoId)}
-              <Button disabled class="w-full bg-zinc-800 text-zinc-400">Connected</Button>
+              <Button disabled class="w-full bg-muted text-muted-foreground">Connected</Button>
             {:else}
-              <Button onclick={() => connectRepo(repo)} class="w-full bg-white text-black hover:bg-zinc-200">Connect</Button>
+              <Button onclick={() => connectRepo(repo)} class="w-full bg-primary text-primary-foreground hover:bg-primary/90">Connect</Button>
             {/if}
           </div>
         </Card>

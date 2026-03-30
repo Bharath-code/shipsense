@@ -24,13 +24,13 @@
   }
 </script>
 
-<Button variant="outline" class="border-indigo-500/30 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-all font-medium" onclick={() => isOpen = true}>
+<Button variant="outline" class="border-primary/30 text-primary hover:text-primary/80 hover:bg-primary/10 transition-all font-medium" onclick={() => isOpen = true}>
   <Share2 class="mr-2 h-4 w-4" />
   Share Growth Card
 </Button>
 
 <Dialog.Root bind:open={isOpen}>
-  <Dialog.Content class="sm:max-w-md bg-zinc-950 border-zinc-800 text-zinc-100 p-0 overflow-hidden shadow-2xl">
+  <Dialog.Content class="sm:max-w-md bg-background border-border text-foreground p-0 overflow-hidden shadow-2xl">
     
     <!-- Growth Card Canvas (The part that gets shared) -->
     <div id="growth-card" class="relative p-8 bg-zinc-950 overflow-hidden">
@@ -94,12 +94,12 @@
     </div>
     
     <!-- Modal Actions -->
-    <div class="p-6 bg-zinc-900/50 border-t border-zinc-800 flex flex-col sm:flex-row gap-3">
-      <Button variant="default" class="w-full bg-white text-zinc-950 hover:bg-zinc-200" onclick={downloadCard}>
+    <div class="p-6 bg-muted/50 border-t border-border flex flex-col sm:flex-row gap-3">
+      <Button variant="default" class="w-full bg-primary text-primary-foreground hover:bg-primary/90" onclick={downloadCard}>
         <Download class="mr-2 h-4 w-4" />
         Save PNG
       </Button>
-      <Button variant="outline" class="w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800" onclick={() => {
+      <Button variant="outline" class="w-full border-border bg-background text-foreground hover:bg-muted" onclick={() => {
         window.open(`https://twitter.com/intent/tweet?text=Just hit a ${streak} day commit streak on ${repo?.name}! My repo Health Score is ${latestScore}/100 🚀&url=https://shipsense.dev`, '_blank');
       }}>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="mr-2 h-4 w-4">

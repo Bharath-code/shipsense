@@ -39,18 +39,18 @@
   <title>Login | ShipSense</title>
 </svelte:head>
 
-<div class="flex items-center justify-center min-h-screen p-4 bg-black">
-  <Card class="w-full max-w-sm border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
+<div class="flex items-center justify-center min-h-screen p-4 bg-background transition-colors duration-300">
+  <Card class="w-full max-w-sm border-border bg-card/50 backdrop-blur-xl">
     <CardHeader class="text-center">
-      <div class="mx-auto mb-4 h-10 w-10 rounded-xl bg-white text-black flex items-center justify-center font-bold text-lg">
+      <div class="mx-auto mb-4 h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
         S
       </div>
-      <CardTitle class="text-2xl font-bold tracking-tight text-white">ShipSense</CardTitle>
-      <CardDescription class="text-zinc-400">Sign in to track your repo growth</CardDescription>
+      <CardTitle class="text-2xl font-bold tracking-tight text-foreground">ShipSense</CardTitle>
+      <CardDescription class="text-muted-foreground">Sign in to track your repo growth</CardDescription>
     </CardHeader>
     <CardContent class="space-y-3">
       {#if error}
-        <div class="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        <div class="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       {/if}
@@ -58,7 +58,7 @@
       <Button
         onclick={handleLogin}
         disabled={loading}
-        class="w-full bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-60"
+        class="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
       >
         {#if loading}
           <svg class="mr-2 h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -74,7 +74,7 @@
         {/if}
       </Button>
 
-      <p class="text-xs text-center text-zinc-500">
+      <p class="text-xs text-center text-muted-foreground">
         By continuing, you grant read access to your public repositories.
       </p>
     </CardContent>
