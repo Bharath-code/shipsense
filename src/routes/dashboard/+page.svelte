@@ -50,17 +50,18 @@
   {:else}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each repos as repo}
-        <Card class="border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition-colors cursor-pointer">
-          <CardHeader>
-            <div class="flex items-center justify-between">
-              <CardTitle class="text-lg">{repo.name}</CardTitle>
-              <!-- Placeholder for health score badge to be added in Phase 3 -->
-              <div class="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center font-bold text-xs">
-                --
+        <a href={`/dashboard/${repo._id}`} class="block focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-xl">
+          <Card class="border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition-colors h-full">
+            <CardHeader>
+              <div class="flex items-center justify-between">
+                <CardTitle class="text-lg">{repo.name}</CardTitle>
+                <!-- Placeholder for health score badge to be added in Phase 3 -->
+                <div class="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center font-bold text-xs">
+                  --
+                </div>
               </div>
-            </div>
-            <CardDescription>{repo.owner}</CardDescription>
-          </CardHeader>
+              <CardDescription>{repo.owner}</CardDescription>
+            </CardHeader>
           <CardContent>
             <div class="grid grid-cols-2 gap-4 text-sm mt-4">
               <div>
@@ -74,6 +75,7 @@
             </div>
           </CardContent>
         </Card>
+      </a>
       {/each}
     </div>
   {/if}

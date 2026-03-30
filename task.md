@@ -27,18 +27,18 @@
 ## Phase 4 — Insight Generator + Task Engine (Day 4)
 - [x] LLM Insight Agent with Gemini (convex/insightGenerator.ts)
 - [x] Deterministic Task Agent (convex/taskGenerator.ts)
-- [ ] InsightCard component
-- [ ] TaskChecklist component
+- [x] InsightCard component
+- [x] TaskChecklist component
 
 ## Phase 5 — Ship Streak + Momentum Graph (Day 5)
 - [x] Streak Tracker (convex/streakTracker.ts)
-- [ ] ShipStreak component
-- [ ] MomentumGraph component
+- [x] ShipStreak component
+- [x] MomentumGraph component
 
 ## Phase 6 — Email Reports + Growth Card (Day 6)
 - [x] Email Agent (convex/email.ts)
-- [ ] Growth Card generator
-- [ ] GrowthCardModal component
+- [x] Growth Card generator
+- [x] GrowthCardModal component
 
 ## Phase 7 — Landing Page + Billing + Launch (Day 7)
 - [x] Landing page
