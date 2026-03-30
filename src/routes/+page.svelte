@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import ThemeToggle from '$lib/components/dashboard/ThemeToggle.svelte';
-	import { ArrowRight, Sparkles, BarChart3, LineChart, Cpu, Fingerprint } from 'lucide-svelte';
+	import { ArrowRight, Sparkles, BarChart3, LineChart, Cpu, Fingerprint, Check, Zap, Shield, Rocket, HelpCircle } from 'lucide-svelte';
 </script>
 
 <svelte:head>
@@ -22,6 +22,14 @@
 			animation: float-delayed 15s ease-in-out infinite;
 		}
 		
+		@keyframes pulse-soft {
+			0%, 100% { opacity: 0.5; transform: scale(1); }
+			50% { opacity: 0.8; transform: scale(1.02); }
+		}
+		.animate-pulse-soft {
+			animation: pulse-soft 4s ease-in-out infinite;
+		}
+		
 		/* Glassmorphic utilities */
 		.glass-panel {
 			background: linear-gradient(145deg, hsl(var(--card)/0.6), hsl(var(--card)/0.2));
@@ -31,6 +39,12 @@
 			box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
 		}
 		
+		.glass-card {
+			background: hsl(var(--card)/0.4);
+			backdrop-filter: blur(20px);
+			border: 1px solid hsl(var(--border)/0.3);
+		}
+
 		.glass-nav {
 			background: linear-gradient(180deg, hsl(var(--background)/0.8), hsl(var(--background)/0.3));
 			backdrop-filter: blur(20px);
@@ -82,17 +96,17 @@
 			</div>
 			
 			<h1 class="text-5xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tight leading-[1.05] mb-8 max-w-5xl">
-				Effortless intelligence for your <br class="hidden md:block"/>
-				<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-foreground to-primary border-transparent">open-source ecosystem.</span>
+				Grow your open-source ecosystem <br class="hidden md:block"/>
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-foreground to-primary border-transparent">without the guesswork.</span>
 			</h1>
 
 			<p class="text-lg md:text-2xl font-normal text-foreground/60 max-w-3xl mb-12 leading-relaxed tracking-normal">
-				Understand your repository health. Nurture your active contributors. Build infinite shipping streaks with deeply integrated telemetry and AI orchestration.
+				Stop drowning in GitHub notifications. ShipSense translates your repository data into clear health scores and uses AI to tell you exactly what to ship next.
 			</p>
 
 			<div class="flex flex-col sm:flex-row items-center gap-6 w-full max-w-md mx-auto sm:max-w-none sm:w-auto">
 				<Button href="/auth/login" class="rounded-full w-full sm:w-auto h-14 px-8 text-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] transition-all duration-500 hover:scale-105 font-semibold">
-					Start Tracking Free
+					Get My Repo Health Score
 					<ArrowRight class="ml-2 w-5 h-5" />
 				</Button>
 				<Button href="https://github.com/shipsense" target="_blank" variant="ghost" class="rounded-full w-full sm:w-auto h-14 px-8 text-lg hover:bg-foreground/5 transition-all duration-300 font-semibold border border-transparent hover:border-border/50">
@@ -100,27 +114,84 @@
 				</Button>
 			</div>
 			
-			<!-- Hero Dashboard Preview (Glass Panel) -->
-			<div class="mt-24 w-full max-w-5xl h-[400px] glass-panel rounded-[2rem] p-4 flex flex-col relative overflow-hidden group hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)] transition-all duration-700">
-				<div class="absolute inset-0 bg-gradient-to-b from-transparent to-background/20 mix-blend-overlay"></div>
-				<!-- Top Bar -->
-				<div class="flex items-center gap-2 mb-6 px-4 pt-2">
-					<div class="w-2.5 h-2.5 rounded-full bg-destructive/80"></div>
-					<div class="w-2.5 h-2.5 rounded-full bg-warning/80"></div>
-					<div class="w-2.5 h-2.5 rounded-full bg-success/80"></div>
-					<div class="ml-4 h-6 w-48 rounded-full bg-foreground/10 backdrop-blur-sm"></div>
-				</div>
-				<!-- Content Grid Mock -->
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 px-4 pb-2">
-					<div class="col-span-2 rounded-2xl bg-gradient-to-br from-foreground/5 to-transparent border border-foreground/10 p-6 flex flex-col">
-						<div class="h-6 w-32 rounded-lg bg-foreground/10 mb-4"></div>
-						<div class="flex-1 rounded-xl bg-gradient-to-tr from-primary/10 via-primary/5 to-transparent border border-primary/20"></div>
+			<!-- Hero Dashboard Preview (Enhanced Glass Panel) -->
+			<div class="mt-24 w-full max-w-5xl h-[450px] glass-panel rounded-[2.5rem] p-8 flex flex-col relative overflow-hidden group hover:shadow-[0_40px_100px_rgba(0,0,0,0.15)] transition-all duration-700">
+				<div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-success/5 pointer-events-none"></div>
+				
+				<!-- Header Mock -->
+				<div class="flex items-center justify-between mb-8">
+					<div class="flex items-center gap-3">
+						<div class="flex gap-1.5">
+							<div class="w-2.5 h-2.5 rounded-full bg-destructive/60"></div>
+							<div class="w-2.5 h-2.5 rounded-full bg-warning/60"></div>
+							<div class="w-2.5 h-2.5 rounded-full bg-success/60"></div>
+						</div>
+						<div class="h-6 w-32 rounded-full bg-foreground/10"></div>
 					</div>
-					<div class="col-span-1 rounded-2xl bg-gradient-to-br from-foreground/5 to-transparent border border-foreground/10 p-6 flex flex-col gap-4">
-						<div class="h-6 w-24 rounded-lg bg-foreground/10 mb-2"></div>
-						<div class="h-12 rounded-xl bg-foreground/5 border border-foreground/5"></div>
-						<div class="h-12 rounded-xl bg-foreground/5 border border-foreground/5"></div>
-						<div class="h-12 rounded-xl bg-foreground/5 border border-foreground/5"></div>
+					<div class="flex gap-2">
+						<div class="h-8 w-8 rounded-full bg-foreground/5 border border-foreground/10"></div>
+						<div class="h-8 w-24 rounded-full bg-primary/20 border border-primary/20"></div>
+					</div>
+				</div>
+
+				<!-- Dashboard Content Mock -->
+				<div class="grid grid-cols-12 gap-6 flex-1">
+					<!-- Left: Growth & Insight -->
+					<div class="col-span-8 flex flex-col gap-6">
+						<!-- Health Score Large -->
+						<div class="flex-1 rounded-3xl glass-card p-6 border border-primary/20 relative overflow-hidden flex flex-col justify-between">
+							<div class="flex justify-between items-start">
+								<span class="text-xs font-bold uppercase tracking-widest text-primary/60">Deterministic Health</span>
+								<div class="flex items-center gap-1 text-success text-sm font-bold">
+									<ArrowRight class="-rotate-45 w-3 h-3" />
+									<span>+12.4%</span>
+								</div>
+							</div>
+							<div class="flex items-end gap-4">
+								<span class="text-6xl font-bold tracking-tighter">84</span>
+								<div class="flex flex-col pb-1">
+									<span class="text-xs text-foreground/40 font-bold">OPTIMAL</span>
+									<div class="flex gap-0.5 mt-1">
+										<div class="h-1 w-4 rounded-full bg-success"></div>
+										<div class="h-1 w-4 rounded-full bg-success"></div>
+										<div class="h-1 w-4 rounded-full bg-success"></div>
+										<div class="h-1 w-4 rounded-full bg-success/20"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- Insight Row -->
+						<div class="h-32 rounded-3xl glass-card p-4 border border-foreground/5 flex items-center gap-4">
+							<div class="h-12 w-12 rounded-2xl bg-success/10 flex items-center justify-center text-success">
+								<Sparkles size={20} />
+							</div>
+							<div class="flex-1">
+								<div class="h-4 w-3/4 rounded bg-foreground/10 mb-2"></div>
+								<div class="h-3 w-1/2 rounded bg-foreground/5"></div>
+							</div>
+						</div>
+					</div>
+					<!-- Right: Streak & Tasks -->
+					<div class="col-span-4 flex flex-col gap-6">
+						<div class="h-48 rounded-3xl glass-card p-6 border border-warning/20 flex flex-col justify-between">
+							<span class="text-xs font-bold uppercase tracking-widest text-warning/60">Ship Streak</span>
+							<div class="text-center py-2">
+								<span class="text-5xl font-bold">14</span>
+								<span class="text-sm text-foreground/40 block font-bold">DAYS</span>
+							</div>
+							<div class="flex justify-between items-center px-2">
+								{#each Array(7) as _, i}
+									<div class="w-1.5 h-6 rounded-full {i < 5 ? 'bg-warning' : 'bg-warning/20'}"></div>
+								{/each}
+							</div>
+						</div>
+						<div class="flex-1 rounded-3xl glass-card p-4 border border-foreground/5">
+							<div class="flex flex-col gap-3">
+								<div class="h-3 w-full rounded bg-foreground/10"></div>
+								<div class="h-3 w-full rounded bg-foreground/10"></div>
+								<div class="h-3 w-2/3 rounded bg-foreground/10"></div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -130,8 +201,8 @@
 		<!-- Capabilities Framework -->
 		<section id="capabilities" class="container mx-auto px-6 max-w-6xl py-24 relative">
 			<div class="text-center mb-16">
-				<h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-4">Core Capabilities</h2>
-				<p class="text-lg text-foreground/60 max-w-2xl mx-auto tracking-normal">A unified engine designed specifically for modern open-source maintenance.</p>
+				<h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-4">Everything you need to scale your open source project.</h2>
+				<p class="text-lg text-foreground/60 max-w-2xl mx-auto tracking-normal">Connect your repository and let ShipSense handle the analytics.</p>
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
@@ -143,7 +214,7 @@
 					</div>
 					<h3 class="text-2xl font-semibold mb-3 tracking-tight">Repository Growth Cards</h3>
 					<p class="text-foreground/60 leading-relaxed tracking-normal">
-						Instantly parse your repository's pulse. Growth Cards aggregate stars, PR velocity, and active contributors into a focused, deterministic health score without the noise.
+						<strong>Measure what actually matters.</strong> Vanity metrics don't equal growth. Growth Cards distill your stars, PR velocity, and contributor dynamics into one definitive health score.
 					</p>
 				</div>
 
@@ -154,7 +225,7 @@
 					</div>
 					<h3 class="text-2xl font-semibold mb-3 tracking-tight">AI Insight Cards</h3>
 					<p class="text-foreground/60 leading-relaxed tracking-normal">
-						Stop guessing what to ship next. Powered by Google Gemini, Insight Cards analyze your telemetry to suggest exact, high-leverage workflows tailored to your ecosystem.
+						<strong>Never wonder what to do next.</strong> Powered by Gemini, AI Insight Cards analyze your codebase telemetry and hand you the highest-leverage tasks to merge, close, or review today.
 					</p>
 				</div>
 
@@ -165,10 +236,185 @@
 					</div>
 					<h3 class="text-2xl font-semibold mb-3 tracking-tight">Ship Streaks</h3>
 					<p class="text-foreground/60 leading-relaxed tracking-normal">
-						Gamify your open-source journey. The Ship Streak engine tracks your daily operational output, building unbroken commit chains and cementing your shipping momentum.
+						<strong>Build unstoppable momentum.</strong> Consistency is the hardest part of open source. The Ship Streak engine gamifies your daily output, helping you build unbreakable commit chains.
 					</p>
 				</div>
 
+			</div>
+		</section>
+
+		<!-- Vision Section: Scalability with Sanity -->
+		<section id="vision" class="container mx-auto px-6 max-w-6xl py-32 border-y border-foreground/5">
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+				<div class="relative">
+					<div class="absolute -top-10 -left-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
+					<h2 class="text-4xl md:text-6xl font-bold tracking-tighter leading-tight mb-8">
+						Scaling with <span class="text-primary italic">sanity</span>.
+					</h2>
+					<p class="text-xl text-foreground/70 leading-relaxed mb-8">
+						Building open source shouldn't be synonymous with burnout. ShipSense was founded on the idea that maintainers deserve better than just "more data."
+					</p>
+					<div class="space-y-6">
+						<div class="flex gap-4">
+							<div class="mt-1 h-6 w-6 rounded-full bg-foreground/5 flex items-center justify-center flex-shrink-0">
+								<Check size={14} class="text-primary" />
+							</div>
+							<p class="text-foreground/80">Move from "reactionary" maintenance to "intentional" shipping.</p>
+						</div>
+						<div class="flex gap-4">
+							<div class="mt-1 h-6 w-6 rounded-full bg-foreground/5 flex items-center justify-center flex-shrink-0">
+								<Check size={14} class="text-primary" />
+							</div>
+							<p class="text-foreground/80">Protect your contributor energy with focused health analytics.</p>
+						</div>
+						<div class="flex gap-4">
+							<div class="mt-1 h-6 w-6 rounded-full bg-foreground/5 flex items-center justify-center flex-shrink-0">
+								<Check size={14} class="text-primary" />
+							</div>
+							<p class="text-foreground/80">Build a sustainable rhythm that creates long-term value.</p>
+						</div>
+					</div>
+				</div>
+				<div class="glass-panel rounded-[3rem] p-12 aspect-square flex flex-col items-center justify-center text-center group transition-all duration-700">
+					<div class="mb-8 w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+						<Shield size={48} strokeWidth={1} />
+					</div>
+					<h3 class="text-3xl font-bold mb-4 italic">Maintainer's Peace of Mind</h3>
+					<p class="text-foreground/50 max-w-sm">We handle the noise, metrics, and prioritization so you can focus on the code that matters most.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Pricing Section -->
+		<section id="pricing" class="container mx-auto px-6 max-w-6xl py-32 border-b border-foreground/5">
+			<div class="text-center mb-20">
+				<h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">Built for every stage of growth.</h2>
+				<p class="text-xl text-foreground/60 max-w-2xl mx-auto">Choose a plan that fits your repository ecosystem.</p>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<!-- Free Plan -->
+				<div class="glass-panel rounded-[2.5rem] p-10 flex flex-col border border-foreground/5 hover:border-foreground/10 transition-colors">
+					<div class="mb-8">
+						<span class="text-sm font-bold uppercase tracking-widest text-foreground/40">Free</span>
+						<div class="mt-4 flex items-end gap-1">
+							<span class="text-4xl font-bold">$0</span>
+							<span class="text-foreground/40 mb-1">/mo</span>
+						</div>
+					</div>
+					<div class="flex-1 space-y-4 mb-10">
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/70">1 Connected Repository</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/70">Daily Health Monitoring</span>
+						</div>
+						<div class="flex items-center gap-3 opacity-30">
+							<Check size={16} class="text-foreground/40" />
+							<span class="text-foreground/40 line-through">Gemini Deep Insights</span>
+						</div>
+					</div>
+					<Button variant="outline" class="rounded-full h-12 w-full border-foreground/20 hover:bg-foreground/5 font-semibold">
+						Start Free
+					</Button>
+				</div>
+
+				<!-- Indie Plan (Popular) -->
+				<div class="glass-panel rounded-[2.5rem] p-10 flex flex-col border border-primary/30 relative overflow-hidden ring-4 ring-primary/5">
+					<div class="absolute top-0 right-0 py-1.5 px-4 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest rounded-bl-2xl">
+						Popular
+					</div>
+					<div class="mb-8">
+						<span class="text-sm font-bold uppercase tracking-widest text-primary">Indie</span>
+						<div class="mt-4 flex items-end gap-1">
+							<span class="text-4xl font-bold">$12</span>
+							<span class="text-foreground/40 mb-1">/mo</span>
+						</div>
+					</div>
+					<div class="flex-1 space-y-4 mb-10">
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/80 font-medium">5 Connected Repositories</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/80 font-medium">Gemini Pro Insights</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/80 font-medium">Weekly Email Reports</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<Zap size={16} class="text-primary fill-primary/20" />
+							<span class="text-foreground/80">Priority Task Generation</span>
+						</div>
+					</div>
+					<Button class="rounded-full h-12 w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg shadow-primary/20">
+						Get Started
+					</Button>
+				</div>
+
+				<!-- Builder Plan -->
+				<div class="glass-panel rounded-[2.5rem] p-10 flex flex-col border border-foreground/5 hover:border-foreground/10 transition-colors">
+					<div class="mb-8">
+						<span class="text-sm font-bold uppercase tracking-widest text-foreground/40">Builder</span>
+						<div class="mt-4 flex items-end gap-1">
+							<span class="text-4xl font-bold">$49</span>
+							<span class="text-foreground/40 mb-1">/mo</span>
+						</div>
+					</div>
+					<div class="flex-1 space-y-4 mb-10">
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/70">Unlimited Repositories</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/70">Gemini 1.5 Flash Speed</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/70">Team Collaboration</span>
+						</div>
+						<div class="flex items-center gap-3">
+							<Check size={16} class="text-success" />
+							<span class="text-foreground/70">Custom Task Protocols</span>
+						</div>
+					</div>
+					<Button variant="outline" class="rounded-full h-12 w-full border-foreground/20 hover:bg-foreground/5 font-semibold">
+						Contact Sales
+					</Button>
+				</div>
+			</div>
+			
+			<div class="mt-16 text-center">
+				<div class="inline-flex items-center gap-2 text-foreground/40 text-sm">
+					<HelpCircle size={14} />
+					<span>Need a custom plan for your organization?</span>
+					<a href="mailto:hello@shipsense.ai" class="text-primary hover:underline font-medium">Let's talk</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Final CTA -->
+		<section class="container mx-auto px-6 max-w-6xl py-32">
+			<div class="relative rounded-[4rem] bg-foreground text-background overflow-hidden p-16 md:p-24 flex flex-col items-center text-center shadow-2xl">
+				<div class="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-primary/10 pointer-events-none"></div>
+				<div class="relative z-10">
+					<Rocket size={48} class="text-primary mb-8 animate-float mx-auto" />
+					<h2 class="text-4xl md:text-7xl font-bold tracking-tighter mb-8 leading-tight max-w-3xl">
+						Ready to ship with <br /> unstoppable clarify?
+					</h2>
+					<p class="text-xl text-background/60 max-w-xl mx-auto mb-12">
+						Join 1,000+ maintainers who use ShipSense to reclaim their focus and scale their ecosystems with data.
+					</p>
+					<Button href="/auth/login" class="rounded-full h-16 px-12 text-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-500 hover:scale-105 font-bold shadow-xl shadow-primary/20">
+						Launch My Command Center
+						<ArrowRight class="ml-2 w-6 h-6" />
+					</Button>
+				</div>
 			</div>
 		</section>
 

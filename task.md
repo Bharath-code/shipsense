@@ -48,8 +48,12 @@
 
 ## Phase 7 — Landing Page + Billing + Launch (Day 7)
 
-- [x] Landing page
-- [x] DodoPayments integration (billing.ts)
-- [x] Webhook handler (http.ts)
-- [x] Feature gates (plan.ts)
+- [x] Landing page refinement
+  - [x] Enhance Hero Dashboard Preview (Animated Glass Cards)
+  - [x] Add Vision Section (Maintainer Path)
+  - [x] Add Pricing Section (Tiers)
+  - [x] Add Final CTA Section
+- [ ] DodoPayments integration (billing.ts)
+- [ ] Webhook handler (http.ts)
+- [ ] Feature gates (plan.ts)
 - [ ] Deploy to Vercel
