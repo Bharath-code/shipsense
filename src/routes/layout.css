@@ -143,6 +143,18 @@
 	}
 }
 
+@layer utilities {
+	.text-bg-subtle {
+		@apply text-foreground/60;
+	}
+	.text-bg-muted {
+		@apply text-foreground/40;
+	}
+	.bg-glass {
+		@apply bg-background/50;
+	}
+}
+
 @custom-variant data-open {
 	&:where([data-state='open']),
 	&:where([data-open]:not([data-open='false'])) {
@@ -212,11 +224,11 @@
 }
 
 @utility glass-panel {
-	@apply border border-white/10 bg-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] backdrop-blur-xl;
+	@apply border-border bg-card shadow-lg backdrop-blur-xl;
 }
 
 @utility glass-card {
-	@apply border border-white/5 bg-white/[0.02] backdrop-blur-md transition-all duration-300 hover:border-white/10 hover:bg-white/[0.05] hover:shadow-[0_0_30px_rgba(255,255,255,0.05)];
+	@apply border-border bg-card/50 backdrop-blur-md transition-all duration-300 hover:bg-card;
 }
 
 @keyframes float {

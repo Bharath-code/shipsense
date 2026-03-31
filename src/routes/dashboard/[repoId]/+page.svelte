@@ -163,7 +163,7 @@
 				<Activity class="h-8 w-8" />
 			</div>
 			<div>
-				<h3 class="text-2xl font-bold text-white/90">Repository Not Found</h3>
+				<h3 class="text-2xl font-bold text-foreground">Repository Not Found</h3>
 				<p class="mt-2 max-w-sm text-muted-foreground">
 					This repository either doesn't exist or you do not have permission to view it.
 				</p>
@@ -189,7 +189,7 @@
 
 				<div class="space-y-3">
 					<div class="flex flex-wrap items-center gap-3">
-						<h1 class="text-3xl font-black tracking-tight text-white/90 sm:text-5xl">
+						<h1 class="text-3xl font-black tracking-tight text-foreground sm:text-5xl">
 							{repo.name}
 						</h1>
 						{#if repo.isPrivate}
@@ -208,7 +208,7 @@
 					</div>
 
 					<p class="flex items-center gap-3 text-lg text-muted-foreground">
-						<span class="font-medium text-white/60">{repo.owner}</span>
+						<span class="font-medium text-foreground/60">{repo.owner}</span>
 						{#if repo.language}
 							<span class="h-1.5 w-1.5 rounded-full bg-white/20"></span>
 							<span
@@ -220,7 +220,7 @@
 					</p>
 
 					{#if repo.description}
-						<p class="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground/80">
+						<p class="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
 							{repo.description}
 						</p>
 					{/if}
@@ -237,7 +237,7 @@
 						><Star class="h-3 w-3 text-warning/60" /> Stars</span
 					>
 					<div class="flex items-center gap-2">
-						<span class="text-4xl font-black text-white/90">{repo.starsCount}</span>
+						<span class="text-4xl font-black text-foreground">{repo.starsCount}</span>
 						{#if repo.starsLast7d && repo.starsLast7d > 0}
 							<span class="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
 								+{repo.starsLast7d}
@@ -253,7 +253,7 @@
 						class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
 						><GitFork class="h-3 w-3 text-primary/60" /> Forks</span
 					>
-					<span class="text-4xl font-black text-white/90">{repo.forksCount}</span>
+					<span class="text-4xl font-black text-foreground">{repo.forksCount}</span>
 				</div>
 
 				<div class="hidden h-16 w-px bg-white/10 lg:block"></div>

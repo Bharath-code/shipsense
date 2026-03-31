@@ -35,7 +35,7 @@
 </script>
 
 <div
-	class="relative flex min-h-screen flex-col bg-slate-950 text-foreground transition-colors duration-300"
+	class="relative flex min-h-screen flex-col bg-background text-foreground transition-colors duration-300"
 >
 	<!-- Ambient Background Glows -->
 	<div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">

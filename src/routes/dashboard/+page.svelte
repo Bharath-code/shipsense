@@ -50,13 +50,13 @@
 <div class="space-y-10">
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 		<div>
-			<h1 class="text-4xl font-bold tracking-tight text-white/90">Your Ecosystem</h1>
+			<h1 class="text-4xl font-bold tracking-tight text-foreground">Your Ecosystem</h1>
 			<p class="mt-2 text-lg text-muted-foreground/80">Monitor and grow your open-source impact.</p>
 		</div>
 
 		<Button
 			href="/dashboard/connect"
-			class="group relative h-12 overflow-hidden rounded-full bg-primary px-8 font-semibold text-primary-foreground transition-all hover:ring-2 hover:ring-primary/50 hover:ring-offset-2 hover:ring-offset-slate-950"
+			class="group relative h-12 overflow-hidden rounded-full bg-primary px-8 font-semibold text-primary-foreground transition-all hover:ring-2 hover:ring-primary/50 hover:ring-offset-2 hover:ring-offset-background"
 		>
 			<span class="relative z-10 flex items-center gap-2">
 				Connect Repository
@@ -68,25 +68,25 @@
 	{#if isLoading}
 		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 			{#each Array(3) as _}
-				<div class="h-48 animate-pulse rounded-2xl border border-white/10 bg-white/5"></div>
+				<div class="h-48 animate-pulse rounded-2xl border border-border bg-muted"></div>
 			{/each}
 		</div>
 	{:else if repos.length === 0}
 		<div
-			class="flex flex-col items-center justify-center rounded-3xl glass-panel border-white/5 p-16 text-center"
+			class="flex flex-col items-center justify-center rounded-3xl border glass-panel p-16 text-center"
 		>
 			<div
 				class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.2)]"
 			>
 				<Rocket class="h-10 w-10" />
 			</div>
-			<h3 class="text-2xl font-bold text-white/90">Ready to launch your growth?</h3>
-			<p class="mt-2 mb-8 max-w-lg text-lg text-muted-foreground/80">
+			<h3 class="text-2xl font-bold text-foreground">Ready to launch your growth?</h3>
+			<p class="mt-2 mb-8 max-w-lg text-lg text-muted-foreground">
 				Connect any public or private GitHub repo to unlock AI-powered health scores, automated
 				insights, and streak tracking — all in one dashboard.
 			</p>
 
-			<div class="mb-10 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground/60">
+			<div class="mb-10 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
 				<div class="flex items-center gap-2">
 					<CheckCircle class="h-4 w-4 text-success" />
 					<span>AI Health Score</span>
@@ -108,7 +108,7 @@
 			<Button
 				href="/dashboard/connect"
 				variant="outline"
-				class="h-12 rounded-full border-white/10 bg-white/5 px-10 hover:bg-white/10"
+				class="h-12 rounded-full border-border bg-muted px-10 hover:bg-muted/80"
 			>
 				Connect your first repo
 			</Button>
@@ -121,7 +121,7 @@
 					class="group transition-transform group-hover:scale-[1.02]"
 				>
 					<div
-						class="relative flex h-full flex-col overflow-hidden rounded-3xl glass-card border-white/10 p-8"
+						class="relative flex h-full flex-col overflow-hidden rounded-3xl border glass-card p-8"
 					>
 						<!-- Hover Glow -->
 						<div
@@ -130,8 +130,8 @@
 
 						<div class="mb-6 flex items-start justify-between">
 							<div class="space-y-1">
-								<h3 class="text-xl font-bold text-white/90">{repo.name}</h3>
-								<p class="text-sm text-muted-foreground/60">{repo.owner}</p>
+								<h3 class="text-xl font-bold text-foreground">{repo.name}</h3>
+								<p class="text-sm text-muted-foreground">{repo.owner}</p>
 							</div>
 							<div class="flex items-center gap-2">
 								{#if repo.lastError}
@@ -143,10 +143,10 @@
 									</div>
 								{/if}
 								<div
-									class={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-black shadow-[0_0_15px_rgba(var(--success-rgb),0.2)] ${
+									class={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-bold ${
 										repo.hasScore
 											? 'border border-success/20 bg-success/10 text-success'
-											: 'border border-white/10 bg-white/5 text-muted-foreground'
+											: 'border border-border bg-muted text-muted-foreground'
 									}`}
 								>
 									{repo.hasScore ? repo.healthScore : '...'}
@@ -154,12 +154,12 @@
 							</div>
 						</div>
 
-						<div class="mt-auto grid grid-cols-2 gap-6 border-t border-white/5 pt-6">
+						<div class="mt-auto grid grid-cols-2 gap-6 border-t pt-6">
 							<div class="space-y-1">
 								<div class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
 									<Star class="h-3 w-3" /> Stars
 								</div>
-								<div class="text-lg font-bold text-white/80">{repo.starsCount}</div>
+								<div class="text-lg font-bold text-foreground">{repo.starsCount}</div>
 							</div>
 							<div class="space-y-1">
 								<div class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">

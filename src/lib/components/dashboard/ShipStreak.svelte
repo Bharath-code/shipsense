@@ -91,13 +91,13 @@
 	{:else if !hasHistory}
 		<div class="flex flex-col items-center justify-center space-y-4 py-8 text-center">
 			<div
-				class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-muted-foreground"
+				class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-muted text-muted-foreground"
 			>
 				<Flame class="h-8 w-8" />
 			</div>
 			<div>
-				<h3 class="text-xl font-bold text-white/80">{streakHeadline()}</h3>
-				<p class="mt-1 text-sm text-muted-foreground/60">Push code to ignite your streak.</p>
+				<h3 class="text-xl font-bold text-foreground">{streakHeadline()}</h3>
+				<p class="mt-1 text-sm text-muted-foreground">Push code to ignite your streak.</p>
 			</div>
 		</div>
 	{:else}
@@ -111,7 +111,7 @@
 					></div>
 
 					<div
-						class={`relative z-10 flex h-32 w-32 scale-100 flex-col items-center justify-center rounded-full border-4 bg-white/5 shadow-2xl transition-all duration-500 group-hover:scale-105 ${
+						class={`relative z-10 flex h-32 w-32 scale-100 flex-col items-center justify-center rounded-full border-4 bg-muted shadow-2xl transition-all duration-500 group-hover:scale-105 ${
 							currentStreak > 0
 								? 'border-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]'
 								: 'border-white/10 opacity-75'
@@ -131,7 +131,7 @@
 
 					{#if currentStreak > 0}
 						<div
-							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-slate-900 shadow-xl"
+							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-background shadow-xl"
 						>
 							<Flame
 								class={`h-6 w-6 ${streakStatus().color} animate-pulse`}
@@ -140,14 +140,14 @@
 						</div>
 					{:else}
 						<div
-							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-slate-900 shadow-xl"
+							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-background shadow-xl"
 						>
 							<Snowflake class={`h-5 w-5 ${streakStatus().color}`} />
 						</div>
 					{/if}
 				</div>
 
-				<h3 class="text-lg font-bold text-white/85">{streakHeadline()}</h3>
+				<h3 class="text-lg font-bold text-foreground">{streakHeadline()}</h3>
 
 				<div
 					class={`rounded-full border px-4 py-1.5 text-xs font-bold tracking-tight shadow-lg ${
@@ -175,7 +175,7 @@
 						>
 							<Trophy class="h-3 w-3 text-warning/60" /> Hall of Fame
 						</p>
-						<p class="text-3xl font-black text-white/90">
+						<p class="text-3xl font-black text-foreground">
 							{longestStreak}
 							<span class="text-sm font-medium tracking-normal text-muted-foreground">days</span>
 						</p>
@@ -188,7 +188,7 @@
 							<Calendar class="h-3 w-3 text-primary/60" /> Last Ship
 						</p>
 						<p
-							class="truncate text-base font-bold text-white/80"
+							class="truncate text-base font-bold text-foreground"
 							title={lastCommitDate || 'Never'}
 						>
 							{lastCommitDate || 'Never'}
@@ -199,14 +199,12 @@
 				<p class="text-sm leading-relaxed text-muted-foreground/80 italic">
 					{#if currentStreak > 0}
 						"The momentum is real. Every commit is a brick in your legacy."
+					{:else if daysSinceLastShip === 0}
+						"Your latest ship is in. The next sync will relight the streak."
+					{:else if daysSinceLastShip === 1}
+						"You're one ship away from getting the streak back on track."
 					{:else}
-						{#if daysSinceLastShip === 0}
-							"Your latest ship is in. The next sync will relight the streak."
-						{:else if daysSinceLastShip === 1}
-							"You're one ship away from getting the streak back on track."
-						{:else}
-							"A fresh start is just an opportunity to build something stronger."
-						{/if}
+						"A fresh start is just an opportunity to build something stronger."
 					{/if}
 				</p>
 			</div>

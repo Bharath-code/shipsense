@@ -25,7 +25,7 @@
 	}
 </script>
 
-<div class="group relative flex flex-col rounded-[2rem] glass-panel border-white/10 p-8 shadow-2xl">
+<div class="group relative flex flex-col rounded-[2rem] border glass-panel p-8 shadow-2xl">
 	<div class="mb-10 flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<div
@@ -34,8 +34,8 @@
 				<Activity class="h-6 w-6" />
 			</div>
 			<div>
-				<h3 class="text-xl font-bold text-white/90">Momentum Engine</h3>
-				<p class="text-xs font-medium tracking-tight text-muted-foreground/60">
+				<h3 class="text-xl font-bold text-foreground">Momentum Engine</h3>
+				<p class="text-xs font-medium tracking-tight text-muted-foreground">
 					Last 7 health snapshots
 				</p>
 			</div>
@@ -43,10 +43,10 @@
 
 		{#if history.length > 0}
 			<div
-				class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-inner"
+				class="flex items-center gap-2 rounded-2xl border border-border bg-muted px-4 py-2 shadow-inner"
 			>
 				<div class="h-2 w-2 animate-pulse rounded-full bg-success"></div>
-				<span class="text-sm font-black text-white/90">
+				<span class="text-sm font-bold text-foreground">
 					{history[history.length - 1]?.healthScore || 0}
 				</span>
 			</div>
@@ -58,19 +58,21 @@
 			<div class="flex h-48 items-end justify-between gap-3 px-2">
 				{#each [1, 2, 3, 4, 5, 6, 7] as _}
 					<div
-						class="w-full animate-pulse rounded-2xl bg-white/5"
+						class="w-full animate-pulse rounded-2xl bg-muted"
 						style={`height: ${Math.random() * 60 + 20}%`}
 					></div>
 				{/each}
 			</div>
 		{:else if history.length === 0}
 			<div class="flex h-48 flex-col items-center justify-center space-y-4 text-center">
-				<div class="rounded-3xl border border-dashed border-white/10 bg-white/5 p-5 text-white/20">
+				<div
+					class="rounded-3xl border border-dashed border-border bg-muted p-5 text-muted-foreground"
+				>
 					<BarChart2 class="h-10 w-10" />
 				</div>
 				<div class="space-y-1">
-					<p class="text-sm font-bold text-white/60">Waiting for first engine fire</p>
-					<p class="max-w-[200px] text-xs leading-relaxed text-muted-foreground/40 italic">
+					<p class="text-sm font-bold text-foreground">Waiting for first engine fire</p>
+					<p class="max-w-[200px] text-xs leading-relaxed text-muted-foreground italic">
 						"Analysis data will populate here after the next synchronization."
 					</p>
 				</div>
@@ -111,8 +113,8 @@
 							<div
 								class="pointer-events-none absolute -top-12 left-1/2 flex -translate-x-1/2 -translate-y-2 flex-col items-center opacity-0 transition-all duration-300 group-hover/bar:-translate-y-4 group-hover/bar:opacity-100"
 							>
-								<div class="rounded-xl border border-white/20 bg-slate-950 px-3 py-1.5 shadow-2xl">
-									<span class="text-xs font-black text-white">{point.healthScore}</span>
+								<div class="rounded-xl border border-border bg-background px-3 py-1.5 shadow-2xl">
+									<span class="text-xs font-bold text-foreground">{point.healthScore}</span>
 								</div>
 								<div class="h-2 w-px bg-white/20"></div>
 							</div>

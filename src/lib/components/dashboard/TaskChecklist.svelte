@@ -16,7 +16,7 @@
 	let isLoading = $derived(tasksQuery.isLoading);
 </script>
 
-<div class="group flex flex-col rounded-[2rem] glass-panel border-white/10 p-8 shadow-2xl">
+<div class="group flex flex-col rounded-[2rem] border glass-panel p-8 shadow-2xl">
 	<div class="mb-8 flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<div
@@ -25,8 +25,8 @@
 				<ListTodo class="h-6 w-6" />
 			</div>
 			<div>
-				<h3 class="text-xl font-bold text-white/90">Priority Delta</h3>
-				<p class="text-xs font-medium tracking-tight text-muted-foreground/60">
+				<h3 class="text-xl font-bold text-foreground">Priority Delta</h3>
+				<p class="text-xs font-medium tracking-tight text-muted-foreground">
 					Deterministic actionable steps
 				</p>
 			</div>
@@ -38,19 +38,19 @@
 			<div class="space-y-4">
 				{#each [1, 2, 3] as _}
 					<div class="flex items-center space-x-4">
-						<div class="h-6 w-6 animate-pulse rounded-full bg-white/5"></div>
-						<div class="h-5 w-full animate-pulse rounded-xl bg-white/5"></div>
+						<div class="h-6 w-6 animate-pulse rounded-full bg-muted"></div>
+						<div class="h-5 w-full animate-pulse rounded-xl bg-muted"></div>
 					</div>
 				{/each}
 			</div>
 		{:else if tasks.length === 0}
 			<div class="flex flex-col items-center justify-center space-y-4 py-8 text-center">
-				<div class="rounded-full bg-white/5 p-4 text-success/40">
+				<div class="rounded-full bg-muted p-4 text-success/40">
 					<CheckCircle2 class="h-8 w-8" />
 				</div>
 				<div>
-					<h4 class="text-lg font-bold text-white/80">Clear Horizon</h4>
-					<p class="max-w-[180px] text-xs leading-relaxed text-muted-foreground/60 italic">
+					<h4 class="text-lg font-bold text-foreground">Clear Horizon</h4>
+					<p class="max-w-[180px] text-xs leading-relaxed text-muted-foreground italic">
 						"The best way to predict the future is to ship it."
 					</p>
 				</div>
@@ -59,7 +59,7 @@
 			<div class="space-y-4">
 				{#each tasks as task (task._id)}
 					<div
-						class="group flex items-start gap-4 rounded-3xl border border-white/5 bg-white/5 p-5 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-xl"
+						class="group flex items-start gap-4 rounded-3xl border bg-muted/50 p-5 transition-all duration-300 hover:bg-muted"
 						transition:fade={{ duration: 200 }}
 					>
 						<button
@@ -73,7 +73,7 @@
 						</button>
 
 						<div class="flex-1 space-y-3">
-							<p class="text-sm leading-relaxed font-medium text-white/80">
+							<p class="text-sm leading-relaxed font-medium text-foreground">
 								{task.taskText}
 							</p>
 
@@ -86,7 +86,7 @@
 												? 'border-blue-500/20 bg-blue-500/10 text-blue-400'
 												: task.taskType === 'anomaly'
 													? 'border-destructive/20 bg-destructive/10 text-destructive'
-													: 'border-white/10 bg-white/5 text-muted-foreground'
+													: 'border-border bg-muted text-muted-foreground'
 									}`}
 								>
 									{task.taskType}
