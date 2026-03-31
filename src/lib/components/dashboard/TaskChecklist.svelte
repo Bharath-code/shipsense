@@ -5,6 +5,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { ListTodo, CheckCircle2, Circle } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
+	import { LABELS } from '$lib/constants/labels';
 
 	let { repoId } = $props<{ repoId: string }>();
 
@@ -25,9 +26,9 @@
 				<ListTodo class="h-6 w-6" />
 			</div>
 			<div>
-				<h3 class="text-xl font-bold text-foreground">Priority Delta</h3>
+				<h3 class="text-xl font-bold text-foreground">{LABELS.PRIORITY_DELTA}</h3>
 				<p class="text-xs font-medium tracking-tight text-muted-foreground">
-					Deterministic actionable steps
+					{LABELS.DETERMININISTIC_STEPS}
 				</p>
 			</div>
 		</div>

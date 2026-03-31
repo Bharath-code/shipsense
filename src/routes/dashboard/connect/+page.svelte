@@ -11,6 +11,7 @@
 		CardContent
 	} from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
+	import { LABELS } from '$lib/constants/labels';
 	import { Star as StarIcon, GitFork as GitForkIcon, Search as SearchIcon } from 'lucide-svelte';
 
 	// Data fetching
@@ -112,7 +113,7 @@
 			/>
 		</div>
 		<Button variant="outline" onclick={loadGithubRepos} disabled={loadingGithub}>
-			{loadingGithub ? 'Refreshing...' : 'Refresh list'}
+			{loadingGithub ? LABELS.SYNCING : LABELS.REFRESH_LIST}
 		</Button>
 	</div>
 

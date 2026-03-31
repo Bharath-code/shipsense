@@ -4,6 +4,7 @@
 	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Sparkles, AlertTriangle, CheckCircle, Activity } from 'lucide-svelte';
+	import { LABELS } from '$lib/constants/labels';
 
 	let { repoId } = $props<{ repoId: string }>();
 
@@ -22,9 +23,9 @@
 				<Sparkles class="h-6 w-6" />
 			</div>
 			<div>
-				<h3 class="text-xl font-bold text-foreground">AI Insights</h3>
+				<h3 class="text-xl font-bold text-foreground">{LABELS.AI_INSIGHTS}</h3>
 				<p class="text-sm font-medium tracking-widest text-muted-foreground uppercase">
-					Intelligence Layer
+					{LABELS.INTELLIGENCE_LAYER}
 				</p>
 			</div>
 		</div>

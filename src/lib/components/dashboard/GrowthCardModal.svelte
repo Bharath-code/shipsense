@@ -3,6 +3,7 @@
 	import { api } from '$convex/_generated/api';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { LABELS } from '$lib/constants/labels';
 	import { Share2, Download, Flame, Star, GitFork, CheckCircle } from 'lucide-svelte';
 	import { toPng } from 'html-to-image';
 
@@ -69,9 +70,10 @@
 	variant="outline"
 	class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
 	onclick={() => (open = true)}
+	aria-label={LABELS.SHARE_GROWTH_CARD}
 >
 	<Share2 class="mr-2 h-4 w-4" />
-	Share Growth Card
+	{LABELS.SHARE_GROWTH_CARD}
 </Button>
 
 <Dialog.Root bind:open>
@@ -191,26 +193,28 @@
 				class="h-14 rounded-2xl bg-white text-base font-black text-black transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
 				onclick={downloadCard}
 				disabled={downloading}
+				aria-label={LABELS.DOWNLOAD_IMAGE}
 			>
 				{#if downloadSuccess}
 					<CheckCircle class="mr-3 h-5 w-5 text-green-500" />
-					DOWNLOADED!
+					{LABELS.DOWNLOADED}
 				{:else if downloading}
 					<Download class="mr-3 h-5 w-5 animate-pulse" />
 					GENERATING...
 				{:else}
 					<Download class="mr-3 h-5 w-5" />
-					DOWNLOAD PNG
+					{LABELS.DOWNLOAD_IMAGE}
 				{/if}
 			</Button>
 			<Button
 				variant="outline"
 				class="h-14 rounded-2xl border-white/10 bg-white/5 text-base font-black text-white transition-all hover:bg-white/10 active:scale-95"
 				onclick={shareToTwitter}
+				aria-label={LABELS.SHARE_TO_TWITTER}
 			>
 				{#if shareSuccess}
 					<CheckCircle class="mr-3 h-5 w-5 text-green-500" />
-					SHARED!
+					{LABELS.SHARED}
 				{:else}
 					<svg class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
 						<path

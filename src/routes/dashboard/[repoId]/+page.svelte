@@ -5,6 +5,7 @@
 	import { api } from '$convex/_generated/api';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Badge } from '$lib/components/ui/badge';
+	import { LABELS, MESSAGES } from '$lib/constants/labels';
 	import {
 		ArrowLeft,
 		GitBranch,
@@ -72,9 +73,7 @@
 	async function disconnectRepo() {
 		if (!repo || isDisconnecting) return;
 
-		const confirmed = window.confirm(
-			`Disconnect ${repo.name}? ShipSense will stop tracking this repository.`
-		);
+		const confirmed = window.confirm(MESSAGES.DISCONNECT_CONFIRM(repo.name));
 		if (!confirmed) return;
 
 		isDisconnecting = true;
@@ -124,7 +123,7 @@
 					onclick={triggerSync}
 				>
 					<RefreshCw class="mr-2 h-4 w-4 {isSyncing ? 'animate-spin' : ''}" />
-					{isSyncing ? 'Syncing...' : 'Sync Now'}
+					{isSyncing ? LABELS.SYNCING : LABELS.SYNC_NOW}
 				</Button>
 				<Button
 					variant="destructive"
@@ -134,7 +133,7 @@
 					onclick={disconnectRepo}
 				>
 					<Trash2 class="mr-2 h-4 w-4" />
-					{isDisconnecting ? 'Disconnecting...' : 'Disconnect'}
+					{isDisconnecting ? LABELS.DISCONNECTING : LABELS.DISCONNECT}
 				</Button>
 			{/if}
 			{#if repo && repo.lastSyncedAt}
@@ -147,14 +146,14 @@
 				{#if repo.lastError}
 					<div class="flex items-center gap-2 text-destructive">
 						<AlertTriangle class="h-3 w-3" />
-						<span class="text-xs font-medium tracking-widest uppercase">Sync Error</span>
+						<span class="text-xs font-medium tracking-widest uppercase">{LABELS.SYNC_ERROR}</span>
 					</div>
 				{:else}
 					<div
 						class="h-2 w-2 animate-pulse rounded-full bg-success shadow-[0_0_8px_rgba(var(--success-rgb),0.6)]"
 					></div>
 					<span class="text-xs font-medium tracking-widest text-muted-foreground uppercase"
-						>Live Sync</span
+						>{LABELS.LIVE_SYNC}</span
 					>
 				{/if}
 			{/if}
@@ -254,7 +253,7 @@
 				<div class="flex flex-col text-center lg:text-left">
 					<span
 						class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
-						><Star class="h-3 w-3 text-warning/60" /> Stars</span
+						><Star class="h-3 w-3 text-warning/60" /> {LABELS.STARS}</span
 					>
 					<div class="flex items-center gap-2">
 						<span class="text-4xl font-black text-foreground">{repo.starsCount}</span>
@@ -271,7 +270,7 @@
 				<div class="flex flex-col text-center lg:text-left">
 					<span
 						class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
-						><GitFork class="h-3 w-3 text-primary/60" /> Forks</span
+						><GitFork class="h-3 w-3 text-primary/60" /> {LABELS.FORKS}</span
 					>
 					<span class="text-4xl font-black text-foreground">{repo.forksCount}</span>
 				</div>
@@ -287,9 +286,10 @@
 							variant="outline"
 							class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
 							onclick={() => (showGrowthCard = true)}
+							aria-label={LABELS.SHARE_GROWTH_CARD}
 						>
 							<Share2 class="mr-2 h-4 w-4" />
-							Share Growth Card
+							{LABELS.SHARE_GROWTH_CARD}
 						</Button>
 					{/if}
 				</div>
