@@ -77,8 +77,9 @@ export const connectRepo = mutation({
 		const planConfig = getPlanConfig(profile.plan as PlanType);
 
 		if (existingRepos.length >= planConfig.maxRepos) {
+			const repoLabel = planConfig.maxRepos === 1 ? 'repository' : 'repositories';
 			throw new Error(
-				`${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)} plan is limited to ${planConfig.maxRepos} repository. Upgrade your plan to add more.`
+				`${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)} plan is limited to ${planConfig.maxRepos} ${repoLabel}. Upgrade your plan to add more.`
 			);
 		}
 
