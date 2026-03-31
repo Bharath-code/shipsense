@@ -1,5 +1,16 @@
 # ShipSense — Task Tracker
 
+## Current Strategy
+
+Ship the real product one feature at a time.
+
+Focus order:
+
+1. Fix correctness gaps in already-built features
+2. Wire retention loops that make the product sticky
+3. Improve trust and conversion UX
+4. Expand intelligence depth only after the core loop works
+
 ## Phase 1 — Foundation + Auth (Day 1)
 
 - [x] Scaffold SvelteKit project (Svelte 5, TypeScript)
@@ -77,3 +88,58 @@
   - [x] Fix Convex backend schema & dependency scope errors
 - [x] Final Production Build Verification (npm run build)
 - [ ] Deploy to Vercel
+
+## Phase 10 — Reality Check Fixes (Next)
+
+- [x] Wire ship streak updates into the sync pipeline
+- [ ] Compute streak from latest commit date instead of leaving streak data stale
+- [ ] Verify streak UI reflects real repository activity
+- [ ] Replace placeholder score trend logic with real previous-vs-current comparison
+- [ ] Fix plan limits so paid tiers are strictly better than free
+- [ ] Align login consent copy with actual GitHub OAuth scopes
+- [ ] Replace default scaffold README with real product/project documentation
+
+## Phase 11 — Data Quality Hardening
+
+- [ ] Implement real `starsLast7d` calculation from snapshot history
+- [ ] Replace placeholder `contributors14d` metric with real GitHub-derived data
+- [ ] Replace placeholder `medianIssueResponseHours` with real issue-response metric
+- [ ] Store and expose last synced timestamp per repository
+- [ ] Add collector error handling and visible sync failure states in the UI
+
+## Phase 12 — Action Engine V1
+
+- [ ] Expand task generation beyond commit gap and generic issue triage
+- [ ] Add issue-based tasks for repos with growing open issue load
+- [ ] Add PR-based tasks for repos with stale open PRs
+- [ ] Add score-drop / anomaly-triggered tasks
+- [ ] Sort and display tasks by real priority in the dashboard
+
+## Phase 13 — Retention Loop V1
+
+- [ ] Build a real daily or weekly report payload from repo insights
+- [ ] Schedule report sending through cron
+- [ ] Respect per-user report preferences
+- [ ] Add in-app setting to enable or disable reports
+- [ ] Add last report sent metadata for debugging and trust
+
+## Phase 14 — Growth + Sharing UX
+
+- [ ] Replace growth-card download placeholder with a real export flow
+- [ ] Improve growth card copy so it reflects real repository state
+- [ ] Add a success state after sharing / downloading
+- [ ] Make dashboard empty states guide users toward first value faster
+
+## Phase 15 — Beyond GitHub MVP
+
+- [ ] Add npm downloads integration
+- [ ] Add website traffic integration
+- [ ] Add search console integration
+- [ ] Unify GitHub + traffic + package metrics into a single insight layer
+- [ ] Generate cross-channel recommendations instead of repo-only recommendations
+
+## Working Rule
+
+- [ ] Only start one unchecked feature at a time
+- [ ] Finish implementation, verification, and UX copy before moving to the next feature
+- [ ] Update this file after every completed feature

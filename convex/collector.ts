@@ -53,6 +53,15 @@ export function processCommitGap(commits: any[], referenceTimeMs: number): numbe
 	return commitGapHours;
 }
 
+export function extractLatestCommitDate(commits: Array<{ committedDate: string }>): string | null {
+	if (commits.length === 0) return null;
+
+	const latestCommitDate = new Date(commits[0].committedDate);
+	if (Number.isNaN(latestCommitDate.getTime())) return null;
+
+	return latestCommitDate.toISOString().slice(0, 10);
+}
+
 export const fetchRepoData = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }): Promise<Id<'repoSnapshots'> | null> => {
@@ -120,9 +129,10 @@ export const fetchRepoData = internalAction({
 		const prsMerged7d = processMergedPRs(data.mergedPRs?.nodes || [], now);
 		const commits = data.defaultBranchRef?.target?.history?.nodes || [];
 		const commitGapHours = processCommitGap(commits, now);
+		const latestCommitDate = extractLatestCommitDate(commits);
 
 		// Capture Snapshot
-		return await ctx.runMutation(internal.collector.saveSnapshot, {
+		const snapshotId = await ctx.runMutation(internal.collector.saveSnapshot, {
 			repoId,
 			stars: data.stargazerCount,
 			starsLast7d: 0, // Simplified for now
@@ -134,6 +144,15 @@ export const fetchRepoData = internalAction({
 			medianIssueResponseHours: 12, // Simplified for now
 			forks: data.forkCount
 		});
+
+		if (latestCommitDate) {
+			await ctx.runMutation(internal.streakTracker.updateStreak, {
+				repoId,
+				commitDate: latestCommitDate
+			});
+		}
+
+		return snapshotId;
 	}
 });
 

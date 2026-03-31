@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { processMergedPRs, processCommitGap } from './collector';
+import { processMergedPRs, processCommitGap, extractLatestCommitDate } from './collector';
 
 describe('collector parsing logic', () => {
 	const now = 1700000000000; // Mock reference time
@@ -32,6 +32,18 @@ describe('collector parsing logic', () => {
 			const commits = [{ committedDate: new Date(tenHoursAgo).toISOString() }];
 
 			expect(processCommitGap(commits, now)).toBe(10);
+		});
+	});
+
+	describe('extractLatestCommitDate', () => {
+		it('returns null when no commits exist', () => {
+			expect(extractLatestCommitDate([])).toBeNull();
+		});
+
+		it('returns a normalized YYYY-MM-DD string for the latest commit', () => {
+			expect(
+				extractLatestCommitDate([{ committedDate: '2026-03-31T15:42:10.000Z' }])
+			).toBe('2026-03-31');
 		});
 	});
 });
