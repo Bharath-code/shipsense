@@ -8,6 +8,7 @@ export default defineSchema({
 	// Extended user profile (linked to Convex auth user)
 	userProfiles: defineTable({
 		userId: v.id('users'),
+		email: v.optional(v.string()),
 		githubUsername: v.string(),
 		githubAccessToken: v.string(),
 		avatarUrl: v.optional(v.string()),
@@ -15,6 +16,7 @@ export default defineSchema({
 		dodoCustomerId: v.optional(v.string()),
 		dodoSubscriptionId: v.optional(v.string()),
 		emailReportsEnabled: v.boolean(),
+		lastReportSentAt: v.optional(v.number()),
 		createdAt: v.number()
 	})
 		.index('by_userId', ['userId'])

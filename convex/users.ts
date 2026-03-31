@@ -16,6 +16,16 @@ export const getGithubToken = internalQuery({
 	}
 });
 
+export const getUserProfile = internalQuery({
+	args: { userId: v.id('users') },
+	handler: async (ctx, { userId }) => {
+		return await ctx.db
+			.query('userProfiles')
+			.withIndex('by_userId', (q) => q.eq('userId', userId))
+			.unique();
+	}
+});
+
 // Public query — resolves the currently authenticated user's profile
 export const getMyProfile = query({
 	args: {},
@@ -27,5 +37,12 @@ export const getMyProfile = query({
 			.query('userProfiles')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
 			.unique();
+	}
+});
+
+export const listAllUserProfiles = internalQuery({
+	args: {},
+	handler: async (ctx) => {
+		return await ctx.db.query('userProfiles').collect();
 	}
 });

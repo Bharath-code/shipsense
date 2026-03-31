@@ -1,4 +1,4 @@
-import { query, mutation } from './_generated/server';
+import { query, mutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 
@@ -42,6 +42,17 @@ export const getRepoInsights = query({
 			.first();
 
 		return insights;
+	}
+});
+
+export const getRepoInsightsForReport = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		return await ctx.db
+			.query('repoInsights')
+			.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.first();
 	}
 });
 
@@ -120,5 +131,16 @@ export const getRepoScoreHistory = query({
 			.take(7);
 
 		return scores.reverse(); // chronological
+	}
+});
+
+export const getOpenTasksForReport = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		return await ctx.db
+			.query('repoTasks')
+			.withIndex('by_repoId_isCompleted', (q) => q.eq('repoId', repoId).eq('isCompleted', false))
+			.order('asc')
+			.take(5);
 	}
 });

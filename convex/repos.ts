@@ -155,3 +155,13 @@ export const syncConnectedRepo = action({
 		return { ok: true };
 	}
 });
+
+export const getUserReposForReport = internalQuery({
+	args: { userId: v.id('users') },
+	handler: async (ctx, { userId }) => {
+		return await ctx.db
+			.query('repos')
+			.withIndex('by_userId_isActive', (q) => q.eq('userId', userId).eq('isActive', true))
+			.collect();
+	}
+});

@@ -59,6 +59,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 
 			await ctx.db.insert('userProfiles', {
 				userId,
+				email: ghProfile.email ?? '',
 				githubUsername: ghProfile.login ?? '',
 				githubAccessToken: ghProfile.githubAccessToken ?? '',
 				avatarUrl: ghProfile.image ?? '',

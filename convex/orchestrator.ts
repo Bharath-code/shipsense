@@ -53,3 +53,19 @@ export const runInsightGeneration = internalAction({
 		}
 	}
 });
+
+export const sendWeeklyReports = internalAction({
+	args: {},
+	handler: async (ctx) => {
+		const profiles = await ctx.runQuery(internal.users.listAllUserProfiles);
+
+		for (const profile of profiles) {
+			if (!profile.email || !profile.emailReportsEnabled) continue;
+
+			await ctx.runAction(internal.email.sendWeeklyReport, {
+				userId: profile.userId,
+				email: profile.email
+			});
+		}
+	}
+});

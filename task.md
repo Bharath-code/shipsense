@@ -117,11 +117,11 @@ Focus order:
 
 ## Phase 13 — Retention Loop V1
 
-- [ ] Build a real daily or weekly report payload from repo insights
-- [ ] Schedule report sending through cron
-- [ ] Respect per-user report preferences
-- [ ] Add in-app setting to enable or disable reports
-- [ ] Add last report sent metadata for debugging and trust
+- [x] Build a real daily or weekly report payload from repo insights
+- [x] Schedule report sending through cron (Sundays 10am UTC)
+- [x] Respect per-user report preferences (emailReportsEnabled toggle)
+- [x] Add in-app setting to enable or disable reports (/dashboard/settings)
+- [x] Add last report sent metadata for debugging and trust
 
 ## Phase 14 — Growth + Sharing UX
 
