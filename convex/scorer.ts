@@ -30,13 +30,28 @@ export function computeRepoScore(snapshot: {
 	};
 }
 
+export function determineTrend(currentScore: number, previousScore?: number) {
+	if (previousScore === undefined) return 'stable' as const;
+	if (currentScore > previousScore) return 'up' as const;
+	if (currentScore < previousScore) return 'down' as const;
+	return 'stable' as const;
+}
+
 export const calculateScore = internalMutation({
 	args: { repoId: v.id('repos'), snapshotId: v.id('repoSnapshots') },
 	handler: async (ctx, { repoId, snapshotId }) => {
 		const snapshot = await ctx.db.get(snapshotId);
 		if (!snapshot) return;
 
+		const previousScoreDoc = await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.first();
+
 		const scores = computeRepoScore(snapshot);
+		const previousScore = previousScoreDoc?.healthScore;
+		const trend = determineTrend(scores.healthScore, previousScore);
 
 		await ctx.db.insert('repoScores', {
 			repoId,
@@ -48,7 +63,8 @@ export const calculateScore = internalMutation({
 			prScore: scores.prScore,
 			contributorScore: scores.contributorScore,
 			scoreExplanation: 'Calculated based on standard heuristics.',
-			trend: 'stable'
+			trend,
+			previousScore
 		});
 	}
 });

@@ -21,6 +21,7 @@
 	let loadingGithub = $state(false);
 	let searchQuery = $state('');
 	let connectError = $state<string | null>(null);
+	let connectingRepoId = $state<number | null>(null);
 
 	async function loadGithubRepos() {
 		loadingGithub = true;
@@ -36,8 +37,12 @@
 	}
 
 	async function connectRepo(repo: any) {
+		if (connectingRepoId === repo.githubRepoId) return;
+
+		connectingRepoId = repo.githubRepoId;
+		connectError = null;
 		try {
-			await client.mutation(api.repos.connectRepo, {
+			const repoId = await client.mutation(api.repos.connectRepo, {
 				githubRepoId: repo.githubRepoId,
 				owner: repo.owner,
 				name: repo.name,
@@ -48,10 +53,12 @@
 				forksCount: repo.forksCount,
 				isPrivate: repo.isPrivate
 			});
-			// Optionally show a success toast here
+			await client.action(api.repos.syncConnectedRepo, { repoId });
 		} catch (err: any) {
 			console.error(err);
 			connectError = err.message;
+		} finally {
+			connectingRepoId = null;
 		}
 	}
 
@@ -164,8 +171,9 @@
 						{:else}
 							<Button
 								onclick={() => connectRepo(repo)}
+								disabled={connectingRepoId === repo.githubRepoId}
 								class="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-								>Connect</Button
+								>{connectingRepoId === repo.githubRepoId ? 'Syncing...' : 'Connect'}</Button
 							>
 						{/if}
 					</div>

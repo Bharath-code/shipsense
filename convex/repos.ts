@@ -1,4 +1,4 @@
-import { mutation, query, internalQuery } from './_generated/server';
+import { mutation, query, internalQuery, action } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { getPlanConfig, type PlanType } from './plan';
@@ -25,10 +25,18 @@ export const listMyRepos = query({
 					.order('desc')
 					.first();
 
+				const momentum =
+					latestScore?.previousScore !== undefined
+						? latestScore.healthScore - latestScore.previousScore
+						: null;
+
 				return {
 					...repo,
-					healthScore: latestScore?.healthScore ?? 0,
-					momentum: latestScore?.trend === 'up' ? 5 : latestScore?.trend === 'down' ? -5 : 0 // Placeholder logic for momentum display
+					healthScore: latestScore?.healthScore ?? null,
+					momentum,
+					trend: latestScore?.trend ?? 'stable',
+					hasScore: !!latestScore,
+					hasTrend: latestScore?.previousScore !== undefined
 				};
 			})
 		);
@@ -130,5 +138,19 @@ export const listAllActiveRepos = internalQuery({
 			.query('repos')
 			.filter((q) => q.eq(q.field('isActive'), true))
 			.collect();
+	}
+});
+
+export const syncConnectedRepo = action({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) throw new Error('Unauthenticated');
+
+		const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
+		if (!repo || repo.userId !== userId) throw new Error('Unauthorized');
+
+		await ctx.runAction(internal.orchestrator.syncRepoNow, { repoId });
+		return { ok: true };
 	}
 });

@@ -27,7 +27,7 @@ type RepoGraphQLResponse = {
 };
 
 type CollectorRepo = {
-	userId: string;
+	userId: Id<'users'>;
 	owner: string;
 	name: string;
 	fullName: string;
@@ -68,9 +68,7 @@ export const fetchRepoData = internalAction({
 		const repo: CollectorRepo | null = await ctx.runQuery(internal.repos.getRepoById, { repoId });
 		if (!repo) throw new Error('Repo not found');
 
-		const tokens: GithubTokenResult = await ctx.runQuery(internal.users.getGithubToken, {
-			subject: repo.userId.toString()
-		});
+		const tokens: GithubTokenResult = await ctx.runQuery(internal.users.getGithubToken, { userId: repo.userId });
 
 		if (!tokens || !tokens.accessToken) {
 			console.warn('No token for user', repo.userId);

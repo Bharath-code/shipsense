@@ -8,15 +8,10 @@ const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 export const fetchUserReposFromGithub = action({
 	args: {},
 	handler: async (ctx): Promise<any[]> => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) throw new Error('Unauthenticated');
+		const userId = await getAuthUserId(ctx);
+		if (!userId) throw new Error('Unauthenticated');
 
-		// @convex-dev/auth encodes subject as "userId|sessionId"
-		const userId = identity.subject.split('|')[0];
-
-		const tokens = (await ctx.runQuery(internal.users.getGithubToken, {
-			subject: userId
-		})) as any;
+		const tokens = (await ctx.runQuery(internal.users.getGithubToken, { userId })) as any;
 
 		if (!tokens || !tokens.accessToken) {
 			throw new Error('No GitHub access token found for user: ' + userId);

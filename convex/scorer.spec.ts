@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeRepoScore } from './scorer';
+import { computeRepoScore, determineTrend } from './scorer';
 
 describe('computeRepoScore', () => {
 	it('calculates a near-perfect score for high activity', () => {
@@ -39,5 +39,23 @@ describe('computeRepoScore', () => {
 		expect(result.contributorScore).toBe(0);
 
 		expect(result.healthScore).toBe(2); // Math.round(1.75)
+	});
+});
+
+describe('determineTrend', () => {
+	it('returns stable when there is no previous score', () => {
+		expect(determineTrend(42)).toBe('stable');
+	});
+
+	it('returns up when the score increases', () => {
+		expect(determineTrend(60, 55)).toBe('up');
+	});
+
+	it('returns down when the score decreases', () => {
+		expect(determineTrend(40, 55)).toBe('down');
+	});
+
+	it('returns stable when the score stays the same', () => {
+		expect(determineTrend(55, 55)).toBe('stable');
 	});
 });

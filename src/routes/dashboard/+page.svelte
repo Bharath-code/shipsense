@@ -17,6 +17,30 @@
 
 	let repos = $derived(activeReposQuery.data || []);
 	let isLoading = $derived(activeReposQuery.isLoading);
+
+	function formatMomentum(momentum: number) {
+		if (momentum > 0) return `+${momentum}`;
+		return `${momentum}`;
+	}
+
+	function momentumTone(trend: 'up' | 'down' | 'stable') {
+		if (trend === 'up') return 'text-success';
+		if (trend === 'down') return 'text-destructive';
+		return 'text-muted-foreground';
+	}
+
+	function hasNumericMomentum(momentum: number | null | undefined): momentum is number {
+		return typeof momentum === 'number';
+	}
+
+	function trendLabel(repo: {
+		hasScore: boolean;
+		hasTrend: boolean;
+		trend: 'up' | 'down' | 'stable';
+	}) {
+		if (!repo.hasScore) return 'Status';
+		return repo.hasTrend ? 'Trend' : 'Status';
+	}
 </script>
 
 <svelte:head>
@@ -90,9 +114,13 @@
 								<p class="text-sm text-muted-foreground/60">{repo.owner}</p>
 							</div>
 							<div
-								class="flex h-12 w-12 items-center justify-center rounded-2xl border border-success/20 bg-success/10 text-xl font-black text-success shadow-[0_0_15px_rgba(var(--success-rgb),0.2)]"
+								class={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-black shadow-[0_0_15px_rgba(var(--success-rgb),0.2)] ${
+									repo.hasScore
+										? 'border border-success/20 bg-success/10 text-success'
+										: 'border border-white/10 bg-white/5 text-muted-foreground'
+								}`}
 							>
-								{repo.healthScore || '??'}
+								{repo.hasScore ? repo.healthScore : '...'}
 							</div>
 						</div>
 
@@ -105,11 +133,19 @@
 							</div>
 							<div class="space-y-1">
 								<div class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-									<Activity class="h-3 w-3" /> Score
+									<Activity class="h-3 w-3" /> {trendLabel(repo)}
 								</div>
-								<div class="text-lg font-bold text-white/80">
-									+{repo.momentum || 0}%
-								</div>
+								{#if !repo.hasScore}
+									<div class="text-sm font-medium text-muted-foreground">Syncing</div>
+								{:else if !repo.hasTrend}
+									<div class="text-sm font-medium text-muted-foreground">Baseline</div>
+								{:else if hasNumericMomentum(repo.momentum)}
+									<div class={`text-lg font-bold ${momentumTone(repo.trend)}`}>
+										{formatMomentum(repo.momentum)}
+									</div>
+								{:else}
+									<div class="text-sm font-medium text-muted-foreground">Stable</div>
+								{/if}
 							</div>
 						</div>
 					</div>
