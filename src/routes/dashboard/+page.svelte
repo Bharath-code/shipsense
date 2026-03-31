@@ -9,7 +9,7 @@
 		CardContent
 	} from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Activity, Rocket, Zap, Clock, Star, AlertTriangle } from 'lucide-svelte';
+	import { Activity, Rocket, Zap, Clock, Star, AlertTriangle, CheckCircle } from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import ArrowRightIcon from 'lucide-svelte/icons/arrow-right';
 
@@ -80,11 +80,31 @@
 			>
 				<Rocket class="h-10 w-10" />
 			</div>
-			<h3 class="text-2xl font-bold text-white/90">No repositories yet</h3>
-			<p class="mt-2 mb-10 max-w-sm text-lg text-muted-foreground/80">
-				Connect your first GitHub repository to start generating AI insights and tracking growth
-				streaks.
+			<h3 class="text-2xl font-bold text-white/90">Ready to launch your growth?</h3>
+			<p class="mt-2 mb-8 max-w-lg text-lg text-muted-foreground/80">
+				Connect any public or private GitHub repo to unlock AI-powered health scores, automated
+				insights, and streak tracking — all in one dashboard.
 			</p>
+
+			<div class="mb-10 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground/60">
+				<div class="flex items-center gap-2">
+					<CheckCircle class="h-4 w-4 text-success" />
+					<span>AI Health Score</span>
+				</div>
+				<div class="flex items-center gap-2">
+					<CheckCircle class="h-4 w-4 text-success" />
+					<span>Commit Streaks</span>
+				</div>
+				<div class="flex items-center gap-2">
+					<CheckCircle class="h-4 w-4 text-success" />
+					<span>Weekly Reports</span>
+				</div>
+				<div class="flex items-center gap-2">
+					<CheckCircle class="h-4 w-4 text-success" />
+					<span>Growth Cards</span>
+				</div>
+			</div>
+
 			<Button
 				href="/dashboard/connect"
 				variant="outline"

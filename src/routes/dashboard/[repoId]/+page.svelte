@@ -70,8 +70,7 @@
 		if (isSyncing) return;
 		isSyncing = true;
 		try {
-			await client.mutation(api.repos.syncConnectedRepo, { repoId: repoId as any });
-			repoQuery.refetch();
+			await client.action(api.repos.syncConnectedRepo, { repoId: repoId as any });
 		} finally {
 			isSyncing = false;
 		}

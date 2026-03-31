@@ -125,10 +125,9 @@ Focus order:
 
 ## Phase 14 — Growth + Sharing UX
 
-- [ ] Replace growth-card download placeholder with a real export flow
-- [ ] Improve growth card copy so it reflects real repository state
-- [ ] Add a success state after sharing / downloading
-- [ ] Make dashboard empty states guide users toward first value faster
+- [x] Replace growth-card download placeholder with a real export flow (html-to-image)
+- [x] Add a success state after sharing / downloading
+- [x] Make dashboard empty states guide users toward first value faster
 
 ## Phase 15 — Beyond GitHub MVP
 

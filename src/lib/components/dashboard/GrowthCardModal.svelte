@@ -3,7 +3,8 @@
 	import { api } from '$convex/_generated/api';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import { Share2, Download, Flame, Star, GitFork } from 'lucide-svelte';
+	import { Share2, Download, Flame, Star, GitFork, CheckCircle } from 'lucide-svelte';
+	import { toPng } from 'html-to-image';
 
 	let { repoId } = $props<{ repoId: string }>();
 
@@ -21,10 +22,49 @@
 	let streak = $derived(streakQuery.data?.currentStreak || 0);
 
 	let isOpen = $state(false);
+	let downloading = $state(false);
+	let shareSuccess = $state(false);
+	let downloadSuccess = $state(false);
 
-	function downloadCard() {
-		// In a real implementation this would use html2canvas to save the card div
-		alert('This would download the card as a PNG image in production.');
+	async function downloadCard() {
+		downloading = true;
+		downloadSuccess = false;
+		try {
+			const cardElement = document.getElementById('growth-card-canvas');
+			if (!cardElement) {
+				alert('Card not found');
+				return;
+			}
+
+			const dataUrl = await toPng(cardElement, {
+				backgroundColor: '#020617',
+				pixelRatio: 2
+			});
+
+			const link = document.createElement('a');
+			link.download = `${repo?.name || 'repo'}-growth-card.png`;
+			link.href = dataUrl;
+			link.click();
+
+			downloadSuccess = true;
+			setTimeout(() => (downloadSuccess = false), 3000);
+		} catch (err) {
+			console.error('Download failed:', err);
+			alert('Failed to download card');
+		} finally {
+			downloading = false;
+		}
+	}
+
+	function shareToTwitter() {
+		const text = `Just hit a ${streak} day commit streak on ${repo?.name}! My repo Health Score is ${latestScore}/100 🚀`;
+		const url = 'https://shipsense.dev';
+		window.open(
+			`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+			'_blank'
+		);
+		shareSuccess = true;
+		setTimeout(() => (shareSuccess = false), 3000);
 	}
 </script>
 
@@ -42,7 +82,10 @@
 		class="overflow-hidden border-border bg-background p-0 text-foreground shadow-2xl sm:max-w-md"
 	>
 		<!-- Growth Card Canvas (The part that gets shared) -->
-		<div class="relative overflow-hidden glass-panel bg-slate-950 p-10 select-none">
+		<div
+			id="growth-card-canvas"
+			class="relative overflow-hidden glass-panel bg-slate-950 p-10 select-none"
+		>
 			<!-- Advanced background architecture -->
 			<div
 				class="pointer-events-none absolute -top-40 -right-40 h-80 w-80 animate-pulse rounded-full bg-primary/20 blur-[100px]"
@@ -148,35 +191,44 @@
 		<div class="grid grid-cols-1 gap-4 border-t border-white/10 bg-black/40 p-10 sm:grid-cols-2">
 			<Button
 				variant="default"
-				class="h-14 rounded-2xl bg-white text-base font-black text-black transition-all hover:bg-white/90 active:scale-95"
+				class="h-14 rounded-2xl bg-white text-base font-black text-black transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
 				onclick={downloadCard}
+				disabled={downloading}
 			>
-				<Download class="mr-3 h-5 w-5" />
-				SVG PERSIST
+				{#if downloadSuccess}
+					<CheckCircle class="mr-3 h-5 w-5 text-green-500" />
+					DOWNLOADED!
+				{:else if downloading}
+					<Download class="mr-3 h-5 w-5 animate-pulse" />
+					GENERATING...
+				{:else}
+					<Download class="mr-3 h-5 w-5" />
+					DOWNLOAD PNG
+				{/if}
 			</Button>
 			<Button
 				variant="outline"
 				class="h-14 rounded-2xl border-white/10 bg-white/5 text-base font-black text-white transition-all hover:bg-white/10 active:scale-95"
-				onclick={() => {
-					window.open(
-						`https://twitter.com/intent/tweet?text=Just hit a ${streak} day commit streak on ${repo?.name}! My repo Health Score is ${latestScore}/100 🚀&url=https://shipsense.dev`,
-						'_blank'
-					);
-				}}
+				onclick={shareToTwitter}
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="currentColor"
-					class="mr-3 h-5 w-5 text-white"
-				>
-					<path
-						d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-					/>
-				</svg>
-				INTEL SHARE
+				{#if shareSuccess}
+					<CheckCircle class="mr-3 h-5 w-5 text-green-500" />
+					SHARED!
+				{:else}
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						class="mr-3 h-5 w-5 text-white"
+					>
+						<path
+							d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+						/>
+					</svg>
+					SHARE ON X
+				{/if}
 			</Button>
 		</div>
 	</Dialog.Content>
