@@ -97,7 +97,7 @@ Focus order:
 - [x] Replace placeholder score trend logic with real previous-vs-current comparison
 - [x] Fix plan limits so paid tiers are strictly better than free
 - [x] Align login consent copy with actual GitHub OAuth scopes
-- [ ] Replace default scaffold README with real product/project documentation
+- [x] Replace default scaffold README with real product/project documentation
 
 ## Phase 11 — Data Quality Hardening
 
