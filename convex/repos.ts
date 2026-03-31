@@ -14,32 +14,46 @@ export const listMyRepos = query({
 		const repos = await ctx.db
 			.query('repos')
 			.withIndex('by_userId_isActive', (q) => q.eq('userId', userId).eq('isActive', true))
-			.collect();
+			.take(20); // Limit to 20 repos per user
 
-		// Enrich each repo with its latest health score and momentum
-		const enrichedRepos = await Promise.all(
+		if (repos.length === 0) return [];
+
+		// Fetch all scores in parallel - faster than N sequential queries
+		const scoreResults = await Promise.all(
 			repos.map(async (repo) => {
 				const latestScore = await ctx.db
 					.query('repoScores')
 					.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repo._id))
 					.order('desc')
 					.first();
-
-				const momentum =
-					latestScore?.previousScore !== undefined
-						? latestScore.healthScore - latestScore.previousScore
-						: null;
-
-				return {
-					...repo,
-					healthScore: latestScore?.healthScore ?? null,
-					momentum,
-					trend: latestScore?.trend ?? 'stable',
-					hasScore: !!latestScore,
-					hasTrend: latestScore?.previousScore !== undefined
-				};
+				return { repoId: repo._id, latestScore };
 			})
 		);
+
+		// Create lookup map
+		const scoreMap: Record<string, (typeof scoreResults)[0]['latestScore']> = {};
+		for (const result of scoreResults) {
+			scoreMap[result.repoId as string] = result.latestScore;
+		}
+
+		// Enrich repos with scores
+		const enrichedRepos = repos.map((repo) => {
+			const latestScore = scoreMap[repo._id as string];
+
+			const momentum =
+				latestScore?.previousScore !== undefined
+					? latestScore.healthScore - latestScore.previousScore
+					: null;
+
+			return {
+				...repo,
+				healthScore: latestScore?.healthScore ?? null,
+				momentum,
+				trend: latestScore?.trend ?? 'stable',
+				hasScore: !!latestScore,
+				hasTrend: latestScore?.previousScore !== undefined
+			};
+		});
 
 		return enrichedRepos;
 	}
@@ -132,13 +146,27 @@ export const getRepoById = internalQuery({
 	}
 });
 
-export const listAllActiveRepos = internalQuery({
-	args: {},
-	handler: async (ctx) => {
-		return await ctx.db
-			.query('repos')
-			.filter((q) => q.eq(q.field('isActive'), true))
+// Batch fetch latest scores for multiple repos
+export const batchGetLatestScores = internalQuery({
+	args: { repoIds: v.array(v.id('repos')) },
+	handler: async (ctx, { repoIds }) => {
+		if (repoIds.length === 0) return {};
+
+		// Query all scores and filter in memory
+		const allScores = await ctx.db
+			.query('repoScores')
+			.filter((q) => q.or(...repoIds.map((id) => q.eq(q.field('repoId'), id))))
 			.collect();
+
+		// Group by repoId and keep only latest per repo
+		const scoreMap: Record<string, (typeof allScores)[0]> = {};
+		for (const score of allScores) {
+			const existing = scoreMap[score.repoId];
+			if (!existing || score.calculatedAt > existing.calculatedAt) {
+				scoreMap[score.repoId] = score;
+			}
+		}
+		return scoreMap;
 	}
 });
 
@@ -162,6 +190,16 @@ export const getUserReposForReport = internalQuery({
 		return await ctx.db
 			.query('repos')
 			.withIndex('by_userId_isActive', (q) => q.eq('userId', userId).eq('isActive', true))
+			.collect();
+	}
+});
+
+export const listAllActiveRepos = internalQuery({
+	args: {},
+	handler: async (ctx) => {
+		return await ctx.db
+			.query('repos')
+			.filter((q) => q.eq(q.field('isActive'), true))
 			.collect();
 	}
 });

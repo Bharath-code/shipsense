@@ -37,9 +37,10 @@ export const runDataCollection = internalAction({
 	handler: async (ctx) => {
 		const repos = await ctx.runQuery(internal.repos.listAllActiveRepos);
 
-		for (const repo of repos) {
-			await ctx.runAction(internal.orchestrator.syncRepoNow, { repoId: repo._id });
-		}
+		// Parallelize sync for all repos
+		await Promise.all(
+			repos.map((repo) => ctx.runAction(internal.orchestrator.syncRepoNow, { repoId: repo._id }))
+		);
 	}
 });
 
@@ -48,9 +49,12 @@ export const runInsightGeneration = internalAction({
 	handler: async (ctx) => {
 		const repos = await ctx.runQuery(internal.repos.listAllActiveRepos);
 
-		for (const repo of repos) {
-			await ctx.runAction(internal.insightGenerator.generateInsights, { repoId: repo._id });
-		}
+		// Parallelize insights generation
+		await Promise.all(
+			repos.map((repo) =>
+				ctx.runAction(internal.insightGenerator.generateInsights, { repoId: repo._id })
+			)
+		);
 	}
 });
 

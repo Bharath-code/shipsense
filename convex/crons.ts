@@ -3,8 +3,8 @@ import { internal } from './_generated/api';
 
 const crons = cronJobs();
 
-// Collector Agent: runs every 6 hours
-crons.hourly('collect-repo-data', { minuteUTC: 0 }, internal.orchestrator.runDataCollection);
+// Collector Agent: runs every 6 hours (was hourly - reduced to avoid rate limits)
+crons.interval('collect-repo-data', { hours: 6 }, internal.orchestrator.runDataCollection);
 
 // Insight & Task Agents: run daily
 crons.daily(
