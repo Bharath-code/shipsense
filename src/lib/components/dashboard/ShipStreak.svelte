@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
-	import { Flame, Calendar, Trophy, Zap, AlertCircle } from 'lucide-svelte';
-	import { badgeVariants } from '$lib/components/ui/badge';
+	import { Flame, Calendar, Trophy, Zap, AlertCircle, Snowflake } from 'lucide-svelte';
 
 	let { repoId } = $props<{ repoId: string }>();
 
@@ -12,15 +10,51 @@
 
 	let streak = $derived(streakQuery.data);
 	let isLoading = $derived(streakQuery.isLoading);
+	let hasHistory = $derived(!!streak?.lastCommitDate);
+	let currentStreak = $derived(streak?.currentStreak ?? 0);
+	let longestStreak = $derived(streak?.longestStreak ?? 0);
+	let lastCommitDate = $derived(streak?.lastCommitDate ?? null);
+
+	function getDaysSince(dateString: string | undefined) {
+		if (!dateString) return null;
+
+		const today = new Date();
+		const targetDate = new Date(dateString);
+
+		today.setUTCHours(0, 0, 0, 0);
+		targetDate.setUTCHours(0, 0, 0, 0);
+
+		return Math.round((today.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
+	}
+
+	let daysSinceLastShip = $derived(getDaysSince(lastCommitDate ?? undefined));
+	let streakHeadline = $derived(() => {
+		if (!hasHistory) return 'No commitment history';
+		if (currentStreak > 0) return 'Shipping streak active';
+		return 'Streak cooled off';
+	});
 
 	// Derive status message based on streak
 	let streakStatus = $derived(() => {
-		if (!streak || streak.currentStreak === 0)
+		if (!streak || !hasHistory)
 			return {
-				text: 'Streak inactive',
+				text: 'No streak yet',
 				color: 'text-muted-foreground',
 				bg: 'bg-muted text-muted-foreground mt-2',
 				icon: AlertCircle
+			};
+
+		if (currentStreak === 0)
+			return {
+				text:
+					daysSinceLastShip === null
+						? 'Inactive'
+						: daysSinceLastShip === 0
+							? 'Awaiting next sync'
+							: `Last shipped ${daysSinceLastShip}d ago`,
+				color: 'text-muted-foreground',
+				bg: 'bg-muted text-muted-foreground mt-2',
+				icon: Snowflake
 			};
 
 		if (streak.currentStreak < 3)
@@ -54,7 +88,7 @@
 			<div class="h-24 w-24 rounded-full bg-white/10"></div>
 			<div class="h-4 w-32 rounded-full bg-white/10"></div>
 		</div>
-	{:else if !streak}
+	{:else if !hasHistory}
 		<div class="flex flex-col items-center justify-center space-y-4 py-8 text-center">
 			<div
 				class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-muted-foreground"
@@ -62,7 +96,7 @@
 				<Flame class="h-8 w-8" />
 			</div>
 			<div>
-				<h3 class="text-xl font-bold text-white/80">No commitment history</h3>
+				<h3 class="text-xl font-bold text-white/80">{streakHeadline()}</h3>
 				<p class="mt-1 text-sm text-muted-foreground/60">Push code to ignite your streak.</p>
 			</div>
 		</div>
@@ -78,15 +112,15 @@
 
 					<div
 						class={`relative z-10 flex h-32 w-32 scale-100 flex-col items-center justify-center rounded-full border-4 bg-white/5 shadow-2xl transition-all duration-500 group-hover:scale-105 ${
-							streak.currentStreak > 0
+							currentStreak > 0
 								? 'border-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]'
-								: 'border-white/10'
+								: 'border-white/10 opacity-75'
 						}`}
 					>
 						<span
 							class="bg-gradient-to-br from-white to-white/40 bg-clip-text text-5xl leading-none font-black text-transparent"
 						>
-							{streak.currentStreak}
+							{currentStreak}
 						</span>
 						<span
 							class="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
@@ -95,17 +129,25 @@
 						</span>
 					</div>
 
-					{#if streak.currentStreak > 0}
+					{#if currentStreak > 0}
 						<div
 							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-slate-900 shadow-xl"
 						>
 							<Flame
 								class={`h-6 w-6 ${streakStatus().color} animate-pulse`}
-								fill={streak.currentStreak > 2 ? 'currentColor' : 'none'}
+								fill={currentStreak > 2 ? 'currentColor' : 'none'}
 							/>
+						</div>
+					{:else}
+						<div
+							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-slate-900 shadow-xl"
+						>
+							<Snowflake class={`h-5 w-5 ${streakStatus().color}`} />
 						</div>
 					{/if}
 				</div>
+
+				<h3 class="text-lg font-bold text-white/85">{streakHeadline()}</h3>
 
 				<div
 					class={`rounded-full border px-4 py-1.5 text-xs font-bold tracking-tight shadow-lg ${
@@ -134,7 +176,7 @@
 							<Trophy class="h-3 w-3 text-warning/60" /> Hall of Fame
 						</p>
 						<p class="text-3xl font-black text-white/90">
-							{streak.longestStreak}
+							{longestStreak}
 							<span class="text-sm font-medium tracking-normal text-muted-foreground">days</span>
 						</p>
 					</div>
@@ -147,18 +189,24 @@
 						</p>
 						<p
 							class="truncate text-base font-bold text-white/80"
-							title={streak.lastCommitDate || 'Never'}
+							title={lastCommitDate || 'Never'}
 						>
-							{streak.lastCommitDate || 'Never'}
+							{lastCommitDate || 'Never'}
 						</p>
 					</div>
 				</div>
 
 				<p class="text-sm leading-relaxed text-muted-foreground/80 italic">
-					{#if streak.currentStreak > 0}
+					{#if currentStreak > 0}
 						"The momentum is real. Every commit is a brick in your legacy."
 					{:else}
-						"A fresh start is just an opportunity to build something stronger."
+						{#if daysSinceLastShip === 0}
+							"Your latest ship is in. The next sync will relight the streak."
+						{:else if daysSinceLastShip === 1}
+							"You're one ship away from getting the streak back on track."
+						{:else}
+							"A fresh start is just an opportunity to build something stronger."
+						{/if}
 					{/if}
 				</p>
 			</div>
