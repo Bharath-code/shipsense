@@ -17,7 +17,8 @@
 		AlertTriangle,
 		CheckCircle2,
 		Clock,
-		RefreshCw
+		RefreshCw,
+		Share2
 	} from 'lucide-svelte';
 
 	import InsightCard from '$lib/components/dashboard/InsightCard.svelte';
@@ -26,12 +27,19 @@
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
 
+	// Get repoId from route params
+	let repoId = $derived($page.params.repoId as string);
+
+	// Get Convex client
+	const client = useConvexClient();
+
 	// Lazy load GrowthCardModal - only load when modal opens
 	let GrowthCardModal = $state<
 		typeof import('$lib/components/dashboard/GrowthCardModal.svelte').default | null
 	>(null);
 	let showGrowthCard = $state(false);
 
+	// Load modal when opened
 	$effect(() => {
 		if (showGrowthCard && !GrowthCardModal) {
 			import('$lib/components/dashboard/GrowthCardModal.svelte').then((module) => {
@@ -40,6 +48,11 @@
 		}
 	});
 
+	// Note: We need to cast repoId to the expected type for convex-svelte
+	// This is because route params are strings but Convex expects Id<"repos">
+	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
+
+	// Helper function
 	function formatTimeAgo(timestamp: number): string {
 		const seconds = Math.floor((Date.now() - timestamp) / 1000);
 		if (seconds < 60) return 'Just now';
@@ -50,13 +63,6 @@
 		const days = Math.floor(hours / 24);
 		return `${days}d ago`;
 	}
-
-	// Using Id<"repos"> string from URL dynamically
-	let repoId = $derived($page.params.repoId);
-	const client = useConvexClient();
-
-	// Raw casting as we're passing convex string Ids
-	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
 
 	let repo = $derived(repoQuery.data);
 	let isLoading = $derived(repoQuery.isLoading);
@@ -275,14 +281,14 @@
 				<div class="w-full lg:w-auto">
 					{#if GrowthCardModal}
 						{@const GrowthCard = GrowthCardModal}
-						<GrowthCard repoId={repoId as string} />
+						<GrowthCard repoId={repoId as string} bind:open={showGrowthCard} />
 					{:else}
 						<Button
 							variant="outline"
 							class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
 							onclick={() => (showGrowthCard = true)}
 						>
-							<RefreshCw class="mr-2 h-4 w-4" />
+							<Share2 class="mr-2 h-4 w-4" />
 							Share Growth Card
 						</Button>
 					{/if}

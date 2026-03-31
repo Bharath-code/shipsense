@@ -5,8 +5,8 @@
 
 	let { repoId } = $props<{ repoId: string }>();
 
-	// Use raw context repoId
-	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId: repoId as any }));
+	// Streak query - Convex handles string to Id conversion
+	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId }));
 
 	let streak = $derived(streakQuery.data);
 	let isLoading = $derived(streakQuery.isLoading);

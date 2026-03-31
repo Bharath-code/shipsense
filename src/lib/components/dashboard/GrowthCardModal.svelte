@@ -6,14 +6,12 @@
 	import { Share2, Download, Flame, Star, GitFork, CheckCircle } from 'lucide-svelte';
 	import { toPng } from 'html-to-image';
 
-	let { repoId } = $props<{ repoId: string }>();
+	let { repoId, open = $bindable(false) } = $props<{ repoId: string; open?: boolean }>();
 
-	// Fetch real data
-	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
-	const scoreHistoryQuery = useQuery(api.dashboard.getRepoScoreHistory, () => ({
-		repoId: repoId as any
-	}));
-	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId: repoId as any }));
+	// Convex accepts string directly - no need for Id type casting
+	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId }));
+	const scoreHistoryQuery = useQuery(api.dashboard.getRepoScoreHistory, () => ({ repoId }));
+	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId }));
 
 	let repo = $derived(repoQuery.data);
 	let latestScore = $derived(
@@ -21,7 +19,6 @@
 	);
 	let streak = $derived(streakQuery.data?.currentStreak || 0);
 
-	let isOpen = $state(false);
 	let downloading = $state(false);
 	let shareSuccess = $state(false);
 	let downloadSuccess = $state(false);
@@ -71,13 +68,13 @@
 <Button
 	variant="outline"
 	class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
-	onclick={() => (isOpen = true)}
+	onclick={() => (open = true)}
 >
 	<Share2 class="mr-2 h-4 w-4" />
 	Share Growth Card
 </Button>
 
-<Dialog.Root bind:open={isOpen}>
+<Dialog.Root bind:open>
 	<Dialog.Content
 		class="overflow-hidden border-border bg-background p-0 text-foreground shadow-2xl sm:max-w-md"
 	>

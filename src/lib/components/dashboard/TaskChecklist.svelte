@@ -8,8 +8,8 @@
 
 	let { repoId } = $props<{ repoId: string }>();
 
-	// Use raw context repoId
-	const tasksQuery = useQuery(api.dashboard.getRepoTasks, () => ({ repoId: repoId as any }));
+	// Use typed query - Convex handles the type conversion internally
+	const tasksQuery = useQuery(api.dashboard.getRepoTasks, () => ({ repoId }));
 	const client = useConvexClient();
 
 	let tasks = $derived(tasksQuery.data || []);

@@ -6,10 +6,8 @@
 
 	let { repoId } = $props<{ repoId: string }>();
 
-	// Use raw context repoId
-	const scoreHistoryQuery = useQuery(api.dashboard.getRepoScoreHistory, () => ({
-		repoId: repoId as any
-	}));
+	// Score history query - Convex handles string to Id conversion
+	const scoreHistoryQuery = useQuery(api.dashboard.getRepoScoreHistory, () => ({ repoId }));
 
 	let history = $derived(scoreHistoryQuery.data || []);
 	let isLoading = $derived(scoreHistoryQuery.isLoading);

@@ -7,8 +7,8 @@
 
 	let { repoId } = $props<{ repoId: string }>();
 
-	// Fetch insights
-	const insightsQuery = useQuery(api.dashboard.getRepoInsights, () => ({ repoId: repoId as any }));
+	// Fetch insights - Convex handles string to Id conversion
+	const insightsQuery = useQuery(api.dashboard.getRepoInsights, () => ({ repoId }));
 	let insights = $derived(insightsQuery.data);
 	let isLoading = $derived(insightsQuery.isLoading);
 </script>
