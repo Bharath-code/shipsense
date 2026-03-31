@@ -84,7 +84,9 @@
 											? 'border-primary/20 bg-primary/10 text-primary'
 											: task.taskType === 'pr'
 												? 'border-blue-500/20 bg-blue-500/10 text-blue-400'
-												: 'border-white/10 bg-white/5 text-muted-foreground'
+												: task.taskType === 'anomaly'
+													? 'border-destructive/20 bg-destructive/10 text-destructive'
+													: 'border-white/10 bg-white/5 text-muted-foreground'
 									}`}
 								>
 									{task.taskType}

@@ -97,7 +97,8 @@ export default defineSchema({
 			v.literal('commit'),
 			v.literal('issue'),
 			v.literal('pr'),
-			v.literal('general')
+			v.literal('general'),
+			v.literal('anomaly')
 		),
 		priority: v.number(),
 		isCompleted: v.boolean(),

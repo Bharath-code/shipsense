@@ -60,10 +60,10 @@ export const getRepoTasks = query({
 			.withIndex('by_repoId_isCompleted', (q) =>
 				q.eq('repoId', args.repoId).eq('isCompleted', false)
 			)
-			.order('desc')
 			.collect();
 
-		return tasks;
+		// Sort by priority (1 = highest priority first)
+		return tasks.sort((a, b) => a.priority - b.priority);
 	}
 });
 

@@ -16,7 +16,8 @@
 		Trash2,
 		AlertTriangle,
 		CheckCircle2,
-		Clock
+		Clock,
+		RefreshCw
 	} from 'lucide-svelte';
 
 	import InsightCard from '$lib/components/dashboard/InsightCard.svelte';
@@ -46,6 +47,7 @@
 	let repo = $derived(repoQuery.data);
 	let isLoading = $derived(repoQuery.isLoading);
 	let isDisconnecting = $state(false);
+	let isSyncing = $state(false);
 
 	async function disconnectRepo() {
 		if (!repo || isDisconnecting) return;
@@ -61,6 +63,17 @@
 			await goto('/dashboard');
 		} finally {
 			isDisconnecting = false;
+		}
+	}
+
+	async function triggerSync() {
+		if (isSyncing) return;
+		isSyncing = true;
+		try {
+			await client.mutation(api.repos.syncConnectedRepo, { repoId: repoId as any });
+			repoQuery.refetch();
+		} finally {
+			isSyncing = false;
 		}
 	}
 </script>
@@ -85,6 +98,16 @@
 		<div class="flex items-center gap-3">
 			{#if repo}
 				<Button
+					variant="outline"
+					size="sm"
+					class="rounded-full border-white/10 bg-white/5 px-4 hover:bg-white/10"
+					disabled={isSyncing}
+					onclick={triggerSync}
+				>
+					<RefreshCw class="mr-2 h-4 w-4 {isSyncing ? 'animate-spin' : ''}" />
+					{isSyncing ? 'Syncing...' : 'Sync Now'}
+				</Button>
+				<Button
 					variant="destructive"
 					size="sm"
 					class="rounded-full px-4"
@@ -92,7 +115,7 @@
 					onclick={disconnectRepo}
 				>
 					<Trash2 class="mr-2 h-4 w-4" />
-					{isDisconnecting ? 'Disconnecting...' : 'Disconnect Repo'}
+					{isDisconnecting ? 'Disconnecting...' : 'Disconnect'}
 				</Button>
 			{/if}
 			{#if repo && repo.lastSyncedAt}

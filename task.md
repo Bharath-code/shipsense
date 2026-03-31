@@ -109,11 +109,11 @@ Focus order:
 
 ## Phase 12 — Action Engine V1
 
-- [ ] Expand task generation beyond commit gap and generic issue triage
-- [ ] Add issue-based tasks for repos with growing open issue load
-- [ ] Add PR-based tasks for repos with stale open PRs
-- [ ] Add score-drop / anomaly-triggered tasks
-- [ ] Sort and display tasks by real priority in the dashboard
+- [x] Expand task generation beyond commit gap and generic issue triage
+- [x] Add issue-based tasks for repos with growing open issue load
+- [x] Add PR-based tasks for repos with stale open PRs
+- [x] Add score-drop / anomaly-triggered tasks
+- [x] Sort and display tasks by real priority in the dashboard
 
 ## Phase 13 — Retention Loop V1
 
