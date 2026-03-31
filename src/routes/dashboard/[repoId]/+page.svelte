@@ -24,7 +24,21 @@
 	import TaskChecklist from '$lib/components/dashboard/TaskChecklist.svelte';
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
-	import GrowthCardModal from '$lib/components/dashboard/GrowthCardModal.svelte';
+	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
+
+	// Lazy load GrowthCardModal - only load when modal opens
+	let GrowthCardModal = $state<
+		typeof import('$lib/components/dashboard/GrowthCardModal.svelte').default | null
+	>(null);
+	let showGrowthCard = $state(false);
+
+	$effect(() => {
+		if (showGrowthCard && !GrowthCardModal) {
+			import('$lib/components/dashboard/GrowthCardModal.svelte').then((module) => {
+				GrowthCardModal = module.default;
+			});
+		}
+	});
 
 	function formatTimeAgo(timestamp: number): string {
 		const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -259,7 +273,19 @@
 				<div class="hidden h-16 w-px bg-white/10 lg:block"></div>
 
 				<div class="w-full lg:w-auto">
-					<GrowthCardModal repoId={repoId as string} />
+					{#if GrowthCardModal}
+						{@const GrowthCard = GrowthCardModal}
+						<GrowthCard repoId={repoId as string} />
+					{:else}
+						<Button
+							variant="outline"
+							class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
+							onclick={() => (showGrowthCard = true)}
+						>
+							<RefreshCw class="mr-2 h-4 w-4" />
+							Share Growth Card
+						</Button>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -268,14 +294,22 @@
 		<div class="grid w-full grid-cols-1 gap-8 lg:grid-cols-12">
 			<!-- Left Column (Heavy Content) -->
 			<div class="flex flex-col gap-8 lg:col-span-7 xl:col-span-8">
-				<InsightCard repoId={repoId as string} />
-				<MomentumGraph repoId={repoId as string} />
+				<ErrorBoundary>
+					<InsightCard repoId={repoId as string} />
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<MomentumGraph repoId={repoId as string} />
+				</ErrorBoundary>
 			</div>
 
 			<!-- Right Column (Widgets) -->
 			<div class="flex flex-col gap-8 lg:col-span-5 xl:col-span-4">
-				<ShipStreak repoId={repoId as string} />
-				<TaskChecklist repoId={repoId as string} />
+				<ErrorBoundary>
+					<ShipStreak repoId={repoId as string} />
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<TaskChecklist repoId={repoId as string} />
+				</ErrorBoundary>
 			</div>
 		</div>
 	{/if}

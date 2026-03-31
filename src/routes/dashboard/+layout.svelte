@@ -37,19 +37,8 @@
 <div
 	class="relative flex min-h-screen flex-col bg-background text-foreground transition-colors duration-300"
 >
-	<!-- Ambient Background Glows -->
-	<div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-		<div
-			class="absolute top-[-10%] left-[-10%] h-[40%] w-[40%] animate-float rounded-full bg-primary/20 opacity-50 blur-[120px]"
-		></div>
-		<div
-			class="absolute right-[-10%] bottom-[10%] h-[30%] w-[30%] animate-pulse rounded-full bg-success/15 opacity-40 blur-[100px]"
-		></div>
-		<div
-			class="absolute top-[30%] right-[10%] h-[25%] w-[25%] animate-float rounded-full bg-warning/10 opacity-30 blur-[80px]"
-			style="animation-delay: -2s;"
-		></div>
-	</div>
+	<!-- Ambient Background Glows - Pure CSS -->
+	<div class="pointer-events-none fixed inset-0 z-0"></div>
 
 	<!-- Floating Glass Header -->
 	<div class="fixed top-6 left-1/2 z-50 w-full max-w-5xl -translate-x-1/2 px-4">

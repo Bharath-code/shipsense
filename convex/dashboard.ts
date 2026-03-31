@@ -144,3 +144,75 @@ export const getOpenTasksForReport = internalQuery({
 			.take(5);
 	}
 });
+
+// Combined dashboard data - fetches all needed data in single query for frontend
+export const getRepoDashboardData = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
+
+		// Verify ownership
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
+
+		// Fetch all data in parallel
+		const [latestSnapshot, latestScore, insights, tasks, streak, scoreHistory] = await Promise.all([
+			// Latest snapshot
+			ctx.db
+				.query('repoSnapshots')
+				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first(),
+			// Latest score
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first(),
+			// Latest insight
+			ctx.db
+				.query('repoInsights')
+				.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first(),
+			// Open tasks
+			ctx.db
+				.query('repoTasks')
+				.withIndex('by_repoId_isCompleted', (q) =>
+					q.eq('repoId', args.repoId).eq('isCompleted', false)
+				)
+				.collect(),
+			// Streak
+			ctx.db
+				.query('shipStreaks')
+				.withIndex('by_repoId', (q) => q.eq('repoId', args.repoId))
+				.first(),
+			// Score history (last 7)
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.take(7)
+		]);
+
+		// Sort tasks by priority
+		const sortedTasks = tasks.sort((a, b) => a.priority - b.priority);
+
+		// Reverse score history to chronological order
+		const chronologicalHistory = scoreHistory.reverse();
+
+		return {
+			repo: {
+				...repo,
+				starsLast7d: latestSnapshot?.starsLast7d ?? 0
+			},
+			latestSnapshot,
+			latestScore,
+			insights,
+			tasks: sortedTasks,
+			streak,
+			scoreHistory: chronologicalHistory
+		};
+	}
+});

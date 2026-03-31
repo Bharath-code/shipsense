@@ -63,8 +63,13 @@
 	}
 
 	// Load right away or let user click
+	let hasLoaded = $state(false);
+
 	$effect(() => {
-		loadGithubRepos();
+		if (!hasLoaded && githubRepos.length === 0) {
+			hasLoaded = true;
+			loadGithubRepos();
+		}
 	});
 
 	let filteredRepos = $derived(
