@@ -83,11 +83,7 @@ export const updateStreak = internalMutation({
 			streak.lastCommitDate,
 			commitDate
 		);
-		const currentStreak = getActiveStreakCount(
-			result.currentStreak,
-			commitDate,
-			observedDate
-		);
+		const currentStreak = getActiveStreakCount(result.currentStreak, commitDate, observedDate);
 
 		if (result.broken || currentStreak === 0) {
 			await ctx.db.patch(streak._id, {

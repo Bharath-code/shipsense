@@ -41,9 +41,9 @@ describe('collector parsing logic', () => {
 		});
 
 		it('returns a normalized YYYY-MM-DD string for the latest commit', () => {
-			expect(
-				extractLatestCommitDate([{ committedDate: '2026-03-31T15:42:10.000Z' }])
-			).toBe('2026-03-31');
+			expect(extractLatestCommitDate([{ committedDate: '2026-03-31T15:42:10.000Z' }])).toBe(
+				'2026-03-31'
+			);
 		});
 	});
 });

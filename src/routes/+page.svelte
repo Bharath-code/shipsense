@@ -224,7 +224,7 @@
 					<div class="col-span-8 flex flex-col gap-6">
 						<!-- Health Score Large -->
 						<div
-							class="relative flex flex-1 flex-col justify-between overflow-hidden rounded-3xl glass-card border border-primary/20 p-6"
+							class="relative flex flex-1 flex-col justify-between overflow-hidden rounded-3xl border glass-card border-primary/20 p-6"
 						>
 							<div class="flex items-start justify-between">
 								<span class="text-xs font-bold tracking-widest text-primary/60 uppercase"
@@ -250,7 +250,7 @@
 						</div>
 						<!-- Insight Row -->
 						<div
-							class="flex h-32 items-center gap-4 rounded-3xl glass-card border border-foreground/5 p-4"
+							class="flex h-32 items-center gap-4 rounded-3xl border glass-card border-foreground/5 p-4"
 						>
 							<div
 								class="flex h-12 w-12 items-center justify-center rounded-2xl bg-success/10 text-success"
@@ -266,7 +266,7 @@
 					<!-- Right: Streak & Tasks -->
 					<div class="col-span-4 flex flex-col gap-6">
 						<div
-							class="flex h-48 flex-col justify-between rounded-3xl glass-card border border-warning/20 p-6"
+							class="flex h-48 flex-col justify-between rounded-3xl border glass-card border-warning/20 p-6"
 						>
 							<span class="text-xs font-bold tracking-widest text-warning/60 uppercase"
 								>Ship Streak</span
@@ -283,7 +283,7 @@
 								{/each}
 							</div>
 						</div>
-						<div class="flex-1 rounded-3xl glass-card border border-foreground/5 p-4">
+						<div class="flex-1 rounded-3xl border glass-card border-foreground/5 p-4">
 							<div class="flex flex-col gap-3">
 								<div class="h-3 w-full rounded bg-foreground/10"></div>
 								<div class="h-3 w-full rounded bg-foreground/10"></div>
@@ -443,7 +443,7 @@
 			<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
 				<!-- Free Plan -->
 				<div
-					class="flex flex-col rounded-[2.5rem] glass-panel border border-foreground/5 p-10 transition-colors hover:border-foreground/10"
+					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
 				>
 					<div class="mb-8">
 						<span class="text-sm font-bold tracking-widest text-foreground/40 uppercase">Free</span>
@@ -476,7 +476,7 @@
 
 				<!-- Indie Plan (Popular) -->
 				<div
-					class="relative flex flex-col overflow-hidden rounded-[2.5rem] glass-panel border border-primary/30 p-10 ring-4 ring-primary/5"
+					class="relative flex flex-col overflow-hidden rounded-[2.5rem] border glass-panel border-primary/30 p-10 ring-4 ring-primary/5"
 				>
 					<div
 						class="absolute top-0 right-0 rounded-bl-2xl bg-primary px-4 py-1.5 text-[10px] font-bold tracking-widest text-primary-foreground uppercase"
@@ -517,7 +517,7 @@
 
 				<!-- Builder Plan -->
 				<div
-					class="flex flex-col rounded-[2.5rem] glass-panel border border-foreground/5 p-10 transition-colors hover:border-foreground/10"
+					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
 				>
 					<div class="mb-8">
 						<span class="text-sm font-bold tracking-widest text-foreground/40 uppercase"

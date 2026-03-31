@@ -158,7 +158,7 @@ This project uses Convex heavily.
 
 Before editing Convex code, read:
 
-- [convex/_generated/ai/guidelines.md](./convex/_generated/ai/guidelines.md)
+- [convex/\_generated/ai/guidelines.md](./convex/_generated/ai/guidelines.md)
 
 That file contains project-specific and framework-specific rules that take priority over generic Convex habits.
 
