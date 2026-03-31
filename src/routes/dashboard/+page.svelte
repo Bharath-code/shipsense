@@ -9,7 +9,7 @@
 		CardContent
 	} from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Activity, Rocket, Zap, Clock, Star } from 'lucide-svelte';
+	import { Activity, Rocket, Zap, Clock, Star, AlertTriangle } from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import ArrowRightIcon from 'lucide-svelte/icons/arrow-right';
 
@@ -113,14 +113,24 @@
 								<h3 class="text-xl font-bold text-white/90">{repo.name}</h3>
 								<p class="text-sm text-muted-foreground/60">{repo.owner}</p>
 							</div>
-							<div
-								class={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-black shadow-[0_0_15px_rgba(var(--success-rgb),0.2)] ${
-									repo.hasScore
-										? 'border border-success/20 bg-success/10 text-success'
-										: 'border border-white/10 bg-white/5 text-muted-foreground'
-								}`}
-							>
-								{repo.hasScore ? repo.healthScore : '...'}
+							<div class="flex items-center gap-2">
+								{#if repo.lastError}
+									<div
+										class="flex h-8 w-8 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive"
+										title={repo.lastError}
+									>
+										<AlertTriangle class="h-4 w-4" />
+									</div>
+								{/if}
+								<div
+									class={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-black shadow-[0_0_15px_rgba(var(--success-rgb),0.2)] ${
+										repo.hasScore
+											? 'border border-success/20 bg-success/10 text-success'
+											: 'border border-white/10 bg-white/5 text-muted-foreground'
+									}`}
+								>
+									{repo.hasScore ? repo.healthScore : '...'}
+								</div>
 							</div>
 						</div>
 
@@ -133,7 +143,8 @@
 							</div>
 							<div class="space-y-1">
 								<div class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-									<Activity class="h-3 w-3" /> {trendLabel(repo)}
+									<Activity class="h-3 w-3" />
+									{trendLabel(repo)}
 								</div>
 								{#if !repo.hasScore}
 									<div class="text-sm font-medium text-muted-foreground">Syncing</div>

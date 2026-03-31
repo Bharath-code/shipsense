@@ -13,7 +13,10 @@
 		GitFork,
 		Lock,
 		Globe,
-		Trash2
+		Trash2,
+		AlertTriangle,
+		CheckCircle2,
+		Clock
 	} from 'lucide-svelte';
 
 	import InsightCard from '$lib/components/dashboard/InsightCard.svelte';
@@ -21,6 +24,17 @@
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
 	import GrowthCardModal from '$lib/components/dashboard/GrowthCardModal.svelte';
+
+	function formatTimeAgo(timestamp: number): string {
+		const seconds = Math.floor((Date.now() - timestamp) / 1000);
+		if (seconds < 60) return 'Just now';
+		const minutes = Math.floor(seconds / 60);
+		if (minutes < 60) return `${minutes}m ago`;
+		const hours = Math.floor(minutes / 60);
+		if (hours < 24) return `${hours}h ago`;
+		const days = Math.floor(hours / 24);
+		return `${days}d ago`;
+	}
 
 	// Using Id<"repos"> string from URL dynamically
 	let repoId = $derived($page.params.repoId);
@@ -81,13 +95,26 @@
 					{isDisconnecting ? 'Disconnecting...' : 'Disconnect Repo'}
 				</Button>
 			{/if}
+			{#if repo && repo.lastSyncedAt}
+				<div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+					<Clock class="h-3 w-3" />
+					<span>{formatTimeAgo(repo.lastSyncedAt)}</span>
+				</div>
+			{/if}
 			{#if repo}
-				<div
-					class="h-2 w-2 animate-pulse rounded-full bg-success shadow-[0_0_8px_rgba(var(--success-rgb),0.6)]"
-				></div>
-				<span class="text-xs font-medium tracking-widest text-muted-foreground uppercase"
-					>Live Sync Alpha</span
-				>
+				{#if repo.lastError}
+					<div class="flex items-center gap-2 text-destructive">
+						<AlertTriangle class="h-3 w-3" />
+						<span class="text-xs font-medium tracking-widest uppercase">Sync Error</span>
+					</div>
+				{:else}
+					<div
+						class="h-2 w-2 animate-pulse rounded-full bg-success shadow-[0_0_8px_rgba(var(--success-rgb),0.6)]"
+					></div>
+					<span class="text-xs font-medium tracking-widest text-muted-foreground uppercase"
+						>Live Sync</span
+					>
+				{/if}
 			{/if}
 		</div>
 	</div>
@@ -187,7 +214,14 @@
 						class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
 						><Star class="h-3 w-3 text-warning/60" /> Stars</span
 					>
-					<span class="text-4xl font-black text-white/90">{repo.starsCount}</span>
+					<div class="flex items-center gap-2">
+						<span class="text-4xl font-black text-white/90">{repo.starsCount}</span>
+						{#if repo.starsLast7d && repo.starsLast7d > 0}
+							<span class="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
+								+{repo.starsLast7d}
+							</span>
+						{/if}
+					</div>
 				</div>
 
 				<div class="hidden h-16 w-px bg-white/10 lg:block"></div>

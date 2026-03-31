@@ -34,6 +34,8 @@ export default defineSchema({
 		isPrivate: v.boolean(),
 		lastCommitAt: v.optional(v.number()),
 		connectedAt: v.number(),
+		lastSyncedAt: v.optional(v.number()),
+		lastError: v.optional(v.string()),
 		isActive: v.boolean()
 	})
 		.index('by_userId', ['userId'])

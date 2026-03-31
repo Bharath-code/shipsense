@@ -37,6 +37,95 @@ type GithubTokenResult = {
 	accessToken: string;
 } | null;
 
+const GITHUB_REST_URL = 'https://api.github.com';
+
+async function fetchContributors14d(
+	owner: string,
+	name: string,
+	accessToken: string
+): Promise<number> {
+	const fourteenDaysAgo = new Date();
+	fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+	const since = fourteenDaysAgo.toISOString().split('T')[0];
+
+	try {
+		const response = await fetch(
+			`${GITHUB_REST_URL}/repos/${owner}/${name}/contributors?since=${since}&per_page=100`,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					Accept: 'application/vnd.github.v3+json'
+				}
+			}
+		);
+
+		if (!response.ok) {
+			console.warn('Failed to fetch contributors:', response.status);
+			return 1;
+		}
+
+		const contributors = await response.json();
+		return Array.isArray(contributors) ? contributors.length : 1;
+	} catch (error) {
+		console.warn('Error fetching contributors:', error);
+		return 1;
+	}
+}
+
+async function fetchMedianIssueResponseHours(
+	owner: string,
+	name: string,
+	accessToken: string
+): Promise<number> {
+	try {
+		const response = await fetch(
+			`${GITHUB_REST_URL}/repos/${owner}/${name}/issues?state=closed&per_page=50`,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					Accept: 'application/vnd.github.v3+json'
+				}
+			}
+		);
+
+		if (!response.ok) {
+			console.warn('Failed to fetch issues:', response.status);
+			return 24; // default to 1 day
+		}
+
+		const issues = await response.json();
+		if (!Array.isArray(issues) || issues.length === 0) {
+			return 24;
+		}
+
+		const responseTimes: number[] = [];
+		for (const issue of issues) {
+			if (issue.pull_request) continue;
+			if (!issue.created_at || !issue.closed_at) continue;
+
+			const created = new Date(issue.created_at).getTime();
+			const closed = new Date(issue.closed_at).getTime();
+			const hours = (closed - created) / (1000 * 60 * 60);
+			if (hours > 0 && hours < 24 * 30) {
+				responseTimes.push(hours);
+			}
+		}
+
+		if (responseTimes.length === 0) {
+			return 24;
+		}
+
+		responseTimes.sort((a, b) => a - b);
+		const mid = Math.floor(responseTimes.length / 2);
+		return responseTimes.length % 2 !== 0
+			? responseTimes[mid]
+			: (responseTimes[mid - 1] + responseTimes[mid]) / 2;
+	} catch (error) {
+		console.warn('Error fetching issue response times:', error);
+		return 24;
+	}
+}
+
 // Fetch full data for a single repo
 export function processMergedPRs(nodes: any[], referenceTimeMs: number): number {
 	if (!nodes) return 0;
@@ -65,15 +154,28 @@ export function extractLatestCommitDate(commits: Array<{ committedDate: string }
 export const fetchRepoData = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }): Promise<Id<'repoSnapshots'> | null> => {
-		const repo: CollectorRepo | null = await ctx.runQuery(internal.repos.getRepoById, { repoId });
-		if (!repo) throw new Error('Repo not found');
+		console.log('[Collector] Starting fetch for repo:', repoId);
 
-		const tokens: GithubTokenResult = await ctx.runQuery(internal.users.getGithubToken, { userId: repo.userId });
+		const repo: CollectorRepo | null = await ctx.runQuery(internal.repos.getRepoById, { repoId });
+		if (!repo) {
+			console.error('[Collector] Repo not found:', repoId);
+			throw new Error('Repo not found');
+		}
+		console.log('[Collector] Found repo:', repo.fullName);
+
+		const tokens: GithubTokenResult = await ctx.runQuery(internal.users.getGithubToken, {
+			userId: repo.userId
+		});
 
 		if (!tokens || !tokens.accessToken) {
-			console.warn('No token for user', repo.userId);
+			console.error('[Collector] No token for user:', repo.userId);
+			await ctx.runMutation(internal.collector.markSyncError, {
+				repoId,
+				error: 'GitHub token not found. Please reconnect your GitHub account.'
+			});
 			return null;
 		}
+		console.log('[Collector] Got token for user');
 
 		// Detailed query to get PRs, Issues, and commits
 		const query = `
@@ -113,15 +215,33 @@ export const fetchRepoData = internalAction({
 			})
 		});
 
+		console.log('[Collector] GitHub API response status:', response.status);
+
 		if (!response.ok) {
-			console.error(`Failed to fetch repo data for ${repo.fullName}`);
+			console.error(
+				`[Collector] Failed to fetch repo data for ${repo.fullName}: ${response.status}`
+			);
+			await ctx.runMutation(internal.collector.markSyncError, {
+				repoId,
+				error: `GitHub API error: ${response.status}`
+			});
 			return null;
 		}
 
 		const json: RepoGraphQLResponse = await response.json();
-		const data = json.data?.repository;
+		console.log('[Collector] GraphQL response:', JSON.stringify(json, null, 2));
 
-		if (!data) return null;
+		const data = json.data?.repository;
+		//console.log('[Collector] Repository data:', data);
+
+		if (!data) {
+			console.error('[Collector] No data in response');
+			await ctx.runMutation(internal.collector.markSyncError, {
+				repoId,
+				error: 'Repository not found or access denied'
+			});
+			return null;
+		}
 
 		const now = Date.now();
 		const observedDate = new Date(now).toISOString().slice(0, 10);
@@ -130,19 +250,49 @@ export const fetchRepoData = internalAction({
 		const commitGapHours = processCommitGap(commits, now);
 		const latestCommitDate = extractLatestCommitDate(commits);
 
+		// Calculate starsLast7d from snapshot history
+		const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+		const oldSnapshot = await ctx.runQuery(internal.collector.getSnapshotAroundTime, {
+			repoId,
+			targetTime: sevenDaysAgo
+		});
+
+		const currentStars = data.stargazerCount;
+		console.log('[Collector] Current stars:', currentStars);
+		console.log('[Collector] Old snapshot for starsLast7d:', oldSnapshot);
+
+		const starsLast7d = oldSnapshot ? Math.max(0, currentStars - oldSnapshot.stars) : 0;
+		console.log('[Collector] Stars last 7d:', starsLast7d);
+
+		// Fetch contributors from last 14 days using REST API
+		console.log('[Collector] Fetching contributors14d...');
+		const contributors14d = await fetchContributors14d(repo.owner, repo.name, tokens.accessToken);
+		console.log('[Collector] Contributors14d:', contributors14d);
+
+		// Fetch median issue response hours from closed issues
+		console.log('[Collector] Fetching medianIssueResponseHours...');
+		const medianIssueResponseHours = await fetchMedianIssueResponseHours(
+			repo.owner,
+			repo.name,
+			tokens.accessToken
+		);
+		console.log('[Collector] Median issue response hours:', medianIssueResponseHours);
+
 		// Capture Snapshot
+		console.log('[Collector] Saving snapshot...');
 		const snapshotId = await ctx.runMutation(internal.collector.saveSnapshot, {
 			repoId,
-			stars: data.stargazerCount,
-			starsLast7d: 0, // Simplified for now
+			stars: currentStars,
+			starsLast7d,
 			issuesOpen: data.issues.totalCount,
 			prsOpen: data.pullRequests.totalCount,
 			prsMerged7d,
-			contributors14d: 1, // Requires REST API to get accurately, defaulting to 1
+			contributors14d,
 			commitGapHours,
-			medianIssueResponseHours: 12, // Simplified for now
+			medianIssueResponseHours,
 			forks: data.forkCount
 		});
+		console.log('[Collector] Snapshot saved:', snapshotId);
 
 		if (latestCommitDate) {
 			await ctx.runMutation(internal.streakTracker.updateStreak, {
@@ -170,10 +320,17 @@ export const saveSnapshot = internalMutation({
 		forks: v.number()
 	},
 	handler: async (ctx, args) => {
-		return await ctx.db.insert('repoSnapshots', {
+		const snapshotId = await ctx.db.insert('repoSnapshots', {
 			...args,
 			capturedAt: Date.now()
 		});
+
+		await ctx.db.patch(args.repoId, {
+			lastSyncedAt: Date.now(),
+			lastError: undefined
+		});
+
+		return snapshotId;
 	}
 });
 
@@ -185,5 +342,46 @@ export const getLatestSnapshot = internalQuery({
 			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repoId))
 			.order('desc')
 			.first();
+	}
+});
+
+export const getSnapshotFromDaysAgo = internalQuery({
+	args: { repoId: v.id('repos'), daysAgo: v.number() },
+	handler: async (ctx, { repoId, daysAgo }) => {
+		const now = Date.now();
+		const sevenDaysAgo = now - daysAgo * 24 * 60 * 60 * 1000;
+
+		const snapshots = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repoId))
+			.filter((q) => q.lte(q.field('capturedAt'), sevenDaysAgo))
+			.order('desc')
+			.first();
+
+		return snapshots;
+	}
+});
+
+export const getSnapshotAroundTime = internalQuery({
+	args: { repoId: v.id('repos'), targetTime: v.number() },
+	handler: async (ctx, { repoId, targetTime }) => {
+		const sevenDaysAgo = targetTime - 7 * 24 * 60 * 60 * 1000;
+
+		return await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repoId))
+			.filter((q) => q.lte(q.field('capturedAt'), sevenDaysAgo))
+			.order('desc')
+			.first();
+	}
+});
+
+export const markSyncError = internalMutation({
+	args: { repoId: v.id('repos'), error: v.string() },
+	handler: async (ctx, { repoId, error }) => {
+		await ctx.db.patch(repoId, {
+			lastError: error,
+			lastSyncedAt: Date.now()
+		});
 	}
 });

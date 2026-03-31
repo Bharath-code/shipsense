@@ -12,7 +12,7 @@ export interface PlanConfig {
 
 export const PLAN_CONFIG: Record<PlanType, PlanConfig> = {
 	free: {
-		maxRepos: 1,
+		maxRepos: 10,
 		aiModel: 'gemini-3-flash',
 		emailReports: false,
 		priorityTasks: false,

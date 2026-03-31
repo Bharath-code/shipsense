@@ -101,11 +101,11 @@ Focus order:
 
 ## Phase 11 — Data Quality Hardening
 
-- [ ] Implement real `starsLast7d` calculation from snapshot history
-- [ ] Replace placeholder `contributors14d` metric with real GitHub-derived data
-- [ ] Replace placeholder `medianIssueResponseHours` with real issue-response metric
-- [ ] Store and expose last synced timestamp per repository
-- [ ] Add collector error handling and visible sync failure states in the UI
+- [x] Implement real `starsLast7d` calculation from snapshot history
+- [x] Replace placeholder `contributors14d` metric with real GitHub-derived data
+- [x] Replace placeholder `medianIssueResponseHours` with real issue-response metric
+- [x] Store and expose last synced timestamp per repository
+- [x] Add collector error handling and visible sync failure states in the UI
 
 ## Phase 12 — Action Engine V1
 

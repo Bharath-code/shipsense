@@ -11,7 +11,16 @@ export const getRepoDetails = query({
 		const repo = await ctx.db.get(args.repoId);
 		if (!repo || repo.userId !== userId) return null;
 
-		return repo;
+		const latestSnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
+
+		return {
+			...repo,
+			starsLast7d: latestSnapshot?.starsLast7d ?? 0
+		};
 	}
 });
 

@@ -5,12 +5,29 @@ import { v } from 'convex/values';
 export const syncRepoNow = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
-		const snapshotId = await ctx.runAction(internal.collector.fetchRepoData, { repoId });
-		if (!snapshotId) return;
+		console.log('[Orchestrator] Starting sync for repo:', repoId);
 
-		await ctx.runMutation(internal.scorer.calculateScore, { repoId, snapshotId });
-		await ctx.runAction(internal.taskGenerator.generateTasks, { repoId });
-		await ctx.runAction(internal.insightGenerator.generateInsights, { repoId });
+		try {
+			const snapshotId = await ctx.runAction(internal.collector.fetchRepoData, { repoId });
+			if (!snapshotId) {
+				console.log('[Orchestrator] No snapshot created, stopping');
+				return;
+			}
+			console.log('[Orchestrator] Snapshot created:', snapshotId);
+
+			await ctx.runMutation(internal.scorer.calculateScore, { repoId, snapshotId });
+			console.log('[Orchestrator] Score calculated');
+
+			await ctx.runAction(internal.taskGenerator.generateTasks, { repoId });
+			console.log('[Orchestrator] Tasks generated');
+
+			await ctx.runAction(internal.insightGenerator.generateInsights, { repoId });
+			console.log('[Orchestrator] Insights generated');
+
+			console.log('[Orchestrator] Sync complete for repo:', repoId);
+		} catch (error) {
+			console.error('[Orchestrator] Sync failed for repo:', repoId, error);
+		}
 	}
 });
 
