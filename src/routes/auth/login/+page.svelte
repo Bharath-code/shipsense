@@ -96,9 +96,16 @@
 				{/if}
 			</Button>
 
-			<p class="text-center text-xs text-muted-foreground">
-				By continuing, you grant read access to your public repositories.
-			</p>
+			<div class="rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-left">
+				<p class="text-[11px] font-semibold tracking-wide text-foreground/80 uppercase">
+					GitHub Access
+				</p>
+				<div class="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
+					<p>Profile and email</p>
+					<p>Repository metadata for connected repositories</p>
+					<p>Private repository access only if you choose to connect private repos</p>
+				</div>
+			</div>
 		</CardContent>
 	</Card>
 </div>
