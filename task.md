@@ -92,7 +92,7 @@ Focus order:
 ## Phase 10 — Reality Check Fixes (Next)
 
 - [x] Wire ship streak updates into the sync pipeline
-- [ ] Compute streak from latest commit date instead of leaving streak data stale
+- [x] Compute streak from latest commit date instead of leaving streak data stale
 - [ ] Verify streak UI reflects real repository activity
 - [ ] Replace placeholder score trend logic with real previous-vs-current comparison
 - [ ] Fix plan limits so paid tiers are strictly better than free

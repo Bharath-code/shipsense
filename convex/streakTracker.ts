@@ -1,21 +1,26 @@
 import { internalMutation } from './_generated/server';
 import { v } from 'convex/values';
 
+function normalizeDate(dateStr: string) {
+	const date = new Date(dateStr);
+	date.setUTCHours(0, 0, 0, 0);
+	return date;
+}
+
+export function getDayDifference(fromDateStr: string, toDateStr: string) {
+	const fromDate = normalizeDate(fromDateStr);
+	const toDate = normalizeDate(toDateStr);
+
+	return Math.round((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 export function calculateNewStreak(
 	currentStreak: number,
 	longestStreak: number,
 	lastCommitDateStr: string,
 	newCommitDateStr: string
 ) {
-	const lastDate = new Date(lastCommitDateStr);
-	const newDate = new Date(newCommitDateStr);
-
-	// Set both dates to midnight to calculate correctly across timezones
-	lastDate.setUTCHours(0, 0, 0, 0);
-	newDate.setUTCHours(0, 0, 0, 0);
-
-	const diffTime = Math.abs(newDate.getTime() - lastDate.getTime());
-	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	const diffDays = Math.abs(getDayDifference(lastCommitDateStr, newCommitDateStr));
 
 	if (diffDays === 1) {
 		// Clean increment
@@ -38,9 +43,22 @@ export function calculateNewStreak(
 	return { currentStreak, longestStreak, broken: false };
 }
 
+export function getActiveStreakCount(
+	currentStreak: number,
+	lastCommitDateStr: string,
+	observedDateStr: string
+) {
+	const daysSinceLastCommit = getDayDifference(lastCommitDateStr, observedDateStr);
+	return daysSinceLastCommit <= 1 ? currentStreak : 0;
+}
+
 export const updateStreak = internalMutation({
-	args: { repoId: v.id('repos'), commitDate: v.string() }, // Accept standard YYYY-MM-DD
-	handler: async (ctx, { repoId, commitDate }) => {
+	args: {
+		repoId: v.id('repos'),
+		commitDate: v.string(),
+		observedDate: v.string()
+	}, // Accept standard YYYY-MM-DD
+	handler: async (ctx, { repoId, commitDate, observedDate }) => {
 		const streak = await ctx.db
 			.query('shipStreaks')
 			.withIndex('by_repoId', (q) => q.eq('repoId', repoId))
@@ -48,11 +66,13 @@ export const updateStreak = internalMutation({
 
 		if (!streak) {
 			// First commit streak initialization
+			const currentStreak = getActiveStreakCount(1, commitDate, observedDate);
 			await ctx.db.insert('shipStreaks', {
 				repoId,
-				currentStreak: 1,
+				currentStreak,
 				longestStreak: 1,
-				lastCommitDate: commitDate
+				lastCommitDate: commitDate,
+				streakBrokenAt: currentStreak === 0 ? Date.now() : undefined
 			});
 			return;
 		}
@@ -63,16 +83,22 @@ export const updateStreak = internalMutation({
 			streak.lastCommitDate,
 			commitDate
 		);
+		const currentStreak = getActiveStreakCount(
+			result.currentStreak,
+			commitDate,
+			observedDate
+		);
 
-		if (result.broken) {
+		if (result.broken || currentStreak === 0) {
 			await ctx.db.patch(streak._id, {
-				currentStreak: result.currentStreak,
+				currentStreak,
+				longestStreak: result.longestStreak,
 				lastCommitDate: commitDate,
 				streakBrokenAt: Date.now()
 			});
 		} else {
 			await ctx.db.patch(streak._id, {
-				currentStreak: result.currentStreak,
+				currentStreak,
 				longestStreak: result.longestStreak,
 				lastCommitDate: commitDate
 			});

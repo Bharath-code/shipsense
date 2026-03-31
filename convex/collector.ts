@@ -126,6 +126,7 @@ export const fetchRepoData = internalAction({
 		if (!data) return null;
 
 		const now = Date.now();
+		const observedDate = new Date(now).toISOString().slice(0, 10);
 		const prsMerged7d = processMergedPRs(data.mergedPRs?.nodes || [], now);
 		const commits = data.defaultBranchRef?.target?.history?.nodes || [];
 		const commitGapHours = processCommitGap(commits, now);
@@ -148,7 +149,8 @@ export const fetchRepoData = internalAction({
 		if (latestCommitDate) {
 			await ctx.runMutation(internal.streakTracker.updateStreak, {
 				repoId,
-				commitDate: latestCommitDate
+				commitDate: latestCommitDate,
+				observedDate
 			});
 		}
 
