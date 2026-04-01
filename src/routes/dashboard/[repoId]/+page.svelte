@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { LABELS, MESSAGES } from '$lib/constants/labels';
+	import Toast from '$lib/components/ui/toast/toast.svelte';
 	import {
 		ArrowLeft,
 		GitBranch,
@@ -69,6 +71,45 @@
 	let isLoading = $derived(repoQuery.isLoading);
 	let isDisconnecting = $state(false);
 	let isSyncing = $state(false);
+
+	// Toast state for first sync prompt
+	let showFirstSyncToast = $state(false);
+	let toastDismissed = $state(false);
+
+	// Check localStorage on mount to see if user previously dismissed
+	$effect(() => {
+		if (!browser) return;
+		const dismissed = localStorage.getItem(`shipsense_toast_dismissed_${repoId}`);
+		if (dismissed) {
+			toastDismissed = true;
+		}
+	});
+
+	// Check if first sync completed and show toast
+	$effect(() => {
+		if (!browser || !repo || toastDismissed) return;
+
+		// Check if we have sync data (first sync completed)
+		if (repo.lastSyncedAt) {
+			// Show toast after a short delay to let the UI settle
+			const timer = setTimeout(() => {
+				if (!toastDismissed) {
+					showFirstSyncToast = true;
+				}
+			}, 2000);
+
+			return () => clearTimeout(timer);
+		}
+	});
+
+	function dismissToast() {
+		showFirstSyncToast = false;
+		toastDismissed = true;
+		// Store in localStorage to not show again
+		if (browser) {
+			localStorage.setItem(`shipsense_toast_dismissed_${repoId}`, 'true');
+		}
+	}
 
 	async function disconnectRepo() {
 		if (!repo || isDisconnecting) return;
@@ -319,4 +360,33 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- First sync toast prompt -->
+	<Toast
+		bind:open={showFirstSyncToast}
+		title={LABELS.TOAST_FIRST_SYNC_TITLE}
+		message={LABELS.TOAST_FIRST_SYNC_MESSAGE}
+		type="success"
+	>
+		<div class="mt-3 flex gap-2">
+			<Button
+				size="sm"
+				class="h-8 rounded-lg bg-emerald-500 font-semibold text-white hover:bg-emerald-600"
+				onclick={() => {
+					showFirstSyncToast = false;
+					showGrowthCard = true;
+				}}
+			>
+				{LABELS.TOAST_SHARE_NOW}
+			</Button>
+			<Button
+				size="sm"
+				variant="ghost"
+				class="h-8 rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
+				onclick={dismissToast}
+			>
+				{LABELS.TOAST_LATER}
+			</Button>
+		</div>
+	</Toast>
 </div>

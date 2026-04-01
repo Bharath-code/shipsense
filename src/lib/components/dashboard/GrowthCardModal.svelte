@@ -4,12 +4,20 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { LABELS } from '$lib/constants/labels';
-	import { Share2, Download, Flame, Star, GitFork, CheckCircle } from 'lucide-svelte';
+	import {
+		Share2,
+		Download,
+		Flame,
+		Star,
+		GitFork,
+		CheckCircle,
+		TrendingUp,
+		Activity
+	} from 'lucide-svelte';
 	import { toPng } from 'html-to-image';
 
 	let { repoId, open = $bindable(false) } = $props<{ repoId: string; open?: boolean }>();
 
-	// Convex accepts string directly - no need for Id type casting
 	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId }));
 	const scoreHistoryQuery = useQuery(api.dashboard.getRepoScoreHistory, () => ({ repoId }));
 	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId }));
@@ -19,10 +27,32 @@
 		scoreHistoryQuery.data?.[scoreHistoryQuery.data.length - 1]?.healthScore || 0
 	);
 	let streak = $derived(streakQuery.data?.currentStreak || 0);
+	let starsLast7d = $derived(repo?.starsLast7d || 0);
+	let lastCommit = $derived(repo?.lastCommitAt ? getDaysAgo(repo.lastCommitAt) : null);
 
 	let downloading = $state(false);
 	let shareSuccess = $state(false);
 	let downloadSuccess = $state(false);
+
+	function getDaysAgo(timestamp: number): string {
+		const days = Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
+		if (days === 0) return 'today';
+		if (days === 1) return 'yesterday';
+		return `${days} days ago`;
+	}
+
+	function getShareMessage(): string {
+		if (streak >= 7) {
+			return `🔥 ${streak} day commit streak on ${repo?.name}! My repo health is ${latestScore}/100. Ship with me 🚀 #OpenSource #DevCommunity`;
+		}
+		if (latestScore >= 80) {
+			return `🎯 My ${repo?.name} repo hit ${latestScore}/100 health score on ShipSense! Time to ship more 🚀`;
+		}
+		if (starsLast7d > 0) {
+			return `📈 ${repo?.name} grew to ${repo?.starsCount} stars (+${starsLast7d} this week!) - tracking with @ShipSense`;
+		}
+		return `🚀 Just connected ${repo?.name} to ShipSense! Health Score: ${latestScore}/100. Let me track this OSS journey!`;
+	}
 
 	async function downloadCard() {
 		downloading = true;
@@ -35,12 +65,12 @@
 			}
 
 			const dataUrl = await toPng(cardElement, {
-				backgroundColor: '#020617',
+				backgroundColor: '#0a0a0f',
 				pixelRatio: 2
 			});
 
 			const link = document.createElement('a');
-			link.download = `${repo?.name || 'repo'}-growth-card.png`;
+			link.download = `${repo?.name || 'repo'}-shipsense-card.png`;
 			link.href = dataUrl;
 			link.click();
 
@@ -48,14 +78,13 @@
 			setTimeout(() => (downloadSuccess = false), 3000);
 		} catch (err) {
 			console.error('Download failed:', err);
-			alert('Failed to download card');
 		} finally {
 			downloading = false;
 		}
 	}
 
 	function shareToTwitter() {
-		const text = `Just hit a ${streak} day commit streak on ${repo?.name}! My repo Health Score is ${latestScore}/100 🚀`;
+		const text = getShareMessage();
 		const url = 'https://shipsense.dev';
 		window.open(
 			`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
@@ -63,6 +92,19 @@
 		);
 		shareSuccess = true;
 		setTimeout(() => (shareSuccess = false), 3000);
+	}
+
+	function getScoreColor(score: number): string {
+		if (score >= 80) return 'from-emerald-500 to-cyan-500';
+		if (score >= 60) return 'from-amber-500 to-orange-500';
+		return 'from-rose-500 to-red-500';
+	}
+
+	function getScoreLabel(score: number): string {
+		if (score >= 80) return 'ELITE';
+		if (score >= 60) return 'HEALTHY';
+		if (score >= 40) return 'FAIR';
+		return 'NEEDS LOVE';
 	}
 </script>
 
@@ -80,148 +122,212 @@
 	<Dialog.Content
 		class="overflow-hidden border-border bg-background p-0 text-foreground shadow-2xl sm:max-w-md"
 	>
-		<!-- Growth Card Canvas (The part that gets shared) -->
-		<div
-			id="growth-card-canvas"
-			class="relative overflow-hidden glass-panel bg-slate-950 p-10 select-none"
-		>
-			<!-- Advanced background architecture -->
+		<!-- Growth Card Canvas -->
+		<div id="growth-card-canvas" class="relative overflow-hidden bg-[#0a0a0f] p-8 select-none">
+			<!-- Animated Background -->
+			<div class="absolute inset-0 overflow-hidden">
+				<div
+					class="absolute -top-1/2 -right-1/4 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-violet-600/30 to-transparent blur-3xl"
+				></div>
+				<div
+					class="absolute -bottom-1/2 -left-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-cyan-500/20 to-transparent blur-3xl"
+				></div>
+				<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+					<div
+						class="h-[800px] w-[800px] animate-spin rounded-full bg-gradient-to-r from-transparent via-white/5 to-transparent"
+						style="animation-duration: 20s;"
+					></div>
+				</div>
+			</div>
+
+			<!-- Grid Pattern -->
 			<div
-				class="pointer-events-none absolute -top-40 -right-40 h-80 w-80 animate-pulse rounded-full bg-primary/20 blur-[100px]"
-			></div>
-			<div
-				class="pointer-events-none absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-indigo-500/10 blur-[100px]"
-			></div>
-			<div
-				class="pointer-events-none absolute top-1/2 left-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 opacity-10"
-				style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 24px 24px;"
+				class="absolute inset-0 opacity-[0.03]"
+				style="background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 40px 40px;"
 			></div>
 
 			<!-- Card Content -->
 			<div class="relative z-10 flex h-full flex-col">
-				<!-- Brand Header -->
-				<div class="mb-10 flex items-center justify-between opacity-60">
+				<!-- Top Bar -->
+				<div class="mb-6 flex items-center justify-between">
 					<div class="flex items-center gap-3">
 						<div
-							class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/20 bg-white/10"
+							class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500"
 						>
-							<span class="text-xs font-black tracking-tighter text-white">SS</span>
+							<Activity class="h-4 w-4 text-white" />
 						</div>
-						<span class="text-[10px] font-black tracking-[0.3em] text-white uppercase"
-							>ShipSense Intelligence</span
-						>
+						<div>
+							<span class="block text-xs font-bold tracking-wider text-white">ShipSense</span>
+							<span class="text-[10px] text-white/40">Repo Health Tracker</span>
+						</div>
 					</div>
-					<span class="font-mono text-[10px] tracking-widest text-white/40 uppercase"
-						>Snapshot // {new Date().getFullYear()}</span
+					<div
+						class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5"
 					>
+						{#if repo?.language}
+							<span class="text-[10px] font-medium text-white/80">{repo.language}</span>
+						{/if}
+						<span class="text-[10px] font-medium text-white/40">•</span>
+						<span class="text-[10px] text-white/40">{lastCommit || 'New'}</span>
+					</div>
 				</div>
 
-				<!-- Repo Info -->
-				<div class="mb-12 space-y-2">
+				<!-- Repo Name & Badge -->
+				<div class="mb-8">
 					<div
-						class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1"
+						class="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1"
 					>
-						<Star class="h-3 w-3 fill-primary text-primary" />
-						<span class="text-[10px] font-black tracking-widest text-primary uppercase"
-							>ELITE REPOSITORY</span
+						<span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
+						<span class="text-[10px] font-bold tracking-widest text-emerald-400 uppercase"
+							>{getScoreLabel(latestScore)}</span
 						>
 					</div>
-					<h2 class="text-4xl leading-none font-black tracking-tighter text-white">
+					<h2 class="text-4xl font-black tracking-tight text-white">
 						{repo?.name || 'Loading...'}
 					</h2>
-					<p class="text-lg font-medium text-white/40">{repo?.owner}</p>
+					<p class="text-sm font-medium text-white/40">{repo?.owner}</p>
 				</div>
 
-				<!-- Metrics Grid -->
-				<div class="mb-6 grid grid-cols-2 gap-6">
-					<div
-						class="group/m relative flex flex-col items-center justify-center space-y-2 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl"
-					>
-						<div
-							class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 transition-opacity group-hover/m:opacity-100"
-						></div>
-						<span
-							class="relative z-10 text-[10px] font-black tracking-[0.2em] text-white/40 uppercase"
-							>Health Index</span
-						>
-						<div class="relative z-10 flex items-baseline gap-1">
-							<span class="text-5xl font-black text-white">{latestScore}</span>
-							<span class="text-xs font-bold text-primary/60">/ 100</span>
+				<!-- Main Score Display -->
+				<div class="mb-8 flex items-center gap-8">
+					<!-- Health Score Ring -->
+					<div class="relative flex-shrink-0">
+						<svg class="h-32 w-32 -rotate-90" viewBox="0 0 100 100">
+							<circle
+								cx="50"
+								cy="50"
+								r="42"
+								fill="none"
+								stroke="rgba(255,255,255,0.1)"
+								stroke-width="8"
+							/>
+							<circle
+								cx="50"
+								cy="50"
+								r="42"
+								fill="none"
+								stroke="url(#scoreGradient)"
+								stroke-width="8"
+								stroke-linecap="round"
+								stroke-dasharray={264}
+								stroke-dashoffset={264 - (264 * latestScore) / 100}
+								class="transition-all duration-1000 ease-out"
+							/>
+							<defs>
+								<linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+									<stop offset="0%" class="stop-color: rgb(16, 185, 129)" />
+									<stop offset="100%" class="stop-color: rgb(6, 182, 212)" />
+								</linearGradient>
+							</defs>
+						</svg>
+						<div class="absolute inset-0 flex items-center justify-center">
+							<div class="text-center">
+								<span class="block text-4xl font-black text-white">{latestScore}</span>
+								<span class="text-[10px] text-white/40">HEALTH</span>
+							</div>
 						</div>
 					</div>
 
-					<div
-						class="group/s relative flex flex-col items-center justify-center space-y-2 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl"
-					>
-						<div
-							class="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 transition-opacity group-hover/s:opacity-100"
-						></div>
-						<span
-							class="relative z-10 flex items-center gap-2 text-[10px] font-black tracking-[0.2em] text-white/40 uppercase"
-							><Flame class="h-3 w-3 text-rose-500" /> Ship Streak</span
-						>
-						<div class="relative z-10 flex items-baseline gap-2">
-							<span class="text-5xl font-black text-white">{streak}</span>
-							<span class="text-xs font-bold text-rose-500/60 uppercase">Days</span>
+					<!-- Stats Grid -->
+					<div class="grid grid-cols-2 gap-4">
+						<!-- Streak -->
+						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+							<div class="mb-1 flex items-center gap-1">
+								<Flame class="h-3 w-3 text-orange-500" />
+								<span class="text-[10px] font-medium text-white/40">STREAK</span>
+							</div>
+							<div class="flex items-baseline gap-1">
+								<span class="text-2xl font-black text-white">{streak}</span>
+								<span class="text-xs text-orange-500">days</span>
+							</div>
+						</div>
+
+						<!-- Stars -->
+						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+							<div class="mb-1 flex items-center gap-1">
+								<Star class="h-3 w-3 text-amber-400" />
+								<span class="text-[10px] font-medium text-white/40">STARS</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-2xl font-black text-white">{repo?.starsCount || 0}</span>
+								{#if starsLast7d > 0}
+									<span class="flex items-center text-xs font-bold text-emerald-400">
+										<TrendingUp class="h-2 w-2" />
+										+{starsLast7d}
+									</span>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Forks -->
+						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+							<div class="mb-1 flex items-center gap-1">
+								<GitFork class="h-3 w-3 text-blue-400" />
+								<span class="text-[10px] font-medium text-white/40">FORKS</span>
+							</div>
+							<span class="text-2xl font-black text-white">{repo?.forksCount || 0}</span>
+						</div>
+
+						<!-- Description -->
+						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+							<div class="mb-1">
+								<span class="text-[10px] font-medium text-white/40">STATUS</span>
+							</div>
+							<span class="block truncate text-sm font-medium text-white/80">
+								{repo?.description?.slice(0, 20) || 'No description'}
+							</span>
 						</div>
 					</div>
 				</div>
 
-				<!-- Lower Footer -->
-				<div class="mt-6 flex items-center justify-between border-t border-white/10 px-2 pt-8">
-					<div class="flex items-center gap-8">
-						<div class="flex items-center gap-3">
-							<Star class="h-5 w-5 text-white/20" />
-							<span class="text-lg font-black text-white/80">{repo?.starsCount || 0}</span>
-						</div>
-						<div class="flex items-center gap-3">
-							<GitFork class="h-5 w-5 text-white/20" />
-							<span class="text-lg font-black text-white/80">{repo?.forksCount || 0}</span>
-						</div>
+				<!-- Bottom Footer -->
+				<div class="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
+					<div class="text-[10px] text-white/30">
+						Track your OSS journey at <span class="text-white/50">shipsense.dev</span>
 					</div>
-					<div class="font-mono text-[10px] tracking-widest text-white/20 uppercase">
-						verified by shipsense
+					<div class="flex items-center gap-2">
+						<div class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></div>
+						<span class="text-[10px] text-white/40">LIVE</span>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- Modal Actions -->
-		<div class="grid grid-cols-1 gap-4 border-t border-white/10 bg-black/40 p-10 sm:grid-cols-2">
+		<!-- Action Buttons - Share Primary -->
+		<div class="grid grid-cols-1 gap-3 border-t border-white/10 bg-black/60 p-6">
 			<Button
-				variant="default"
-				class="h-14 rounded-2xl bg-white text-base font-black text-black transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
+				class="h-12 w-full rounded-xl bg-[#000000] text-base font-bold text-white transition-all hover:bg-[#1a1a1a] active:scale-[0.98]"
+				onclick={shareToTwitter}
+				aria-label="Share on X"
+			>
+				{#if shareSuccess}
+					<CheckCircle class="mr-2 h-5 w-5 text-emerald-400" />
+					{LABELS.SHARED}
+				{:else}
+					<svg class="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+						<path
+							d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+						/>
+					</svg>
+					Share on X
+				{/if}
+			</Button>
+			<Button
+				variant="outline"
+				class="h-11 w-full rounded-xl border-white/20 bg-white/5 text-sm font-medium text-white/80 hover:bg-white/10"
 				onclick={downloadCard}
 				disabled={downloading}
 				aria-label={LABELS.DOWNLOAD_IMAGE}
 			>
 				{#if downloadSuccess}
-					<CheckCircle class="mr-3 h-5 w-5 text-green-500" />
+					<CheckCircle class="mr-2 h-4 w-4 text-emerald-400" />
 					{LABELS.DOWNLOADED}
 				{:else if downloading}
-					<Download class="mr-3 h-5 w-5 animate-pulse" />
-					GENERATING...
+					<Download class="mr-2 h-4 w-4 animate-pulse" />
+					Generating...
 				{:else}
-					<Download class="mr-3 h-5 w-5" />
+					<Download class="mr-2 h-4 w-4" />
 					{LABELS.DOWNLOAD_IMAGE}
-				{/if}
-			</Button>
-			<Button
-				variant="outline"
-				class="h-14 rounded-2xl border-white/10 bg-white/5 text-base font-black text-white transition-all hover:bg-white/10 active:scale-95"
-				onclick={shareToTwitter}
-				aria-label={LABELS.SHARE_TO_TWITTER}
-			>
-				{#if shareSuccess}
-					<CheckCircle class="mr-3 h-5 w-5 text-green-500" />
-					{LABELS.SHARED}
-				{:else}
-					<svg class="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-						<path
-							d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-						/>
-					</svg>
-					SHARE ON X
 				{/if}
 			</Button>
 		</div>

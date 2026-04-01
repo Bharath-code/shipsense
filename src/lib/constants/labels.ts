@@ -57,7 +57,13 @@ export const LABELS = {
 	// Errors
 	ERROR_LOADING: 'Error loading data',
 	ERROR_SYNC: 'Sync failed',
-	ERROR_CONNECT: 'Failed to connect repository'
+	ERROR_CONNECT: 'Failed to connect repository',
+
+	// Toast notifications
+	TOAST_FIRST_SYNC_TITLE: '🎉 Your first health snapshot!',
+	TOAST_FIRST_SYNC_MESSAGE: 'Share your starter card and show your OSS journey.',
+	TOAST_SHARE_NOW: 'Share Starter Card',
+	TOAST_LATER: 'Later'
 } as const;
 
 export const MESSAGES = {
