@@ -68,7 +68,7 @@
 		>
 			<a
 				href="/"
-				class="flex items-center gap-2 font-mono font-bold tracking-tighter transition-opacity hover:opacity-80"
+				class="flex cursor-pointer items-center gap-2 font-mono font-bold tracking-tighter transition-opacity hover:opacity-80"
 			>
 				<div
 					class="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] lg:h-8 lg:w-8 lg:rounded-lg"
@@ -81,7 +81,7 @@
 			<nav class="flex items-center space-x-0.5 text-xs font-medium lg:space-x-1 lg:text-sm">
 				<a
 					href="/dashboard"
-					class="rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page
+					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page
 						.url.pathname === '/dashboard'
 						? 'bg-white/10 text-foreground'
 						: 'text-muted-foreground hover:text-foreground'}"
@@ -91,7 +91,7 @@
 				</a>
 				<a
 					href="/dashboard/connect"
-					class="rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page.url.pathname.includes(
+					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page.url.pathname.includes(
 						'/connect'
 					)
 						? 'bg-white/10 text-foreground'
@@ -102,7 +102,7 @@
 				</a>
 				<a
 					href="/dashboard/settings"
-					class="rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page.url.pathname.includes(
+					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page.url.pathname.includes(
 						'/settings'
 					)
 						? 'bg-white/10 text-foreground'

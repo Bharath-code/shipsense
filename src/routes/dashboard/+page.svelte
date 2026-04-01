@@ -169,7 +169,7 @@
 			{#each repos as repo}
 				<a
 					href={`/dashboard/${repo._id}`}
-					class="group transition-transform group-hover:scale-[1.02]"
+					class="group cursor-pointer transition-transform group-hover:scale-[1.02]"
 				>
 					<div
 						class="relative flex h-full flex-col overflow-hidden rounded-3xl border glass-card p-8"

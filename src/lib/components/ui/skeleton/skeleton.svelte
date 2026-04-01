@@ -14,7 +14,7 @@
 {#if variant === 'shimmer'}
 	<div class={cn('relative overflow-hidden rounded-md bg-muted', className)} {...rest}>
 		<div
-			class="animate-shimmer absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent"
+			class="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent"
 		></div>
 	</div>
 {:else if variant === 'text'}
