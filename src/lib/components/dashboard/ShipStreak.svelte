@@ -101,9 +101,9 @@
 			</div>
 		</div>
 	{:else}
-		<div class="flex flex-col items-center justify-between gap-10 lg:flex-row">
+		<div class="flex flex-col items-center gap-8">
 			<!-- Main Streak Readout -->
-			<div class="flex flex-col items-center justify-center space-y-4">
+			<div class="flex flex-col items-center space-y-4">
 				<div class="relative">
 					<!-- Radial Glow -->
 					<div
@@ -163,15 +163,14 @@
 			</div>
 
 			<!-- Divider -->
-			<div class="hidden h-32 w-px bg-white/10 lg:block"></div>
-			<div class="h-px w-full bg-white/10 lg:hidden"></div>
+			<div class="h-px w-full bg-white/10"></div>
 
 			<!-- Details -->
-			<div class="w-full flex-1 space-y-6 text-center lg:text-left">
+			<div class="w-full space-y-6 text-center">
 				<div class="grid grid-cols-2 gap-6">
 					<div class="space-y-2">
 						<p
-							class="flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
+							class="flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 						>
 							<Trophy class="h-3 w-3 text-warning/60" /> Hall of Fame
 						</p>
@@ -183,7 +182,7 @@
 
 					<div class="space-y-2">
 						<p
-							class="flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
+							class="flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 						>
 							<Calendar class="h-3 w-3 text-primary/60" /> Last Ship
 						</p>
