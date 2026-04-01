@@ -238,7 +238,7 @@
 							<div class="flex items-end gap-4">
 								<span class="text-6xl font-bold tracking-tighter">84</span>
 								<div class="flex flex-col pb-1">
-									<span class="text-xs font-bold text-foreground/40">OPTIMAL</span>
+									<span class="text-xs font-bold text-muted-foreground">OPTIMAL</span>
 									<div class="mt-1 flex gap-0.5">
 										<div class="h-1 w-4 rounded-full bg-success"></div>
 										<div class="h-1 w-4 rounded-full bg-success"></div>
@@ -273,7 +273,7 @@
 							>
 							<div class="py-2 text-center">
 								<span class="text-5xl font-bold">14</span>
-								<span class="block text-sm font-bold text-foreground/40">DAYS</span>
+								<span class="block text-sm font-bold text-muted-foreground">DAYS</span>
 							</div>
 							<div class="flex items-center justify-between px-2">
 								{#each Array(7) as _, i}
@@ -446,10 +446,12 @@
 					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
 				>
 					<div class="mb-8">
-						<span class="text-sm font-bold tracking-widest text-foreground/40 uppercase">Free</span>
+						<span class="text-sm font-bold tracking-widest text-muted-foreground uppercase"
+							>Free</span
+						>
 						<div class="mt-4 flex items-end gap-1">
 							<span class="text-4xl font-bold">$0</span>
-							<span class="mb-1 text-foreground/40">/mo</span>
+							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
 					<div class="mb-10 flex-1 space-y-4">
@@ -462,8 +464,8 @@
 							<span class="text-foreground/70">Daily Health Monitoring</span>
 						</div>
 						<div class="flex items-center gap-3 opacity-30">
-							<Check size={16} class="text-foreground/40" />
-							<span class="text-foreground/40 line-through">Gemini Deep Insights</span>
+							<Check size={16} class="text-muted-foreground" />
+							<span class="text-muted-foreground line-through">Gemini Deep Insights</span>
 						</div>
 					</div>
 					<Button
@@ -487,7 +489,7 @@
 						<span class="text-sm font-bold tracking-widest text-primary uppercase">Indie</span>
 						<div class="mt-4 flex items-end gap-1">
 							<span class="text-4xl font-bold">$12</span>
-							<span class="mb-1 text-foreground/40">/mo</span>
+							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
 					<div class="mb-10 flex-1 space-y-4">
@@ -520,12 +522,12 @@
 					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
 				>
 					<div class="mb-8">
-						<span class="text-sm font-bold tracking-widest text-foreground/40 uppercase"
+						<span class="text-sm font-bold tracking-widest text-muted-foreground uppercase"
 							>Builder</span
 						>
 						<div class="mt-4 flex items-end gap-1">
 							<span class="text-4xl font-bold">$49</span>
-							<span class="mb-1 text-foreground/40">/mo</span>
+							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
 					<div class="mb-10 flex-1 space-y-4">
@@ -556,7 +558,7 @@
 			</div>
 
 			<div class="mt-16 text-center">
-				<div class="inline-flex items-center gap-2 text-sm text-foreground/40">
+				<div class="inline-flex items-center gap-2 text-sm text-muted-foreground">
 					<HelpCircle size={14} />
 					<span>Need a custom plan for your organization?</span>
 					<a href="mailto:hello@shipsense.ai" class="font-medium text-primary hover:underline"

@@ -104,10 +104,14 @@
 
 	<div class="flex items-center space-x-2">
 		<div class="relative max-w-sm flex-1">
-			<SearchIcon class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+			<SearchIcon
+				class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground"
+				aria-hidden="true"
+			/>
 			<input
 				type="text"
 				placeholder="Filter repositories..."
+				aria-label="Filter repositories by name or description"
 				bind:value={searchQuery}
 				class="flex h-9 w-full rounded-md border border-border bg-card px-3 py-1 pl-9 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 			/>
@@ -115,6 +119,10 @@
 		<Button variant="outline" onclick={loadGithubRepos} disabled={loadingGithub}>
 			{loadingGithub ? LABELS.SYNCING : LABELS.REFRESH_LIST}
 		</Button>
+	</div>
+
+	<div aria-live="polite" aria-atomic="true" class="sr-only">
+		{filteredRepos.length} repositories found{searchQuery ? ` matching "${searchQuery}"` : ''}
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

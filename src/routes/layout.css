@@ -141,6 +141,18 @@
 	html {
 		@apply font-mono;
 	}
+
+	:focus-visible {
+		@apply outline-2 outline-offset-2 outline-primary;
+	}
+
+	a:focus-visible,
+	button:focus-visible,
+	input:focus-visible,
+	select:focus-visible,
+	textarea:focus-visible {
+		@apply outline-2 outline-offset-2 outline-primary;
+	}
 }
 
 @layer utilities {
