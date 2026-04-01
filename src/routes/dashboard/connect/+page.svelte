@@ -12,7 +12,14 @@
 	} from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { LABELS } from '$lib/constants/labels';
-	import { Star as StarIcon, GitFork as GitForkIcon, Search as SearchIcon } from 'lucide-svelte';
+	import {
+		Star as StarIcon,
+		GitFork as GitForkIcon,
+		Search as SearchIcon,
+		Check,
+		Loader2,
+		Link
+	} from 'lucide-svelte';
 
 	// Data fetching
 	const activeReposQuery = useQuery(api.repos.listMyRepos, {});
@@ -24,9 +31,15 @@
 	let connectError = $state<string | null>(null);
 	let connectingRepoId = $state<number | null>(null);
 
+	// Bulk connect state
+	let selectedRepos = $state<Set<number>>(new Set());
+	let bulkConnecting = $state(false);
+	let bulkResults = $state<{ success: number; failed: number } | null>(null);
+
 	async function loadGithubRepos() {
 		loadingGithub = true;
 		connectError = null;
+		bulkResults = null;
 		try {
 			githubRepos = (await client.action(api.github.fetchUserReposFromGithub, {})) || [];
 		} catch (err: any) {
@@ -63,6 +76,69 @@
 		}
 	}
 
+	async function bulkConnectSelected() {
+		if (selectedRepos.size === 0) return;
+
+		bulkConnecting = true;
+		connectError = null;
+		let success = 0;
+		let failed = 0;
+
+		for (const githubId of selectedRepos) {
+			const repo = githubRepos.find((r) => r.githubRepoId === githubId);
+			if (!repo) {
+				failed++;
+				continue;
+			}
+			try {
+				const repoId = await client.mutation(api.repos.connectRepo, {
+					githubRepoId: repo.githubRepoId,
+					owner: repo.owner,
+					name: repo.name,
+					fullName: repo.fullName,
+					description: repo.description,
+					language: repo.language,
+					starsCount: repo.starsCount,
+					forksCount: repo.forksCount,
+					isPrivate: repo.isPrivate
+				});
+				await client.action(api.repos.syncConnectedRepo, { repoId });
+				success++;
+			} catch (err: any) {
+				console.error(`Failed to connect ${repo.name}:`, err);
+				failed++;
+			}
+		}
+
+		bulkResults = { success, failed };
+		selectedRepos = new Set();
+		bulkConnecting = false;
+
+		// Clear results after 5s
+		setTimeout(() => {
+			bulkResults = null;
+		}, 5000);
+	}
+
+	function toggleSelection(repo: any) {
+		const newSet = new Set(selectedRepos);
+		if (newSet.has(repo.githubRepoId)) {
+			newSet.delete(repo.githubRepoId);
+		} else {
+			newSet.add(repo.githubRepoId);
+		}
+		selectedRepos = newSet;
+	}
+
+	function selectAll() {
+		const available = filteredRepos.filter((r) => !activeRepoIds.includes(r.githubRepoId));
+		if (selectedRepos.size === available.length) {
+			selectedRepos = new Set();
+		} else {
+			selectedRepos = new Set(available.map((r) => r.githubRepoId));
+		}
+	}
+
 	// Load right away or let user click
 	let hasLoaded = $state(false);
 
@@ -82,6 +158,15 @@
 	);
 
 	let activeRepoIds = $derived(activeReposQuery.data?.map((r: any) => r.githubRepoId) || []);
+
+	let availableForConnect = $derived(
+		filteredRepos.filter((r) => !activeRepoIds.includes(r.githubRepoId))
+	);
+
+	let allAvailableSelected = $derived(
+		availableForConnect.length > 0 &&
+			availableForConnect.every((r) => selectedRepos.has(r.githubRepoId))
+	);
 </script>
 
 <svelte:head>
@@ -120,6 +205,57 @@
 			{loadingGithub ? LABELS.SYNCING : LABELS.REFRESH_LIST}
 		</Button>
 	</div>
+
+	{#if filteredRepos.length > 0 && availableForConnect.length > 0}
+		<div class="flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<button
+					type="button"
+					onclick={selectAll}
+					class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+				>
+					<div
+						class="flex h-5 w-5 items-center justify-center rounded border {allAvailableSelected
+							? 'border-primary bg-primary text-primary-foreground'
+							: 'border-border'}"
+					>
+						{#if allAvailableSelected}
+							<Check class="h-3 w-3" />
+						{/if}
+					</div>
+					Select all ({availableForConnect.length})
+				</button>
+				{#if selectedRepos.size > 0}
+					<span class="text-sm font-medium text-primary">{selectedRepos.size} selected</span>
+				{/if}
+			</div>
+
+			{#if selectedRepos.size > 0}
+				<Button onclick={bulkConnectSelected} disabled={bulkConnecting} class="gap-2">
+					{#if bulkConnecting}
+						<Loader2 class="h-4 w-4 animate-spin" />
+						Connecting...
+					{:else}
+						<Link class="h-4 w-4" />
+						Connect {selectedRepos.size} Selected
+					{/if}
+				</Button>
+			{/if}
+		</div>
+	{/if}
+
+	{#if bulkResults}
+		<div class="rounded-md border border-success/50 bg-success/10 p-4 text-sm">
+			<span class="font-medium text-success">
+				Successfully connected {bulkResults.success} repo{bulkResults.success !== 1 ? 's' : ''}
+			</span>
+			{#if bulkResults.failed > 0}
+				<span class="ml-2 text-destructive">
+					({bulkResults.failed} failed)
+				</span>
+			{/if}
+		</div>
+	{/if}
 
 	<div aria-live="polite" aria-atomic="true" class="sr-only">
 		{filteredRepos.length} repositories found{searchQuery ? ` matching "${searchQuery}"` : ''}
@@ -160,18 +296,40 @@
 			{#each filteredRepos as repo}
 				<Card class="flex flex-col border-border bg-card transition-colors hover:border-primary/50">
 					<CardHeader class="pb-2">
-						<div class="flex items-start justify-between">
-							<CardTitle class="truncate text-base font-semibold text-foreground">
-								{repo.name}
-							</CardTitle>
+						<div class="flex items-start justify-between gap-2">
+							<div class="flex items-start gap-2">
+								{#if !activeRepoIds.includes(repo.githubRepoId)}
+									<button
+										type="button"
+										onclick={() => toggleSelection(repo)}
+										class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded border {selectedRepos.has(
+											repo.githubRepoId
+										)
+											? 'border-primary bg-primary text-primary-foreground'
+											: 'border-border'}"
+										aria-label="Select {repo.name}"
+									>
+										{#if selectedRepos.has(repo.githubRepoId)}
+											<Check class="h-3 w-3" />
+										{/if}
+									</button>
+								{/if}
+								<div class="min-w-0">
+									<CardTitle class="truncate text-base font-semibold text-foreground">
+										{repo.name}
+									</CardTitle>
+								</div>
+							</div>
 							{#if repo.isPrivate}
 								<Badge
 									variant="outline"
-									class="border-border bg-muted text-xs text-muted-foreground">Private</Badge
+									class="shrink-0 border-border bg-muted text-xs text-muted-foreground"
+									>Private</Badge
 								>
 							{:else}
-								<Badge variant="outline" class="border-border text-xs text-muted-foreground"
-									>Public</Badge
+								<Badge
+									variant="outline"
+									class="shrink-0 border-border text-xs text-muted-foreground">Public</Badge
 								>
 							{/if}
 						</div>
@@ -203,7 +361,7 @@
 						{:else}
 							<Button
 								onclick={() => connectRepo(repo)}
-								disabled={connectingRepoId === repo.githubRepoId}
+								disabled={connectingRepoId === repo.githubRepoId || bulkConnecting}
 								class="w-full bg-primary text-primary-foreground hover:bg-primary/90"
 								>{connectingRepoId === repo.githubRepoId ? 'Syncing...' : 'Connect'}</Button
 							>

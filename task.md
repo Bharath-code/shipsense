@@ -216,9 +216,9 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 ### Bulk Connect
 
-- [ ] Add checkboxes to select multiple repos on connect page
-- [ ] "Connect Selected" batch action
-- [ ] Show total repo count in selection UI
+- [x] Add checkboxes to select multiple repos on connect page
+- [x] "Connect Selected" batch action
+- [x] Show total repo count in selection UI
 
 ---
 
