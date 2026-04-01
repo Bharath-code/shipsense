@@ -9,6 +9,8 @@
 		CardContent
 	} from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
+	import { HelpTooltip } from '$lib/components/ui/tooltip';
+	import { LABELS, TOOLTIPS } from '$lib/constants/labels';
 	import { Activity, Rocket, Zap, Clock, Star, AlertTriangle, CheckCircle } from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import ArrowRightIcon from 'lucide-svelte/icons/arrow-right';
@@ -73,12 +75,61 @@
 		</div>
 	{:else if repos.length === 0}
 		<div
-			class="flex flex-col items-center justify-center rounded-3xl border glass-panel p-16 text-center"
+			class="flex flex-col items-center justify-center rounded-3xl border glass-panel p-12 text-center lg:p-16"
 		>
-			<div
-				class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.2)]"
-			>
-				<Rocket class="h-10 w-10" />
+			<div class="mb-8 flex items-center justify-center">
+				<svg
+					class="h-32 w-32 text-primary/20"
+					viewBox="0 0 200 200"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<circle
+						cx="100"
+						cy="100"
+						r="80"
+						stroke="currentColor"
+						stroke-width="2"
+						fill="none"
+						class="opacity-30"
+					/>
+					<circle
+						cx="100"
+						cy="100"
+						r="60"
+						stroke="currentColor"
+						stroke-width="1.5"
+						fill="none"
+						class="opacity-20"
+					/>
+					<circle
+						cx="100"
+						cy="100"
+						r="40"
+						stroke="currentColor"
+						stroke-width="1"
+						fill="none"
+						class="opacity-15"
+					/>
+					<path
+						d="M100 50 L100 150 M50 100 L150 100"
+						stroke="currentColor"
+						stroke-width="1"
+						class="opacity-10"
+					/>
+					<circle cx="100" cy="70" r="8" fill="currentColor" class="opacity-60" />
+					<circle cx="130" cy="90" r="5" fill="currentColor" class="opacity-40" />
+					<circle cx="70" cy="90" r="5" fill="currentColor" class="opacity-40" />
+					<circle cx="85" cy="125" r="6" fill="currentColor" class="opacity-50" />
+					<circle cx="115" cy="125" r="6" fill="currentColor" class="opacity-50" />
+					<path
+						d="M60 60 Q80 40 100 50 Q120 40 140 60"
+						stroke="currentColor"
+						stroke-width="2"
+						fill="none"
+						class="opacity-40"
+					/>
+				</svg>
 			</div>
 			<h3 class="text-2xl font-bold text-foreground">Ready to launch your growth?</h3>
 			<p class="mt-2 mb-8 max-w-lg text-lg text-muted-foreground">
@@ -142,15 +193,17 @@
 										<AlertTriangle class="h-4 w-4" />
 									</div>
 								{/if}
-								<div
-									class={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-bold ${
-										repo.hasScore
-											? 'border border-success/20 bg-success/10 text-success'
-											: 'border border-border bg-muted text-muted-foreground'
-									}`}
-								>
-									{repo.hasScore ? repo.healthScore : '...'}
-								</div>
+								<HelpTooltip content={TOOLTIPS.HEALTH_SCORE}>
+									<div
+										class={`flex h-12 w-12 cursor-help items-center justify-center rounded-2xl text-xl font-bold ${
+											repo.hasScore
+												? 'border border-success/20 bg-success/10 text-success'
+												: 'border border-border bg-muted text-muted-foreground'
+										}`}
+									>
+										{repo.hasScore ? repo.healthScore : '...'}
+									</div>
+								</HelpTooltip>
 							</div>
 						</div>
 

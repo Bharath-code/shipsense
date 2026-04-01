@@ -1,3 +1,19 @@
+export const TOOLTIPS = {
+	HEALTH_SCORE:
+		'Composite score (0-100) based on stars, forks, recent commits, issue response time, and community engagement.',
+	STARS: 'Total stars on GitHub. Indicates project popularity and community interest.',
+	FORKS: 'Total forks. Shows how many developers have copied your project.',
+	WATCHERS: 'Users watching this repository for notifications.',
+	STREAK: 'Consecutive days with at least one commit. Measures consistent shipping.',
+	MOMENTUM: 'Change in health score compared to 7 days ago. Positive means improving.',
+	CONTRIBUTORS_14D: 'Unique contributors in the last 14 days. Shows active collaboration.',
+	ISSUE_RESPONSE: 'Median hours until first response to new issues. Lower is better.',
+	LAST_SYNC: 'Last time ShipSense fetched fresh data from GitHub.',
+	SYNC_STATUS: 'Whether the latest sync completed successfully or has errors.',
+	AI_SUMMARY: 'AI-generated analysis of your repository health and growth patterns.',
+	RECOMMENDED_ACTIONS: 'AI-suggested next steps to improve your repository health.'
+} as const;
+
 export const LABELS = {
 	// Navigation
 	DASHBOARD: 'Dashboard',

@@ -119,17 +119,35 @@
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 		{#if loadingGithub && githubRepos.length === 0}
-			<Card class="border-border bg-muted/20">
-				<CardContent class="flex justify-center p-6 text-muted-foreground italic">
-					Loading repositories from GitHub...
-				</CardContent>
-			</Card>
+			<div
+				class="col-span-full flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/50 bg-muted/20 py-16 text-center"
+			>
+				<div
+					class="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
+				></div>
+				<p class="text-lg font-medium text-foreground">Loading your repositories...</p>
+				<p class="mt-1 text-sm text-muted-foreground">Fetching from GitHub</p>
+			</div>
 		{:else if filteredRepos.length === 0}
-			<Card class="border-border bg-muted/20">
-				<CardContent class="flex justify-center p-6 text-muted-foreground italic">
-					No repositories found.
-				</CardContent>
-			</Card>
+			<div
+				class="col-span-full flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/50 bg-muted/20 py-16 text-center"
+			>
+				<div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+					<SearchIcon class="h-8 w-8 text-muted-foreground" />
+				</div>
+				{#if searchQuery}
+					<p class="text-lg font-medium text-foreground">No repositories match "{searchQuery}"</p>
+					<p class="mt-1 text-sm text-muted-foreground">Try a different search term</p>
+				{:else}
+					<p class="text-lg font-medium text-foreground">No repositories found</p>
+					<p class="mt-1 text-sm text-muted-foreground">
+						Make sure you have repositories on GitHub
+					</p>
+					<Button variant="outline" class="mt-6" onclick={loadGithubRepos} disabled={loadingGithub}>
+						Try Again
+					</Button>
+				{/if}
+			</div>
 		{:else}
 			{#each filteredRepos as repo}
 				<Card class="flex flex-col border-border bg-card transition-colors hover:border-primary/50">

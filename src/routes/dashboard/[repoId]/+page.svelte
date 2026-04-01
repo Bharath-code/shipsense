@@ -6,7 +6,8 @@
 	import { api } from '$convex/_generated/api';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Badge } from '$lib/components/ui/badge';
-	import { LABELS, MESSAGES } from '$lib/constants/labels';
+	import { HelpTooltip } from '$lib/components/ui/tooltip';
+	import { LABELS, MESSAGES, TOOLTIPS } from '$lib/constants/labels';
 	import Toast from '$lib/components/ui/toast/toast.svelte';
 	import {
 		ArrowLeft,
@@ -291,30 +292,34 @@
 			<div
 				class="z-10 flex flex-wrap items-center gap-8 rounded-[2rem] border border-white/5 bg-white/[0.03] p-8 lg:border-none lg:bg-transparent lg:p-0"
 			>
-				<div class="flex flex-col text-center lg:text-left">
-					<span
-						class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
-						><Star class="h-3 w-3 text-warning/60" /> {LABELS.STARS}</span
-					>
-					<div class="flex items-center gap-2">
-						<span class="text-4xl font-black text-foreground">{repo.starsCount}</span>
-						{#if repo.starsLast7d && repo.starsLast7d > 0}
-							<span class="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
-								+{repo.starsLast7d}
-							</span>
-						{/if}
+				<HelpTooltip content={TOOLTIPS.STARS}>
+					<div class="flex cursor-help flex-col text-center lg:text-left">
+						<span
+							class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
+							><Star class="h-3 w-3 text-warning/60" /> {LABELS.STARS}</span
+						>
+						<div class="flex items-center gap-2">
+							<span class="text-4xl font-black text-foreground">{repo.starsCount}</span>
+							{#if repo.starsLast7d && repo.starsLast7d > 0}
+								<span class="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
+									+{repo.starsLast7d}
+								</span>
+							{/if}
+						</div>
 					</div>
-				</div>
+				</HelpTooltip>
 
 				<div class="hidden h-16 w-px bg-white/10 lg:block"></div>
 
-				<div class="flex flex-col text-center lg:text-left">
-					<span
-						class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
-						><GitFork class="h-3 w-3 text-primary/60" /> {LABELS.FORKS}</span
-					>
-					<span class="text-4xl font-black text-foreground">{repo.forksCount}</span>
-				</div>
+				<HelpTooltip content={TOOLTIPS.FORKS}>
+					<div class="flex cursor-help flex-col text-center lg:text-left">
+						<span
+							class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
+							><GitFork class="h-3 w-3 text-primary/60" /> {LABELS.FORKS}</span
+						>
+						<span class="text-4xl font-black text-foreground">{repo.forksCount}</span>
+					</div>
+				</HelpTooltip>
 
 				<div class="hidden h-16 w-px bg-white/10 lg:block"></div>
 

@@ -137,6 +137,79 @@ Focus order:
 - [ ] Unify GitHub + traffic + package metrics into a single insight layer
 - [ ] Generate cross-channel recommendations instead of repo-only recommendations
 
+## Phase 16 — UX Improvements
+
+### Tooltips & Help
+
+- [x] Add tooltip component (src/lib/components/ui/tooltip/)
+- [x] Add tooltips to health score metrics explaining each component
+- [x] Add tooltips to streak, stars, forks in repo detail
+- [x] Add "?" help button in header with keyboard shortcuts
+
+### Keyboard Shortcuts
+
+- [x] Add keyboard shortcuts handler
+- [x] Implement `?` - Show keyboard shortcuts modal
+- [x] Implement `r` - Refresh sync
+- [x] Implement `d` - Go to dashboard
+- [x] Implement `,` - Go to settings
+
+### Empty States
+
+- [x] Enhance dashboard empty state with illustration + CTA
+- [x] Improve connect page empty state guidance
+
+### Loading States
+
+- [x] Audit all components for skeleton loading
+- [x] Add shimmer animation to loading states
+
+### Mobile Responsive
+
+- [x] Audit dashboard on mobile viewports
+- [x] Fix any overflow or layout issues
+- [x] Ensure 44px minimum touch targets
+
+---
+
+## Phase 17 — Accessibility (A11y)
+
+### Keyboard Navigation
+
+- [ ] Add skip link to main content
+- [ ] Verify logical tab order throughout app
+- [ ] Add keyboard support for all interactive elements
+
+### Focus States
+
+- [ ] Add visible focus indicators (2px outline)
+- [ ] Implement focus trap in modals
+- [ ] Manage focus return after modal close
+
+### Screen Reader Support
+
+- [ ] Add ARIA labels to all buttons and interactive elements
+- [ ] Add aria-live regions for dynamic content
+- [ ] Add proper heading hierarchy
+- [ ] Add alt text for images
+
+### Color & Contrast
+
+- [ ] Audit WCAG AA contrast ratios
+- [ ] Fix any contrast issues found
+
+### Forms & Inputs
+
+- [ ] Verify all form inputs have associated labels
+- [ ] Add required field indicators
+
+### Reduced Motion
+
+- [ ] Respect prefers-reduced-motion media query
+- [ ] Pause animations when requested
+
+---
+
 ## Working Rule
 
 - [ ] Only start one unchecked feature at a time
