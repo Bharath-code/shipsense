@@ -216,3 +216,87 @@ export const getRepoDashboardData = query({
 		};
 	}
 });
+
+export const getScoreBreakdown = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
+
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
+
+		const latestScore = await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
+
+		const latestSnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
+
+		// If no score or snapshot, return null
+		if (!latestScore && !latestSnapshot) return null;
+
+		// Build response with available data
+		const healthScore = latestScore?.healthScore ?? 0;
+		const calculatedAt = latestScore?.calculatedAt ?? latestSnapshot?.capturedAt ?? Date.now();
+		const formula = latestScore?.scoreExplanation ?? 'Score will be calculated after first sync';
+
+		return {
+			healthScore,
+			components: {
+				stars: {
+					earned: latestScore?.starScore ?? 0,
+					max: 35,
+					percentage: latestScore?.starScore ? Math.round((latestScore.starScore / 35) * 100) : 0,
+					rawValue: latestSnapshot?.stars ?? 0,
+					label: 'Stars',
+					description: 'GitHub stars indicate project popularity'
+				},
+				commits: {
+					earned: latestScore?.commitScore ?? 0,
+					max: 25,
+					percentage: latestScore?.commitScore
+						? Math.round((latestScore.commitScore / 25) * 100)
+						: 0,
+					rawValue: latestSnapshot?.commitGapHours ?? 0,
+					label: 'Commits',
+					description: 'Recent commits show active maintenance'
+				},
+				issues: {
+					earned: latestScore?.issueScore ?? 0,
+					max: 20,
+					percentage: latestScore?.issueScore ? Math.round((latestScore.issueScore / 20) * 100) : 0,
+					rawValue: latestSnapshot?.issuesOpen ?? 0,
+					label: 'Issues',
+					description: 'Open issues measure community engagement'
+				},
+				prs: {
+					earned: latestScore?.prScore ?? 0,
+					max: 10,
+					percentage: latestScore?.prScore ? Math.round((latestScore.prScore / 10) * 100) : 0,
+					rawValue: latestSnapshot?.prsMerged7d ?? 0,
+					label: 'PRs',
+					description: 'Merged PRs indicate healthy collaboration'
+				},
+				contributors: {
+					earned: latestScore?.contributorScore ?? 0,
+					max: 10,
+					percentage: latestScore?.contributorScore
+						? Math.round((latestScore.contributorScore / 10) * 100)
+						: 0,
+					rawValue: latestSnapshot?.contributors14d ?? 0,
+					label: 'Contributors',
+					description: 'Recent contributors show project growth'
+				}
+			},
+			formula,
+			calculatedAt,
+			syncStatus: latestScore ? 'synced' : latestSnapshot ? 'syncing' : 'pending'
+		};
+	}
+});

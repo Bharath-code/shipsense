@@ -13,32 +13,32 @@ describe('computeRepoScore', () => {
 		const result = computeRepoScore(snapshot);
 
 		expect(result.starScore).toBe(35); // capped at 35
-		expect(result.commitScore).toBe(24.5); // 25 - 1 * 0.5
-		expect(result.issueScore).toBe(17.5); // 20 - 5 * 0.5
+		expect(result.commitScore).toBe(25); // Math.round(25 - 1 * 0.5) = Math.round(24.5) = 25
+		expect(result.issueScore).toBe(18); // Math.round(20 - 5 * 0.5) = Math.round(17.5) = 18
 		expect(result.prScore).toBe(10); // capped at 10
 		expect(result.contributorScore).toBe(10); // capped at 10
 
-		// Total should be sum of the above: 35 + 24.5 + 17.5 + 10 + 10 = 97
+		// Total is Math.round of raw sum: 35 + 24.5 + 17.5 + 10 + 10 = 97
 		expect(result.healthScore).toBe(97);
 	});
 
 	it('calculates a low score for inactive repositories', () => {
 		const snapshot = {
 			stars: 5,
-			commitGapHours: 100, // 25 - 50 = < 0
-			issuesOpen: 50, // 20 - 25 = < 0
+			commitGapHours: 100, // 25 - 50 = < 0, capped at 0
+			issuesOpen: 50, // 20 - 25 = < 0, capped at 0
 			prsMerged7d: 0,
 			contributors14d: 0
 		};
 		const result = computeRepoScore(snapshot);
 
-		expect(result.starScore).toBe((5 / 100) * 35); // 1.75
+		expect(result.starScore).toBe(2); // Math.round((5 / 100) * 35) = Math.round(1.75) = 2
 		expect(result.commitScore).toBe(0); // capped at 0 minimum
 		expect(result.issueScore).toBe(0); // capped at 0 minimum
 		expect(result.prScore).toBe(0);
 		expect(result.contributorScore).toBe(0);
 
-		expect(result.healthScore).toBe(2); // Math.round(1.75)
+		expect(result.healthScore).toBe(2);
 	});
 });
 

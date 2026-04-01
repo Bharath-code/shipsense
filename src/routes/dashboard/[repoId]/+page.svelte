@@ -29,6 +29,7 @@
 	import TaskChecklist from '$lib/components/dashboard/TaskChecklist.svelte';
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
+	import ScoreBreakdown from '$lib/components/dashboard/ScoreBreakdown.svelte';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
 
 	// Get repoId from route params
@@ -341,6 +342,9 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Score Breakdown Section -->
+		<ScoreBreakdown repoId={repoId as string} />
 
 		<!-- Main Dashboard Grid -->
 		<div class="grid w-full grid-cols-1 gap-8 lg:grid-cols-12">

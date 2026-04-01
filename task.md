@@ -129,13 +129,9 @@ Focus order:
 - [x] Add a success state after sharing / downloading
 - [x] Make dashboard empty states guide users toward first value faster
 
-## Phase 15 — Beyond GitHub MVP
+## Phase 15 — Beyond GitHub MVP (Deferred to Phase 22)
 
-- [ ] Add npm downloads integration
-- [ ] Add website traffic integration
-- [ ] Add search console integration
-- [ ] Unify GitHub + traffic + package metrics into a single insight layer
-- [ ] Generate cross-channel recommendations instead of repo-only recommendations
+Moved to Phase 22 for proper implementation with unified insights layer.
 
 ## Phase 16 — UX Improvements
 
@@ -210,8 +206,85 @@ Focus order:
 
 ---
 
+## Phase 18 — Quick Product Enhancements
+
+### Search & Filter
+
+- [ ] Add search input to dashboard for repos with many connected
+- [ ] Filter repos by name, language, health score range
+- [ ] Persist search state in URL params
+
+### Bulk Connect
+
+- [ ] Add checkboxes to select multiple repos on connect page
+- [ ] "Connect Selected" batch action
+- [ ] Show total repo count in selection UI
+
+---
+
+## Phase 19 — Onboarding Tour
+
+- [ ] Create interactive walkthrough component (tour.svelte)
+- [ ] Step 1: Welcome + value prop
+- [ ] Step 2: Connect first repo prompt
+- [ ] Step 3: Explain health score
+- [ ] Step 4: Show first task
+- [ ] Add tour trigger on first login (no repos state)
+- [ ] "Dismiss" and "Skip" options with localStorage persistence
+- [ ] "Start Tour" button in empty state
+
+---
+
+## Phase 20 — Real-time Updates
+
+- [ ] Set up Convex realtime subscriptions for sync status
+- [ ] Show "Live" indicator with pulse animation when actively syncing
+- [ ] Push notifications for: sync complete, score change, streak break
+- [ ] Implement using convex-svelte's realtime features
+
+---
+
+## Phase 21 — In-app Notifications
+
+- [ ] Create notification center dropdown in header
+- [ ] Notification types: score drops, streak breaks, new PRs needing review, weekly report sent
+- [ ] Mark as read / dismiss functionality
+- [ ] Persist notifications in Convex (notifications table)
+- [ ] Real-time updates when new notification arrives
+
+---
+
+## Phase 22 — Beyond GitHub MVP (Phase 15)
+
+### npm Downloads Integration
+
+- [ ] Add npm API client (convex/npm.ts)
+- [ ] Fetch weekly downloads from npm Registry API
+- [ ] Store npm stats in repo snapshots
+- [ ] Display npm downloads in repo detail
+
+### Website Traffic Integration
+
+- [ ] Add Simple Analytics or Plausible API client
+- [ ] Fetch pageviews, unique visitors, top pages
+- [ ] Store traffic stats in Convex
+- [ ] Display traffic metrics in dashboard
+
+### Unified Insights Layer
+
+- [ ] Combine GitHub + npm + traffic into composite health score
+- [ ] Weight and normalize different data sources
+- [ ] Generate cross-channel recommendations
+- [ ] Update AI insight prompt to consider all data sources
+
+---
+
 ## Working Rule
 
 - [ ] Only start one unchecked feature at a time
 - [ ] Finish implementation, verification, and UX copy before moving to the next feature
 - [ ] Update this file after every completed feature
+
+## Score Transparency Fix (April 2026)
+
+- [x] Fix score breakdown not showing after sync - now shows snapshot data even if score not calculated yet
