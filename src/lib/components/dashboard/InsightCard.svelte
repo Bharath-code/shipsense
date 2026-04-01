@@ -3,7 +3,7 @@
 	import { api } from '$convex/_generated/api';
 	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Sparkles, AlertTriangle, CheckCircle, Activity } from 'lucide-svelte';
+	import { Sparkles, AlertTriangle, CheckCircle, Activity, AlertCircle } from 'lucide-svelte';
 	import { LABELS } from '$lib/constants/labels';
 
 	let { repoId } = $props<{ repoId: string }>();
@@ -12,6 +12,7 @@
 	const insightsQuery = useQuery(api.dashboard.getRepoInsights, () => ({ repoId }));
 	let insights = $derived(insightsQuery.data);
 	let isLoading = $derived(insightsQuery.isLoading);
+	let error = $derived(insightsQuery.error);
 </script>
 
 <div class="overflow-hidden rounded-[2rem] border glass-panel p-8 shadow-2xl">
@@ -44,11 +45,17 @@
 				<div class="h-4 w-full rounded-full bg-white/10"></div>
 				<div class="h-4 w-5/6 rounded-full bg-white/10"></div>
 			</div>
+		{:else if error}
+			<div class="flex flex-col items-center py-12 text-center">
+				<AlertCircle class="h-12 w-12 py-1 text-destructive" />
+				<p class="mt-4 text-lg font-medium text-destructive">Error loading insights</p>
+				<p class="text-sm text-muted-foreground">{error.message}</p>
+			</div>
 		{:else if !insights}
 			<div class="flex flex-col items-center py-12 text-center text-muted-foreground">
 				<Activity class="h-12 w-12 py-1 opacity-20" />
 				<p class="mt-4 text-lg font-medium text-muted-foreground">No insights generated yet.</p>
-				<p class="text-sm">Check back in 24 hours.</p>
+				<p class="text-sm">Insights are generated after the first sync completes.</p>
 			</div>
 		{:else}
 			<!-- Summary -->

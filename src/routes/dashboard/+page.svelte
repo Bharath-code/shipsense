@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { api } from '$convex/_generated/api';
 	import {
 		Card,
@@ -11,7 +13,18 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { HelpTooltip } from '$lib/components/ui/tooltip';
 	import { LABELS, TOOLTIPS } from '$lib/constants/labels';
-	import { Activity, Rocket, Zap, Clock, Star, AlertTriangle, CheckCircle } from 'lucide-svelte';
+	import {
+		Activity,
+		Rocket,
+		Zap,
+		Clock,
+		Star,
+		AlertTriangle,
+		CheckCircle,
+		Search,
+		Filter,
+		X
+	} from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import ArrowRightIcon from 'lucide-svelte/icons/arrow-right';
 
@@ -19,6 +32,67 @@
 
 	let repos = $derived(activeReposQuery.data || []);
 	let isLoading = $derived(activeReposQuery.isLoading);
+
+	// Search and filter state
+	let searchQuery = $state('');
+	let languageFilter = $state('all');
+	let scoreFilter = $state('all');
+
+	// Debounced URL update (doesn't affect local state)
+	function scheduleUrlUpdate() {
+		const params = new URLSearchParams();
+		if (searchQuery) params.set('q', searchQuery);
+		if (languageFilter !== 'all') params.set('lang', languageFilter);
+		if (scoreFilter !== 'all') params.set('score', scoreFilter);
+		const qs = params.toString();
+		const newUrl = qs ? `/dashboard?${qs}` : '/dashboard';
+		history.replaceState(null, '', newUrl);
+	}
+
+	// Get unique languages
+	let languages = $derived([...new Set(repos.map((r) => r.language).filter(Boolean))] as string[]);
+
+	// Filtered repos
+	let filteredRepos = $derived(
+		repos.filter((repo) => {
+			// Search by name
+			if (searchQuery && !repo.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+				return false;
+			}
+			// Filter by language
+			if (languageFilter !== 'all' && repo.language !== languageFilter) {
+				return false;
+			}
+			// Filter by health score range
+			if (scoreFilter !== 'all') {
+				const score = repo.healthScore ?? 0;
+				switch (scoreFilter) {
+					case 'excellent':
+						if (score < 80) return false;
+						break;
+					case 'good':
+						if (score < 60 || score >= 80) return false;
+						break;
+					case 'fair':
+						if (score < 40 || score >= 60) return false;
+						break;
+					case 'poor':
+						if (score >= 40) return false;
+						break;
+				}
+			}
+			return true;
+		})
+	);
+
+	let hasActiveFilters = $derived(searchQuery || languageFilter !== 'all' || scoreFilter !== 'all');
+
+	function clearFilters() {
+		searchQuery = '';
+		languageFilter = 'all';
+		scoreFilter = 'all';
+		scheduleUrlUpdate();
+	}
 
 	function formatMomentum(momentum: number) {
 		if (momentum > 0) return `+${momentum}`;
@@ -66,6 +140,71 @@
 			</span>
 		</Button>
 	</div>
+
+	{#if !isLoading && repos.length > 0}
+		<!-- Search & Filter Bar -->
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+			<div class="relative flex-1">
+				<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<input
+					type="text"
+					placeholder="Search repositories..."
+					value={searchQuery}
+					oninput={(e) => {
+						searchQuery = (e.currentTarget as HTMLInputElement).value;
+						scheduleUrlUpdate();
+					}}
+					class="h-11 w-full rounded-xl border border-border bg-muted/50 pr-4 pl-10 text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:outline-none"
+					aria-label="Search repositories"
+				/>
+			</div>
+
+			<div class="flex items-center gap-3">
+				<select
+					value={languageFilter}
+					onchange={(e) => {
+						languageFilter = e.currentTarget.value;
+						scheduleUrlUpdate();
+					}}
+					class="h-11 rounded-xl border border-border bg-muted/50 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+					aria-label="Filter by language"
+				>
+					<option value="all">All Languages</option>
+					{#each languages as lang}
+						<option value={lang}>{lang}</option>
+					{/each}
+				</select>
+
+				<select
+					value={scoreFilter}
+					onchange={(e) => {
+						scoreFilter = e.currentTarget.value;
+						scheduleUrlUpdate();
+					}}
+					class="h-11 rounded-xl border border-border bg-muted/50 px-4 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+					aria-label="Filter by health score"
+				>
+					<option value="all">All Scores</option>
+					<option value="excellent">Excellent (80+)</option>
+					<option value="good">Good (60-79)</option>
+					<option value="fair">Fair (40-59)</option>
+					<option value="poor">{'Poor (<40)'}</option>
+				</select>
+
+				{#if hasActiveFilters}
+					<button
+						type="button"
+						onclick={clearFilters}
+						class="flex h-11 items-center gap-2 rounded-xl border border-border bg-muted/50 px-4 text-sm text-muted-foreground hover:text-foreground"
+						aria-label="Clear all filters"
+					>
+						<X class="h-4 w-4" />
+						Clear
+					</button>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	{#if isLoading}
 		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -164,9 +303,26 @@
 				Connect your first repo
 			</Button>
 		</div>
+	{:else if filteredRepos.length === 0}
+		<div
+			class="flex flex-col items-center justify-center rounded-3xl border glass-panel p-12 text-center"
+		>
+			<Search class="h-12 w-12 text-muted-foreground/40" />
+			<h3 class="mt-4 text-xl font-bold text-foreground">No repositories found</h3>
+			<p class="mt-2 text-muted-foreground">
+				{hasActiveFilters
+					? 'Try adjusting your search or filters.'
+					: 'Connect a repository to get started.'}
+			</p>
+			{#if hasActiveFilters}
+				<Button variant="outline" class="mt-6 rounded-full" onclick={clearFilters}>
+					Clear Filters
+				</Button>
+			{/if}
+		</div>
 	{:else}
 		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-			{#each repos as repo}
+			{#each filteredRepos as repo}
 				<a
 					href={`/dashboard/${repo._id}`}
 					class="group cursor-pointer transition-transform group-hover:scale-[1.02]"

@@ -210,9 +210,9 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 ### Search & Filter
 
-- [ ] Add search input to dashboard for repos with many connected
-- [ ] Filter repos by name, language, health score range
-- [ ] Persist search state in URL params
+- [x] Add search input to dashboard for repos with many connected
+- [x] Filter repos by name, language, health score range
+- [x] Persist search state in URL params
 
 ### Bulk Connect
 
