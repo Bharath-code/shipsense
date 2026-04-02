@@ -224,14 +224,14 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 ## Phase 19 — Onboarding Tour
 
-- [ ] Create interactive walkthrough component (tour.svelte)
-- [ ] Step 1: Welcome + value prop
-- [ ] Step 2: Connect first repo prompt
-- [ ] Step 3: Explain health score
-- [ ] Step 4: Show first task
-- [ ] Add tour trigger on first login (no repos state)
-- [ ] "Dismiss" and "Skip" options with localStorage persistence
-- [ ] "Start Tour" button in empty state
+- [x] Create interactive walkthrough component (OnboardingTour.svelte)
+- [x] Step 1: Welcome + value prop
+- [x] Step 2: Connect first repo prompt
+- [x] Step 3: Explain health score
+- [x] Step 4: Show first task
+- [x] Add tour trigger on first login (no repos state)
+- [x] "Dismiss" and "Skip" options with localStorage persistence
+- [x] "Start Tour" button in empty state
 
 ---
 

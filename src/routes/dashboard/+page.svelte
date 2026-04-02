@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { api } from '$convex/_generated/api';
 	import {
@@ -27,6 +28,7 @@
 	} from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import ArrowRightIcon from 'lucide-svelte/icons/arrow-right';
+	import OnboardingTour from '$lib/components/dashboard/OnboardingTour.svelte';
 
 	const activeReposQuery = useQuery(api.repos.listMyRepos, {});
 
@@ -92,6 +94,22 @@
 		languageFilter = 'all';
 		scoreFilter = 'all';
 		scheduleUrlUpdate();
+	}
+
+	// Onboarding tour state
+	let showTour = $state(false);
+	let tourDismissed = $state(false);
+
+	$effect(() => {
+		if (!browser) return;
+		const dismissed = localStorage.getItem('shipsense_tour_dismissed');
+		if (dismissed) {
+			tourDismissed = true;
+		}
+	});
+
+	function startTour() {
+		showTour = true;
 	}
 
 	function formatMomentum(momentum: number) {
@@ -302,6 +320,12 @@
 			>
 				Connect your first repo
 			</Button>
+
+			{#if !tourDismissed}
+				<button type="button" onclick={startTour} class="mt-4 text-sm text-primary hover:underline">
+					Take a quick tour
+				</button>
+			{/if}
 		</div>
 	{:else if filteredRepos.length === 0}
 		<div
@@ -393,4 +417,7 @@
 			{/each}
 		</div>
 	{/if}
+
+	<!-- Onboarding Tour -->
+	<OnboardingTour bind:open={showTour} on:close={() => (tourDismissed = true)} />
 </div>
