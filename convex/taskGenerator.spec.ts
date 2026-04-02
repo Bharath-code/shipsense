@@ -16,19 +16,19 @@ describe('determineTasks', () => {
 
 	it('generates an issue task if repo is public', () => {
 		const tasks = determineTasks(false, 12, {
-			issuesOpen: 0,
+			issuesOpen: 11,
 			prsOpen: 0,
 			prsMerged7d: 0,
 			contributors14d: 0
 		});
 		expect(tasks).toHaveLength(1);
 		expect(tasks[0].taskType).toBe('issue');
-		expect(tasks[0].priority).toBe(2);
+		expect(tasks[0].priority).toBe(3);
 	});
 
 	it('generates both tasks if public and commit gap > 24', () => {
 		const tasks = determineTasks(false, 48, {
-			issuesOpen: 0,
+			issuesOpen: 11,
 			prsOpen: 0,
 			prsMerged7d: 0,
 			contributors14d: 0

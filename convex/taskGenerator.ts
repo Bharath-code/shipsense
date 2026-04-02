@@ -26,7 +26,7 @@ export function determineTasks(
 
 	// Commit gap task - highest priority if no recent commits
 	if (commitGapHours > 24) {
-		if (commitGapHours > 48) {
+		if (commitGapHours >= 48) {
 			tasks.push({
 				taskText: 'No commits in 2+ days. Push something today to keep your streak alive!',
 				taskType: 'commit',

@@ -310,3 +310,128 @@ export const getScoreBreakdown = query({
 		};
 	}
 });
+
+export const getPublicRepoHealth = query({
+	args: { slug: v.string() },
+	handler: async (ctx, args) => {
+		const repo = await ctx.db
+			.query('repos')
+			.withIndex('by_slug', (q) => q.eq('slug', args.slug))
+			.first();
+
+		if (!repo || !repo.isActive) return null;
+
+		const latestSnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repo._id))
+			.order('desc')
+			.first();
+
+		const latestScore = await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repo._id))
+			.order('desc')
+			.first();
+
+		const recentCommits = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repo._id))
+			.order('desc')
+			.take(5);
+
+		return {
+			repo: {
+				name: repo.name,
+				owner: repo.owner,
+				fullName: repo.fullName,
+				description: repo.description,
+				language: repo.language,
+				starsCount: repo.starsCount,
+				forksCount: repo.forksCount,
+				isPrivate: repo.isPrivate,
+				lastSyncedAt: repo.lastSyncedAt
+			},
+			healthScore: latestScore?.healthScore ?? null,
+			trend: latestScore?.trend ?? null,
+			metrics: latestSnapshot
+				? {
+						stars: latestSnapshot.stars,
+						forks: latestSnapshot.forks,
+						issuesOpen: latestSnapshot.issuesOpen,
+						prsOpen: latestSnapshot.prsOpen,
+						prsMerged7d: latestSnapshot.prsMerged7d,
+						contributors14d: latestSnapshot.contributors14d,
+						commitGapHours: latestSnapshot.commitGapHours,
+						starsLast7d: latestSnapshot.starsLast7d
+					}
+				: null,
+			recentCommits: recentCommits.map((s) => ({
+				capturedAt: s.capturedAt,
+				commitGapHours: s.commitGapHours
+			})),
+			scoreBreakdown: latestScore
+				? {
+						stars: latestScore.starScore,
+						commits: latestScore.commitScore,
+						issues: latestScore.issueScore,
+						prs: latestScore.prScore,
+						contributors: latestScore.contributorScore
+					}
+				: null
+		};
+	}
+});
+
+export const getPublicRepoBySlug = query({
+	args: { slug: v.string() },
+	handler: async (ctx, args) => {
+		const repo = await ctx.db
+			.query('repos')
+			.withIndex('by_slug', (q) => q.eq('slug', args.slug))
+			.first();
+
+		if (!repo || !repo.isActive) return null;
+
+		return {
+			_id: repo._id,
+			name: repo.name,
+			owner: repo.owner,
+			fullName: repo.fullName,
+			description: repo.description,
+			language: repo.language,
+			starsCount: repo.starsCount,
+			forksCount: repo.forksCount,
+			isPrivate: repo.isPrivate
+		};
+	}
+});
+
+export const getPublicRepoHealthById = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || !repo.isActive) return null;
+
+		const latestScore = await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
+
+		return {
+			repo: {
+				name: repo.name,
+				owner: repo.owner,
+				fullName: repo.fullName,
+				description: repo.description,
+				language: repo.language,
+				starsCount: repo.starsCount,
+				forksCount: repo.forksCount,
+				isPrivate: repo.isPrivate,
+				lastSyncedAt: repo.lastSyncedAt
+			},
+			healthScore: latestScore?.healthScore ?? null,
+			trend: latestScore?.trend ?? null
+		};
+	}
+});

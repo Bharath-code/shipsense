@@ -30,6 +30,7 @@
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
 	import ScoreBreakdown from '$lib/components/dashboard/ScoreBreakdown.svelte';
+	import SyncStatus from '$lib/components/dashboard/SyncStatus.svelte';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
 
 	// Get repoId from route params
@@ -37,6 +38,26 @@
 
 	// Get Convex client
 	const client = useConvexClient();
+
+	// Badge modal state
+	let showBadgeModal = $state(false);
+	let badgeCopied = $state(false);
+
+	const repoQuery2 = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
+	let repoForBadge = $derived(repoQuery2.data);
+	let badgeUrl = $derived(`/api/badge/${repoForBadge?.slug || repoId}.svg`);
+	let publicUrl = $derived(`/p/${repoForBadge?.slug || repoId}`);
+	let badgeMarkdown = $derived(`![ShipSense Health](https://shipsense.app${badgeUrl})`);
+
+	async function copyBadgeUrl() {
+		try {
+			await navigator.clipboard.writeText(badgeMarkdown);
+			badgeCopied = true;
+			setTimeout(() => (badgeCopied = false), 2000);
+		} catch {
+			// Fallback for older browsers
+		}
+	}
 
 	// Lazy load GrowthCardModal - only load when modal opens
 	let GrowthCardModal = $state<
@@ -186,19 +207,7 @@
 				</div>
 			{/if}
 			{#if repo}
-				{#if repo.lastError}
-					<div class="flex items-center gap-2 text-destructive">
-						<AlertTriangle class="h-3 w-3" />
-						<span class="text-xs font-medium tracking-widest uppercase">{LABELS.SYNC_ERROR}</span>
-					</div>
-				{:else}
-					<div
-						class="h-2 w-2 animate-pulse rounded-full bg-success shadow-[0_0_8px_rgba(var(--success-rgb),0.6)]"
-					></div>
-					<span class="text-xs font-medium tracking-widest text-muted-foreground uppercase"
-						>{LABELS.LIVE_SYNC}</span
-					>
-				{/if}
+				<SyncStatus repoId={repoId as string} />
 			{/if}
 		</div>
 	</div>
@@ -340,6 +349,37 @@
 						</Button>
 					{/if}
 				</div>
+
+				<div class="w-full lg:w-auto">
+					<Button
+						variant="outline"
+						class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
+						onclick={() => (showBadgeModal = true)}
+						aria-label="Get health badge"
+					>
+						<svg class="mr-2 h-4 w-4" viewBox="0 0 100 20" fill="none">
+							<rect width="55" height="20" rx="3" fill="#555" />
+							<rect x="55" width="45" height="20" rx="3" fill="#4c1" />
+							<text
+								x="27"
+								y="14"
+								fill="#fff"
+								font-family="Verdana"
+								font-size="11"
+								text-anchor="middle">S</text
+							>
+							<text
+								x="77"
+								y="14"
+								fill="#fff"
+								font-family="Verdana"
+								font-size="11"
+								text-anchor="middle">85</text
+							>
+						</svg>
+						Get Badge
+					</Button>
+				</div>
 			</div>
 		</div>
 
@@ -398,4 +438,70 @@
 			</Button>
 		</div>
 	</Toast>
+
+	<!-- Badge Modal -->
+	{#if showBadgeModal}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+			onclick={() => (showBadgeModal = false)}
+		>
+			<div
+				class="mx-4 w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-background p-8 shadow-2xl"
+				onclick={(e) => e.stopPropagation()}
+			>
+				<div class="mb-6 flex items-center justify-between">
+					<h2 class="text-xl font-bold text-foreground">Health Badge</h2>
+					<button
+						type="button"
+						onclick={() => (showBadgeModal = false)}
+						class="text-muted-foreground hover:text-foreground"
+					>
+						<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+							><path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/></svg
+						>
+					</button>
+				</div>
+
+				<!-- Badge Preview -->
+				<div class="mb-6 flex justify-center rounded-xl bg-muted/50 p-6">
+					<img src={badgeUrl} alt="Health Badge" class="h-5" />
+				</div>
+
+				<!-- Markdown Code -->
+				<div class="mb-4">
+					<p class="mb-2 text-sm font-medium text-muted-foreground">
+						Copy this markdown to your README:
+					</p>
+					<div class="flex items-center gap-2 rounded-lg bg-muted p-3">
+						<code class="flex-1 text-xs break-all text-foreground">{badgeMarkdown}</code>
+						<button
+							type="button"
+							onclick={copyBadgeUrl}
+							class="shrink-0 cursor-pointer rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+						>
+							{badgeCopied ? 'Copied!' : 'Copy'}
+						</button>
+					</div>
+				</div>
+
+				<!-- Public Page Link -->
+				<div class="mb-6">
+					<p class="mb-2 text-sm font-medium text-muted-foreground">Public health page:</p>
+					<a href={publicUrl} target="_blank" class="text-sm break-all text-primary hover:underline"
+						>{publicUrl}</a
+					>
+				</div>
+
+				<p class="text-xs text-muted-foreground">
+					The badge updates automatically when your health score changes. After deploying, replace
+					the relative URL with your app's domain.
+				</p>
+			</div>
+		</div>
+	{/if}
 </div>

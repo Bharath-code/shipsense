@@ -254,28 +254,68 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 ---
 
-## Phase 22 — Beyond GitHub MVP (Phase 15)
+## Phase 22 — Growth & Intelligence Features
 
-### npm Downloads Integration
+### Phase 22A — Public Health Badge + Shareable Health Page
 
-- [ ] Add npm API client (convex/npm.ts)
-- [ ] Fetch weekly downloads from npm Registry API
-- [ ] Store npm stats in repo snapshots
-- [ ] Display npm downloads in repo detail
+#### Badge Infrastructure
 
-### Website Traffic Integration
+- [x] Add `slug` field to repos table (computed from owner/name)
+- [x] Create `getPublicRepoHealth` query in convex/dashboard.ts
+- [x] Create badge SVG generator (src/lib/badge/generateBadge.ts)
+- [x] Create SVG badge endpoint (src/routes/api/badge/[repoId].svg/+server.ts)
+- [x] Cache badge in Convex, regenerate on score change
 
-- [ ] Add Simple Analytics or Plausible API client
-- [ ] Fetch pageviews, unique visitors, top pages
-- [ ] Store traffic stats in Convex
-- [ ] Display traffic metrics in dashboard
+#### Public Health Page
 
-### Unified Insights Layer
+- [x] Create public route (src/routes/p/[slug]/+page.svelte)
+- [x] Create public page component with metrics, score, activity
+- [x] Add Open Graph meta tags for social sharing
+- [x] Add "Track your repo" CTA on public page
+- [x] Add "Get Badge" button in repo detail page
+- [x] Add copy badge URL to clipboard feature
 
-- [ ] Combine GitHub + npm + traffic into composite health score
-- [ ] Weight and normalize different data sources
-- [ ] Generate cross-channel recommendations
-- [ ] Update AI insight prompt to consider all data sources
+#### Badge Design
+
+- [x] Design color-coded badge (Green 80+, Yellow 60-79, Orange 40-59, Red <40)
+- [x] Make badge clickable → links to public health page
+- [x] Add "Powered by ShipSense" branding on badge
+
+### Phase 22B — README Quality Score
+
+#### Backend
+
+- [ ] Fetch README content during sync (update convex/collector.ts)
+- [ ] Create README analyzer (convex/readmeAnalyzer.ts)
+- [ ] Implement scoring criteria: length, sections, code blocks, badges, license, contributing
+- [ ] Store readmeScore and readmeSuggestions in repoSnapshots
+
+#### Frontend
+
+- [ ] Create ReadmeScore component (src/lib/components/dashboard/ReadmeScore.svelte)
+- [ ] Add ReadmeScore widget to repo detail page
+- [ ] Show actionable recommendations (what's missing, how to improve)
+
+### Phase 22C — Dependency Monitoring
+
+#### Schema
+
+- [ ] Add repoDependencies table to schema
+- [ ] Add dependency_alert notification type
+
+#### Backend
+
+- [ ] Parse package.json, requirements.txt during sync
+- [ ] Create npm API client (convex/npmRegistry.ts)
+- [ ] Create dependency monitoring logic (convex/dependencies.ts)
+- [ ] Add dependency check to orchestrator sync pipeline
+- [ ] Add notifications for: vulnerabilities, major outdated, deprecated
+
+#### Frontend
+
+- [ ] Create DependencyList component (src/lib/components/dashboard/DependencyList.svelte)
+- [ ] Add DependencyList widget to repo detail page
+- [ ] Show outdated count, vulnerability warnings, latest versions
 
 ---
 

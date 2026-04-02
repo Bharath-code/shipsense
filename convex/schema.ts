@@ -38,11 +38,13 @@ export default defineSchema({
 		connectedAt: v.number(),
 		lastSyncedAt: v.optional(v.number()),
 		lastError: v.optional(v.string()),
-		isActive: v.boolean()
+		isActive: v.boolean(),
+		slug: v.optional(v.string()) // e.g. "bharath-code-shipsense" for public URLs
 	})
 		.index('by_userId', ['userId'])
 		.index('by_userId_isActive', ['userId', 'isActive'])
-		.index('by_githubRepoId', ['githubRepoId']),
+		.index('by_githubRepoId', ['githubRepoId'])
+		.index('by_slug', ['slug']),
 
 	// Historical metric snapshots (collected every 6 hours)
 	repoSnapshots: defineTable({

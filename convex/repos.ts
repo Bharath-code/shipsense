@@ -118,7 +118,8 @@ export const connectRepo = mutation({
 			language: args.language ?? undefined,
 			userId,
 			connectedAt: Date.now(),
-			isActive: true
+			isActive: true,
+			slug: `${args.owner.toLowerCase()}-${args.name.toLowerCase()}`
 		});
 
 		await ctx.scheduler.runAfter(0, internal.orchestrator.syncRepoNow, { repoId });
