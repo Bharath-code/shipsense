@@ -118,5 +118,26 @@ export default defineSchema({
 		longestStreak: v.number(),
 		lastCommitDate: v.string(), // "YYYY-MM-DD"
 		streakBrokenAt: v.optional(v.number())
-	}).index('by_repoId', ['repoId'])
+	}).index('by_repoId', ['repoId']),
+
+	// In-app notifications
+	notifications: defineTable({
+		userId: v.id('users'),
+		type: v.union(
+			v.literal('score_drop'),
+			v.literal('streak_break'),
+			v.literal('streak_milestone'),
+			v.literal('sync_complete'),
+			v.literal('weekly_report'),
+			v.literal('new_task')
+		),
+		title: v.string(),
+		message: v.string(),
+		repoId: v.optional(v.id('repos')),
+		repoName: v.optional(v.string()),
+		read: v.boolean(),
+		createdAt: v.number()
+	})
+		.index('by_userId_read', ['userId', 'read'])
+		.index('by_userId_createdAt', ['userId', 'createdAt'])
 });

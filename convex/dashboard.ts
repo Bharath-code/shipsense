@@ -2,6 +2,16 @@ import { query, mutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 
+export const getRepoStreakInternal = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		return await ctx.db
+			.query('shipStreaks')
+			.withIndex('by_repoId', (q) => q.eq('repoId', args.repoId))
+			.first();
+	}
+});
+
 export const getRepoDetails = query({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, args) => {

@@ -246,11 +246,11 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 ## Phase 21 — In-app Notifications
 
-- [ ] Create notification center dropdown in header
-- [ ] Notification types: score drops, streak breaks, new PRs needing review, weekly report sent
-- [ ] Mark as read / dismiss functionality
-- [ ] Persist notifications in Convex (notifications table)
-- [ ] Real-time updates when new notification arrives
+- [x] Create notification center dropdown in header
+- [x] Notification types: score drops, streak breaks, new PRs needing review, weekly report sent
+- [x] Mark as read / dismiss functionality
+- [x] Persist notifications in Convex (notifications table)
+- [x] Real-time updates when new notification arrives
 
 ---
 

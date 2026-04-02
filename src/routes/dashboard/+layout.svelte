@@ -6,6 +6,7 @@
 	import { LogOut as LogOutIcon, Keyboard } from 'lucide-svelte';
 	import ThemeToggle from '$lib/components/dashboard/ThemeToggle.svelte';
 	import KeyboardShortcutsModal from '$lib/components/dashboard/KeyboardShortcutsModal.svelte';
+	import NotificationCenter from '$lib/components/dashboard/NotificationCenter.svelte';
 	import { keyboardHandler } from '$lib/stores/keyboard';
 	import { TooltipProvider } from '$lib/components/ui/tooltip';
 
@@ -114,6 +115,7 @@
 			</nav>
 
 			<div class="flex items-center gap-1 lg:gap-2">
+				<NotificationCenter />
 				<Button
 					variant="ghost"
 					size="icon"
