@@ -13,7 +13,8 @@ export const createNotification = internalMutation({
 			v.literal('streak_milestone'),
 			v.literal('sync_complete'),
 			v.literal('weekly_report'),
-			v.literal('new_task')
+			v.literal('new_task'),
+			v.literal('dependency_alert')
 		),
 		title: v.string(),
 		message: v.string(),

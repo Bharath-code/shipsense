@@ -36,6 +36,16 @@ export const syncRepoNow = internalAction({
 						name: repo.name
 					});
 					console.log('[Orchestrator] README analyzed');
+
+					await ctx.runAction(internal.dependencies.fetchAndMonitorDependencies, {
+						repoId,
+						accessToken: tokens.accessToken,
+						owner: repo.owner,
+						name: repo.name,
+						repoDisplayName: repo.name,
+						userId: repo.userId
+					});
+					console.log('[Orchestrator] Dependencies analyzed');
 				}
 			}
 

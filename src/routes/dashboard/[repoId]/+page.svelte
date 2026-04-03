@@ -32,6 +32,7 @@
 	import ScoreBreakdown from '$lib/components/dashboard/ScoreBreakdown.svelte';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
 	import ReadmeScore from '$lib/components/dashboard/ReadmeScore.svelte';
+	import DependencyList from '$lib/components/dashboard/DependencyList.svelte';
 
 	// Get repoId from route params
 	let repoId = $derived($page.params.repoId as string);
@@ -402,6 +403,9 @@
 				</ErrorBoundary>
 				<ErrorBoundary>
 					<ReadmeScore repoId={repoId as string} />
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<DependencyList repoId={repoId as string} />
 				</ErrorBoundary>
 				<ErrorBoundary>
 					<TaskChecklist repoId={repoId as string} />

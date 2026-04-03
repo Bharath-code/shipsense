@@ -10,6 +10,7 @@
 		Trophy,
 		Mail,
 		ClipboardList,
+		PackageSearch,
 		X,
 		RefreshCw
 	} from 'lucide-svelte';
@@ -29,7 +30,8 @@
 		streak_milestone: Trophy,
 		sync_complete: RefreshCw,
 		weekly_report: Mail,
-		new_task: ClipboardList
+		new_task: ClipboardList,
+		dependency_alert: PackageSearch
 	};
 
 	const typeColors: Record<string, string> = {
@@ -38,7 +40,8 @@
 		streak_milestone: 'text-warning',
 		sync_complete: 'text-success',
 		weekly_report: 'text-primary',
-		new_task: 'text-primary'
+		new_task: 'text-primary',
+		dependency_alert: 'text-warning'
 	};
 
 	function formatTimeAgo(timestamp: number): string {

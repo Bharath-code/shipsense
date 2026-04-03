@@ -94,6 +94,41 @@ export default defineSchema({
 		.index('by_repoId', ['repoId'])
 		.index('by_repoId_generatedAt', ['repoId', 'generatedAt']),
 
+	// Dependency monitoring results from repository manifests
+	repoDependencies: defineTable({
+		repoId: v.id('repos'),
+		name: v.string(),
+		ecosystem: v.union(v.literal('npm'), v.literal('pypi')),
+		manifestPath: v.string(),
+		currentRequirement: v.string(),
+		currentVersion: v.string(),
+		latestVersion: v.optional(v.string()),
+		isOutdated: v.boolean(),
+		outdatedType: v.union(
+			v.literal('none'),
+			v.literal('patch'),
+			v.literal('minor'),
+			v.literal('major'),
+			v.literal('unknown')
+		),
+		isDeprecated: v.boolean(),
+		deprecationMessage: v.optional(v.string()),
+		hasVulnerability: v.boolean(),
+		vulnerabilitySeverity: v.union(
+			v.literal('none'),
+			v.literal('low'),
+			v.literal('moderate'),
+			v.literal('high'),
+			v.literal('critical'),
+			v.literal('unknown')
+		),
+		vulnerabilitySummary: v.optional(v.string()),
+		lastCheckedAt: v.number()
+	})
+		.index('by_repoId', ['repoId'])
+		.index('by_repoId_ecosystem', ['repoId', 'ecosystem'])
+		.index('by_repoId_vulnerabilitySeverity', ['repoId', 'vulnerabilitySeverity']),
+
 	// Actionable tasks (deterministic rules engine)
 	repoTasks: defineTable({
 		repoId: v.id('repos'),
@@ -133,7 +168,8 @@ export default defineSchema({
 			v.literal('streak_milestone'),
 			v.literal('sync_complete'),
 			v.literal('weekly_report'),
-			v.literal('new_task')
+			v.literal('new_task'),
+			v.literal('dependency_alert')
 		),
 		title: v.string(),
 		message: v.string(),

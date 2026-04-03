@@ -34,6 +34,62 @@ export const getRepoDetails = query({
 	}
 });
 
+export const getRepoDependencies = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
+
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
+
+		const dependencies = await ctx.db
+			.query('repoDependencies')
+			.withIndex('by_repoId', (q) => q.eq('repoId', args.repoId))
+			.collect();
+
+		const severityOrder = {
+			critical: 5,
+			high: 4,
+			moderate: 3,
+			low: 2,
+			unknown: 1,
+			none: 0
+		} as const;
+		const outdatedOrder = {
+			major: 4,
+			minor: 3,
+			patch: 2,
+			unknown: 1,
+			none: 0
+		} as const;
+
+		const sorted = dependencies.sort((a, b) => {
+			const vulnerabilityDiff =
+				severityOrder[b.vulnerabilitySeverity] - severityOrder[a.vulnerabilitySeverity];
+			if (vulnerabilityDiff !== 0) return vulnerabilityDiff;
+
+			if (a.isDeprecated !== b.isDeprecated) return a.isDeprecated ? -1 : 1;
+
+			const outdatedDiff = outdatedOrder[b.outdatedType] - outdatedOrder[a.outdatedType];
+			if (outdatedDiff !== 0) return outdatedDiff;
+
+			return a.name.localeCompare(b.name);
+		});
+
+		return {
+			summary: {
+				total: sorted.length,
+				outdated: sorted.filter((dependency) => dependency.isOutdated).length,
+				majorOutdated: sorted.filter((dependency) => dependency.outdatedType === 'major').length,
+				deprecated: sorted.filter((dependency) => dependency.isDeprecated).length,
+				vulnerable: sorted.filter((dependency) => dependency.hasVulnerability).length
+			},
+			dependencies: sorted
+		};
+	}
+});
+
 export const getRepoInsights = query({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, args) => {

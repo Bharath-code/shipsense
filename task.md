@@ -300,22 +300,22 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 #### Schema
 
-- [ ] Add repoDependencies table to schema
-- [ ] Add dependency_alert notification type
+- [x] Add repoDependencies table to schema
+- [x] Add dependency_alert notification type
 
 #### Backend
 
-- [ ] Parse package.json, requirements.txt during sync
-- [ ] Create npm API client (convex/npmRegistry.ts)
-- [ ] Create dependency monitoring logic (convex/dependencies.ts)
-- [ ] Add dependency check to orchestrator sync pipeline
-- [ ] Add notifications for: vulnerabilities, major outdated, deprecated
+- [x] Parse package.json, requirements.txt during sync
+- [x] Create npm API client (convex/npmRegistry.ts)
+- [x] Create dependency monitoring logic (convex/dependencies.ts)
+- [x] Add dependency check to orchestrator sync pipeline
+- [x] Add notifications for: vulnerabilities, major outdated, deprecated
 
 #### Frontend
 
-- [ ] Create DependencyList component (src/lib/components/dashboard/DependencyList.svelte)
-- [ ] Add DependencyList widget to repo detail page
-- [ ] Show outdated count, vulnerability warnings, latest versions
+- [x] Create DependencyList component (src/lib/components/dashboard/DependencyList.svelte)
+- [x] Add DependencyList widget to repo detail page
+- [x] Show outdated count, vulnerability warnings, latest versions
 
 ---
 
