@@ -30,8 +30,8 @@
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
 	import ScoreBreakdown from '$lib/components/dashboard/ScoreBreakdown.svelte';
-	import SyncStatus from '$lib/components/dashboard/SyncStatus.svelte';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
+	import ReadmeScore from '$lib/components/dashboard/ReadmeScore.svelte';
 
 	// Get repoId from route params
 	let repoId = $derived($page.params.repoId as string);
@@ -205,9 +205,6 @@
 					<Clock class="h-3 w-3" />
 					<span>{formatTimeAgo(repo.lastSyncedAt)}</span>
 				</div>
-			{/if}
-			{#if repo}
-				<SyncStatus repoId={repoId as string} />
 			{/if}
 		</div>
 	</div>
@@ -402,6 +399,9 @@
 			<div class="flex flex-col gap-8 lg:col-span-5 xl:col-span-4">
 				<ErrorBoundary>
 					<ShipStreak repoId={repoId as string} />
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<ReadmeScore repoId={repoId as string} />
 				</ErrorBoundary>
 				<ErrorBoundary>
 					<TaskChecklist repoId={repoId as string} />

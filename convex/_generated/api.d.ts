@@ -21,6 +21,7 @@ import type * as migrations from "../migrations.js";
 import type * as notifications from "../notifications.js";
 import type * as orchestrator from "../orchestrator.js";
 import type * as plan from "../plan.js";
+import type * as readmeAnalyzer from "../readmeAnalyzer.js";
 import type * as repos from "../repos.js";
 import type * as scorer from "../scorer.js";
 import type * as streakTracker from "../streakTracker.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   orchestrator: typeof orchestrator;
   plan: typeof plan;
+  readmeAnalyzer: typeof readmeAnalyzer;
   repos: typeof repos;
   scorer: typeof scorer;
   streakTracker: typeof streakTracker;

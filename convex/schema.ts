@@ -58,7 +58,9 @@ export default defineSchema({
 		contributors14d: v.number(),
 		commitGapHours: v.float64(),
 		medianIssueResponseHours: v.float64(),
-		forks: v.number()
+		forks: v.number(),
+		readmeScore: v.optional(v.number()),
+		readmeSuggestions: v.optional(v.array(v.string()))
 	})
 		.index('by_repoId', ['repoId'])
 		.index('by_repoId_capturedAt', ['repoId', 'capturedAt']),

@@ -23,6 +23,22 @@ export const syncRepoNow = internalAction({
 			const newScore = await ctx.runQuery(internal.scorer.getLatestScore, { repoId });
 			const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
 
+			if (repo) {
+				const tokens = await ctx.runQuery(internal.users.getGithubToken, {
+					userId: repo.userId
+				});
+
+				if (tokens?.accessToken) {
+					await ctx.runAction(internal.readmeAnalyzer.fetchAndAnalyzeReadme, {
+						repoId,
+						accessToken: tokens.accessToken,
+						owner: repo.owner,
+						name: repo.name
+					});
+					console.log('[Orchestrator] README analyzed');
+				}
+			}
+
 			if (repo && newScore) {
 				if (previousScore && newScore.healthScore < previousScore.healthScore - 5) {
 					await ctx.runMutation(internal.notifications.createNotification, {

@@ -285,16 +285,16 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 #### Backend
 
-- [ ] Fetch README content during sync (update convex/collector.ts)
-- [ ] Create README analyzer (convex/readmeAnalyzer.ts)
-- [ ] Implement scoring criteria: length, sections, code blocks, badges, license, contributing
-- [ ] Store readmeScore and readmeSuggestions in repoSnapshots
+- [x] Fetch README content during sync (update convex/collector.ts)
+- [x] Create README analyzer (convex/readmeAnalyzer.ts)
+- [x] Implement scoring criteria: length, sections, code blocks, badges, license, contributing
+- [x] Store readmeScore and readmeSuggestions in repoSnapshots
 
 #### Frontend
 
-- [ ] Create ReadmeScore component (src/lib/components/dashboard/ReadmeScore.svelte)
-- [ ] Add ReadmeScore widget to repo detail page
-- [ ] Show actionable recommendations (what's missing, how to improve)
+- [x] Create ReadmeScore component (src/lib/components/dashboard/ReadmeScore.svelte)
+- [x] Add ReadmeScore widget to repo detail page
+- [x] Show actionable recommendations (what's missing, how to improve)
 
 ### Phase 22C — Dependency Monitoring
 

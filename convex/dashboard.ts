@@ -304,6 +304,8 @@ export const getScoreBreakdown = query({
 					description: 'Recent contributors show project growth'
 				}
 			},
+			readmeScore: latestSnapshot?.readmeScore ?? null,
+			readmeSuggestions: latestSnapshot?.readmeSuggestions ?? [],
 			formula,
 			calculatedAt,
 			syncStatus: latestScore ? 'synced' : latestSnapshot ? 'syncing' : 'pending'

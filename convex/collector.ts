@@ -385,3 +385,25 @@ export const markSyncError = internalMutation({
 		});
 	}
 });
+
+export const updateReadmeAnalysis = internalMutation({
+	args: {
+		repoId: v.id('repos'),
+		readmeScore: v.number(),
+		readmeSuggestions: v.array(v.string())
+	},
+	handler: async (ctx, { repoId, readmeScore, readmeSuggestions }) => {
+		const latestSnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.first();
+
+		if (latestSnapshot) {
+			await ctx.db.patch(latestSnapshot._id, {
+				readmeScore,
+				readmeSuggestions
+			});
+		}
+	}
+});
