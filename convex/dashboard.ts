@@ -90,6 +90,86 @@ export const getRepoDependencies = query({
 	}
 });
 
+export const getRepoDailyBrief = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
+
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
+
+		const [latestSnapshot, latestScore, latestInsight, topTask, topAnomaly] = await Promise.all([
+			ctx.db
+				.query('repoSnapshots')
+				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first(),
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first(),
+			ctx.db
+				.query('repoInsights')
+				.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first(),
+			ctx.db
+				.query('repoTasks')
+				.withIndex('by_repoId_isCompleted', (q) =>
+					q.eq('repoId', args.repoId).eq('isCompleted', false)
+				)
+				.order('asc')
+				.first(),
+			ctx.db
+				.query('repoAnomalies')
+				.withIndex('by_repoId_isActive', (q) => q.eq('repoId', args.repoId).eq('isActive', true))
+				.order('desc')
+				.first()
+		]);
+
+		const summaryLine = topAnomaly
+			? topAnomaly.description
+			: latestInsight?.summary ??
+				'Fresh data is flowing in. Keep shipping and check back after the next sync.';
+
+		const todayFocus = topAnomaly?.recommendedAction ?? topTask?.taskText ?? latestInsight?.actions?.[0] ?? null;
+
+		return {
+			repoName: repo.name,
+			healthScore: latestScore?.healthScore ?? null,
+			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
+			contributors14d: latestSnapshot?.contributors14d ?? 0,
+			lastSyncedAt: repo.lastSyncedAt ?? latestSnapshot?.capturedAt ?? null,
+			summaryLine,
+			todayFocus,
+			topTask: topTask
+				? {
+						text: topTask.taskText,
+						type: topTask.taskType,
+						priority: topTask.priority
+					}
+				: null,
+			topAnomaly: topAnomaly
+				? {
+						kind: topAnomaly.kind,
+						severity: topAnomaly.severity,
+						title: topAnomaly.title,
+						description: topAnomaly.description,
+						recommendedAction: topAnomaly.recommendedAction
+					}
+				: null,
+			insight: latestInsight
+				? {
+						summary: latestInsight.summary,
+						risk: latestInsight.risk
+					}
+				: null
+		};
+	}
+});
+
 export const getRepoInsights = query({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, args) => {

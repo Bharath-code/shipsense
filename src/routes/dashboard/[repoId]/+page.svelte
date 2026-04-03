@@ -34,6 +34,7 @@
 	import ReadmeScore from '$lib/components/dashboard/ReadmeScore.svelte';
 	import DependencyList from '$lib/components/dashboard/DependencyList.svelte';
 	import AnomalyAlerts from '$lib/components/dashboard/AnomalyAlerts.svelte';
+	import DailyBrief from '$lib/components/dashboard/DailyBrief.svelte';
 
 	// Get repoId from route params
 	let repoId = $derived($page.params.repoId as string);
@@ -384,6 +385,7 @@
 
 		<!-- Score Breakdown Section -->
 		<ScoreBreakdown repoId={repoId as string} />
+		<DailyBrief repoId={repoId as string} />
 
 		<!-- Main Dashboard Grid -->
 		<div class="grid w-full grid-cols-1 gap-8 lg:grid-cols-12">

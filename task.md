@@ -329,7 +329,7 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 #### Daily Action Loop
 
 - [ ] Upgrade task generation so anomaly alerts feed a stronger “what to do today” recommendation
-- [ ] Add a compact daily brief card combining anomaly + insight + top task
+- [x] Add a compact daily brief card combining anomaly + insight + top task
 
 #### Growth Proof
 
