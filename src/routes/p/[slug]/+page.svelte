@@ -201,6 +201,22 @@
 				</div>
 			{/if}
 
+			{#if data.growthMoments && data.growthMoments.length > 0}
+				<div class="mb-8 rounded-2xl border bg-card p-6">
+					<h2 class="mb-4 text-sm font-bold tracking-widest text-muted-foreground uppercase">
+						Growth Moments
+					</h2>
+					<div class="space-y-3">
+						{#each data.growthMoments as moment}
+							<div class="rounded-xl bg-muted/40 p-4">
+								<p class="text-sm font-semibold text-foreground">{moment.title}</p>
+								<p class="mt-1 text-sm text-muted-foreground">{moment.description}</p>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
 			<!-- Embed Badge Section -->
 			<div class="mb-8 rounded-2xl border bg-card p-6">
 				<h2 class="mb-4 text-sm font-bold tracking-widest text-muted-foreground uppercase">

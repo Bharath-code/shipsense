@@ -21,6 +21,7 @@
 	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId }));
 	const scoreHistoryQuery = useQuery(api.dashboard.getRepoScoreHistory, () => ({ repoId }));
 	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId }));
+	const growthMomentsQuery = useQuery(api.dashboard.getRepoGrowthMoments, () => ({ repoId }));
 
 	let repo = $derived(repoQuery.data);
 	let latestScore = $derived(
@@ -29,6 +30,7 @@
 	let streak = $derived(streakQuery.data?.currentStreak || 0);
 	let starsLast7d = $derived(repo?.starsLast7d || 0);
 	let lastCommit = $derived(repo?.lastCommitAt ? getDaysAgo(repo.lastCommitAt) : null);
+	let growthMoments = $derived(growthMomentsQuery.data || []);
 
 	let downloading = $state(false);
 	let shareSuccess = $state(false);
@@ -42,6 +44,13 @@
 	}
 
 	function getShareMessage(): string {
+		const topMoment = growthMoments[0];
+		if (topMoment?.kind === 'best_week') {
+			return `📈 ${repo?.name} just hit its best week for stars on ShipSense. ${topMoment.description} 🚀`;
+		}
+		if (topMoment?.kind === 'momentum_recovered') {
+			return `⚡ ${repo?.name} just recovered momentum on ShipSense. ${topMoment.description} 🚀`;
+		}
 		if (streak >= 7) {
 			return `🔥 ${streak} day commit streak on ${repo?.name}! My repo health is ${latestScore}/100. Ship with me 🚀 #OpenSource #DevCommunity`;
 		}
@@ -51,7 +60,7 @@
 		if (starsLast7d > 0) {
 			return `📈 ${repo?.name} grew to ${repo?.starsCount} stars (+${starsLast7d} this week!) - tracking with @ShipSense`;
 		}
-		return `🚀 Just connected ${repo?.name} to ShipSense! Health Score: ${latestScore}/100. Let me track this OSS journey!`;
+		return `📊 Tracking ${repo?.name} on ShipSense: health score ${latestScore}/100. Watching momentum, contributors, and what to improve next.`;
 	}
 
 	async function downloadCard() {
@@ -186,6 +195,14 @@
 						{repo?.name || 'Loading...'}
 					</h2>
 					<p class="text-sm font-medium text-white/40">{repo?.owner}</p>
+					{#if growthMoments[0]}
+						<div class="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+							<TrendingUp class="h-3 w-3 text-emerald-400" />
+							<span class="text-[10px] font-bold tracking-widest text-emerald-400 uppercase">
+								{growthMoments[0].title}
+							</span>
+						</div>
+					{/if}
 				</div>
 
 				<!-- Main Score Display -->

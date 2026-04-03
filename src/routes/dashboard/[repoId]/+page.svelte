@@ -35,6 +35,7 @@
 	import DependencyList from '$lib/components/dashboard/DependencyList.svelte';
 	import AnomalyAlerts from '$lib/components/dashboard/AnomalyAlerts.svelte';
 	import DailyBrief from '$lib/components/dashboard/DailyBrief.svelte';
+	import SharePromptToast from '$lib/components/dashboard/SharePromptToast.svelte';
 
 	// Get repoId from route params
 	let repoId = $derived($page.params.repoId as string);
@@ -421,6 +422,8 @@
 	{/if}
 
 	<!-- First sync toast prompt -->
+	<SharePromptToast repoId={repoId as string} />
+
 	<Toast
 		bind:open={showFirstSyncToast}
 		title={LABELS.TOAST_FIRST_SYNC_TITLE}

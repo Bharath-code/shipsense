@@ -58,6 +58,15 @@ export const syncRepoNow = internalAction({
 					currentScore: newScore.healthScore
 				});
 
+				await ctx.runAction(internal.sharePrompts.generateSharePrompt, {
+					repoId,
+					userId: repo.userId,
+					repoName: repo.name,
+					repoSlug: repo.slug,
+					previousScore: previousScore?.healthScore,
+					currentScore: newScore.healthScore
+				});
+
 				if (previousScore && newScore.healthScore < previousScore.healthScore - 5) {
 					await ctx.runMutation(internal.notifications.createNotification, {
 						userId: repo.userId,

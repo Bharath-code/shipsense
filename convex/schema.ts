@@ -150,6 +150,30 @@ export default defineSchema({
 		.index('by_repoId_isActive', ['repoId', 'isActive'])
 		.index('by_repoId_detectedAt', ['repoId', 'detectedAt']),
 
+	// Dedupeable share nudges for notable wins after sync
+	repoSharePrompts: defineTable({
+		repoId: v.id('repos'),
+		userId: v.id('users'),
+		kind: v.union(
+			v.literal('star_spike'),
+			v.literal('best_week'),
+			v.literal('momentum_recovered'),
+			v.literal('streak_milestone'),
+			v.literal('score_milestone')
+		),
+		title: v.string(),
+		message: v.string(),
+		shareText: v.string(),
+		shareUrl: v.string(),
+		fingerprint: v.string(),
+		isActive: v.boolean(),
+		dismissedAt: v.optional(v.number()),
+		createdAt: v.number()
+	})
+		.index('by_repoId_isActive', ['repoId', 'isActive'])
+		.index('by_userId_createdAt', ['userId', 'createdAt'])
+		.index('by_repoId_fingerprint', ['repoId', 'fingerprint']),
+
 	// Actionable tasks (deterministic rules engine)
 	repoTasks: defineTable({
 		repoId: v.id('repos'),

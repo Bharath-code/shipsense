@@ -333,8 +333,14 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 #### Growth Proof
 
-- [ ] Surface “best week” and “momentum recovered” moments in the public/shareable views
-- [ ] Promote anomaly wins into public growth-card copy when relevant
+- [x] Surface “best week” and “momentum recovered” moments in the public/shareable views
+- [x] Promote anomaly wins into public growth-card copy when relevant
+
+### Phase 24 — Share Nudges
+
+- [x] Nudge users after sync when a share-worthy win is detected
+- [x] Dedupe prompts per event so repeated syncs do not spam the same nudge
+- [x] Connect prompt CTA directly to X share flow
 
 ---
 

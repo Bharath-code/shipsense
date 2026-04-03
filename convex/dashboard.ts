@@ -2,6 +2,49 @@ import { query, mutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 
+export type GrowthMoment = {
+	kind: 'best_week' | 'momentum_recovered';
+	title: string;
+	description: string;
+};
+
+export function deriveGrowthMoments(input: {
+	starsLast7d: number;
+	scoreHistory: Array<{ healthScore: number }>;
+	recentSnapshots: Array<{ starsLast7d: number }>;
+}): GrowthMoment[] {
+	const moments: GrowthMoment[] = [];
+
+	const previousSnapshotStars = input.recentSnapshots.slice(1).map((snapshot) => snapshot.starsLast7d);
+	const previousBestWeek = previousSnapshotStars.length > 0 ? Math.max(...previousSnapshotStars) : 0;
+	if (input.starsLast7d > 0 && input.starsLast7d >= previousBestWeek && input.starsLast7d >= 5) {
+		moments.push({
+			kind: 'best_week',
+			title: 'Best week for stars',
+			description:
+				previousBestWeek > 0
+					? `This repo is at +${input.starsLast7d} stars this week, matching or beating the previous best of +${previousBestWeek}.`
+					: `This repo picked up +${input.starsLast7d} stars this week and is starting to show real momentum.`
+		});
+	}
+
+	if (input.scoreHistory.length >= 3) {
+		const latest = input.scoreHistory[input.scoreHistory.length - 1]?.healthScore ?? 0;
+		const previous = input.scoreHistory[input.scoreHistory.length - 2]?.healthScore ?? 0;
+		const beforePrevious = input.scoreHistory[input.scoreHistory.length - 3]?.healthScore ?? 0;
+
+		if (latest >= previous + 5 && previous <= beforePrevious) {
+			moments.push({
+				kind: 'momentum_recovered',
+				title: 'Momentum recovered',
+				description: `Health score bounced from ${previous} to ${latest}, reversing the previous slowdown.`
+			});
+		}
+	}
+
+	return moments;
+}
+
 export const getRepoStreakInternal = internalQuery({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, args) => {
@@ -280,6 +323,39 @@ export const getRepoScoreHistory = query({
 	}
 });
 
+export const getRepoGrowthMoments = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return [];
+
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return [];
+
+		const [scoreHistory, recentSnapshots] = await Promise.all([
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.take(5),
+			ctx.db
+				.query('repoSnapshots')
+				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.take(5)
+		]);
+
+		const chronologicalScores = scoreHistory.reverse();
+		const latestSnapshot = recentSnapshots[0];
+
+		return deriveGrowthMoments({
+			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
+			scoreHistory: chronologicalScores.map((score) => ({ healthScore: score.healthScore })),
+			recentSnapshots: recentSnapshots.map((snapshot) => ({ starsLast7d: snapshot.starsLast7d }))
+		});
+	}
+});
+
 export const getOpenTasksForReport = internalQuery({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
@@ -471,11 +547,24 @@ export const getPublicRepoHealth = query({
 			.order('desc')
 			.first();
 
-		const recentCommits = await ctx.db
-			.query('repoSnapshots')
-			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repo._id))
-			.order('desc')
-			.take(5);
+		const [recentCommits, recentScores] = await Promise.all([
+			ctx.db
+				.query('repoSnapshots')
+				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repo._id))
+				.order('desc')
+				.take(5),
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repo._id))
+				.order('desc')
+				.take(5)
+		]);
+
+		const growthMoments = deriveGrowthMoments({
+			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
+			scoreHistory: recentScores.reverse().map((score) => ({ healthScore: score.healthScore })),
+			recentSnapshots: recentCommits.map((snapshot) => ({ starsLast7d: snapshot.starsLast7d }))
+		});
 
 		return {
 			repo: {
@@ -507,6 +596,7 @@ export const getPublicRepoHealth = query({
 				capturedAt: s.capturedAt,
 				commitGapHours: s.commitGapHours
 			})),
+			growthMoments,
 			scoreBreakdown: latestScore
 				? {
 						stars: latestScore.starScore,
