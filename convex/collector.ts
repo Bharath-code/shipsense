@@ -345,6 +345,19 @@ export const getLatestSnapshot = internalQuery({
 	}
 });
 
+export const getSnapshotBeforeLatest = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		const snapshots = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.take(2);
+
+		return snapshots[1] ?? null;
+	}
+});
+
 export const getSnapshotFromDaysAgo = internalQuery({
 	args: { repoId: v.id('repos'), daysAgo: v.number() },
 	handler: async (ctx, { repoId, daysAgo }) => {

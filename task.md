@@ -317,6 +317,25 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 - [x] Add DependencyList widget to repo detail page
 - [x] Show outdated count, vulnerability warnings, latest versions
 
+### Phase 23 — Traction Loop V1
+
+#### Anomaly Intelligence
+
+- [x] Add repoAnomalies table to schema
+- [x] Detect star spikes, contributor spikes, and momentum drops during sync
+- [x] Add anomaly_alert notification type
+- [x] Show anomaly alerts widget on repo detail page
+
+#### Daily Action Loop
+
+- [ ] Upgrade task generation so anomaly alerts feed a stronger “what to do today” recommendation
+- [ ] Add a compact daily brief card combining anomaly + insight + top task
+
+#### Growth Proof
+
+- [ ] Surface “best week” and “momentum recovered” moments in the public/shareable views
+- [ ] Promote anomaly wins into public growth-card copy when relevant
+
 ---
 
 ## Working Rule

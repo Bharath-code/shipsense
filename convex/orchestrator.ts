@@ -50,6 +50,14 @@ export const syncRepoNow = internalAction({
 			}
 
 			if (repo && newScore) {
+				await ctx.runAction(internal.anomalies.analyzeRepoAnomalies, {
+					repoId,
+					userId: repo.userId,
+					repoName: repo.name,
+					previousScore: previousScore?.healthScore,
+					currentScore: newScore.healthScore
+				});
+
 				if (previousScore && newScore.healthScore < previousScore.healthScore - 5) {
 					await ctx.runMutation(internal.notifications.createNotification, {
 						userId: repo.userId,

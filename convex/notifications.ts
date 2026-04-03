@@ -14,7 +14,8 @@ export const createNotification = internalMutation({
 			v.literal('sync_complete'),
 			v.literal('weekly_report'),
 			v.literal('new_task'),
-			v.literal('dependency_alert')
+			v.literal('dependency_alert'),
+			v.literal('anomaly_alert')
 		),
 		title: v.string(),
 		message: v.string(),

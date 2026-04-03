@@ -129,6 +129,27 @@ export default defineSchema({
 		.index('by_repoId_ecosystem', ['repoId', 'ecosystem'])
 		.index('by_repoId_vulnerabilitySeverity', ['repoId', 'vulnerabilitySeverity']),
 
+	// Detected repository anomalies and momentum signals
+	repoAnomalies: defineTable({
+		repoId: v.id('repos'),
+		kind: v.union(
+			v.literal('star_spike'),
+			v.literal('contributor_spike'),
+			v.literal('momentum_drop')
+		),
+		severity: v.union(v.literal('low'), v.literal('medium'), v.literal('high')),
+		title: v.string(),
+		description: v.string(),
+		recommendedAction: v.string(),
+		metricValue: v.number(),
+		baselineValue: v.number(),
+		detectedAt: v.number(),
+		isActive: v.boolean()
+	})
+		.index('by_repoId', ['repoId'])
+		.index('by_repoId_isActive', ['repoId', 'isActive'])
+		.index('by_repoId_detectedAt', ['repoId', 'detectedAt']),
+
 	// Actionable tasks (deterministic rules engine)
 	repoTasks: defineTable({
 		repoId: v.id('repos'),
@@ -169,7 +190,8 @@ export default defineSchema({
 			v.literal('sync_complete'),
 			v.literal('weekly_report'),
 			v.literal('new_task'),
-			v.literal('dependency_alert')
+			v.literal('dependency_alert'),
+			v.literal('anomaly_alert')
 		),
 		title: v.string(),
 		message: v.string(),

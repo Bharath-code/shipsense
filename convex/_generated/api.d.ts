@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as anomalies from "../anomalies.js";
 import type * as auth from "../auth.js";
 import type * as billing from "../billing.js";
 import type * as collector from "../collector.js";
@@ -37,6 +38,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  anomalies: typeof anomalies;
   auth: typeof auth;
   billing: typeof billing;
   collector: typeof collector;

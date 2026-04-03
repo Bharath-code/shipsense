@@ -11,6 +11,7 @@
 		Mail,
 		ClipboardList,
 		PackageSearch,
+		Siren,
 		X,
 		RefreshCw
 	} from 'lucide-svelte';
@@ -31,7 +32,8 @@
 		sync_complete: RefreshCw,
 		weekly_report: Mail,
 		new_task: ClipboardList,
-		dependency_alert: PackageSearch
+		dependency_alert: PackageSearch,
+		anomaly_alert: Siren
 	};
 
 	const typeColors: Record<string, string> = {
@@ -41,7 +43,8 @@
 		sync_complete: 'text-success',
 		weekly_report: 'text-primary',
 		new_task: 'text-primary',
-		dependency_alert: 'text-warning'
+		dependency_alert: 'text-warning',
+		anomaly_alert: 'text-destructive'
 	};
 
 	function formatTimeAgo(timestamp: number): string {
