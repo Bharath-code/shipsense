@@ -94,6 +94,28 @@ export default defineSchema({
 		.index('by_repoId', ['repoId'])
 		.index('by_repoId_generatedAt', ['repoId', 'generatedAt']),
 
+	// Persisted daily digest summaries for habit-forming check-ins
+	repoDailyDigests: defineTable({
+		repoId: v.id('repos'),
+		generatedAt: v.number(),
+		summary: v.string(),
+		changeSummary: v.string(),
+		topRisk: v.string(),
+		topWin: v.string(),
+		recommendedAction: v.string(),
+		recommendedActionSource: v.union(
+			v.literal('anomaly'),
+			v.literal('trend'),
+			v.literal('dependency'),
+			v.literal('readme'),
+			v.literal('hygiene')
+		),
+		recommendedActionImpact: v.string(),
+		isQuietDay: v.boolean()
+	})
+		.index('by_repoId', ['repoId'])
+		.index('by_repoId_generatedAt', ['repoId', 'generatedAt']),
+
 	// Dependency monitoring results from repository manifests
 	repoDependencies: defineTable({
 		repoId: v.id('repos'),
@@ -187,6 +209,16 @@ export default defineSchema({
 			v.literal('anomaly')
 		),
 		priority: v.number(),
+		taskSource: v.optional(
+			v.union(
+				v.literal('anomaly'),
+				v.literal('trend'),
+				v.literal('dependency'),
+				v.literal('readme'),
+				v.literal('hygiene')
+			)
+		),
+		expectedImpact: v.optional(v.string()),
 		isCompleted: v.boolean(),
 		createdAt: v.number(),
 		completedAt: v.optional(v.number())

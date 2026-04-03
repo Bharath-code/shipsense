@@ -13,6 +13,7 @@ import type * as auth from "../auth.js";
 import type * as billing from "../billing.js";
 import type * as collector from "../collector.js";
 import type * as crons from "../crons.js";
+import type * as dailyDigests from "../dailyDigests.js";
 import type * as dashboard from "../dashboard.js";
 import type * as dependencies from "../dependencies.js";
 import type * as email from "../email.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   billing: typeof billing;
   collector: typeof collector;
   crons: typeof crons;
+  dailyDigests: typeof dailyDigests;
   dashboard: typeof dashboard;
   dependencies: typeof dependencies;
   email: typeof email;

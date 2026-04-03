@@ -140,6 +140,9 @@ export const syncRepoNow = internalAction({
 			await ctx.runAction(internal.insightGenerator.generateInsights, { repoId });
 			console.log('[Orchestrator] Insights generated');
 
+			await ctx.runAction(internal.dailyDigests.generateRepoDailyDigest, { repoId });
+			console.log('[Orchestrator] Daily digest generated');
+
 			console.log('[Orchestrator] Sync complete for repo:', repoId);
 		} catch (error) {
 			console.error('[Orchestrator] Sync failed for repo:', repoId, error);
@@ -164,9 +167,10 @@ export const runInsightGeneration = internalAction({
 		const repos = await ctx.runQuery(internal.repos.listAllActiveRepos);
 
 		await Promise.all(
-			repos.map((repo) =>
-				ctx.runAction(internal.insightGenerator.generateInsights, { repoId: repo._id })
-			)
+			repos.map(async (repo) => {
+				await ctx.runAction(internal.insightGenerator.generateInsights, { repoId: repo._id });
+				await ctx.runAction(internal.dailyDigests.generateRepoDailyDigest, { repoId: repo._id });
+			})
 		);
 	}
 });

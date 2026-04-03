@@ -12,6 +12,8 @@ describe('determineTasks', () => {
 		expect(tasks).toHaveLength(1);
 		expect(tasks[0].taskType).toBe('commit');
 		expect(tasks[0].priority).toBe(1);
+		expect(tasks[0].taskSource).toBe('hygiene');
+		expect(tasks[0].expectedImpact).toContain('shipping streak');
 	});
 
 	it('generates an issue task if repo is public', () => {
@@ -24,6 +26,7 @@ describe('determineTasks', () => {
 		expect(tasks).toHaveLength(1);
 		expect(tasks[0].taskType).toBe('issue');
 		expect(tasks[0].priority).toBe(3);
+		expect(tasks[0].taskSource).toBe('trend');
 	});
 
 	it('generates both tasks if public and commit gap > 24', () => {
@@ -72,5 +75,6 @@ describe('determineTasks', () => {
 		expect(tasks[0].taskType).toBe('anomaly');
 		expect(tasks[0].priority).toBe(1);
 		expect(tasks[0].taskText).toContain('Share the momentum publicly.');
+		expect(tasks[0].expectedImpact).toContain('distribution');
 	});
 });

@@ -142,7 +142,8 @@ export const getRepoDailyBrief = query({
 		const repo = await ctx.db.get(args.repoId);
 		if (!repo || repo.userId !== userId) return null;
 
-		const [latestSnapshot, latestScore, latestInsight, topTask, topAnomaly] = await Promise.all([
+		const [latestSnapshot, latestScore, latestInsight, topTask, topAnomaly, latestDigest] =
+			await Promise.all([
 			ctx.db
 				.query('repoSnapshots')
 				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
@@ -169,15 +170,26 @@ export const getRepoDailyBrief = query({
 				.query('repoAnomalies')
 				.withIndex('by_repoId_isActive', (q) => q.eq('repoId', args.repoId).eq('isActive', true))
 				.order('desc')
+				.first(),
+			ctx.db
+				.query('repoDailyDigests')
+				.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
 				.first()
 		]);
 
-		const summaryLine = topAnomaly
-			? topAnomaly.description
-			: latestInsight?.summary ??
-				'Fresh data is flowing in. Keep shipping and check back after the next sync.';
+		const summaryLine =
+			latestDigest?.summary ??
+			topAnomaly?.description ??
+			latestInsight?.summary ??
+			'Fresh data is flowing in. Keep shipping and check back after the next sync.';
 
-		const todayFocus = topAnomaly?.recommendedAction ?? topTask?.taskText ?? latestInsight?.actions?.[0] ?? null;
+		const todayFocus =
+			latestDigest?.recommendedAction ??
+			topAnomaly?.recommendedAction ??
+			topTask?.taskText ??
+			latestInsight?.actions?.[0] ??
+			null;
 
 		return {
 			repoName: repo.name,
@@ -185,13 +197,24 @@ export const getRepoDailyBrief = query({
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			contributors14d: latestSnapshot?.contributors14d ?? 0,
 			lastSyncedAt: repo.lastSyncedAt ?? latestSnapshot?.capturedAt ?? null,
+			generatedAt: latestDigest?.generatedAt ?? null,
+			changeSummary:
+				latestDigest?.changeSummary ??
+				'Run another sync to see a clearer day-over-day change summary.',
 			summaryLine,
 			todayFocus,
+			todayFocusSource: latestDigest?.recommendedActionSource ?? topTask?.taskSource ?? null,
+			todayFocusImpact: latestDigest?.recommendedActionImpact ?? topTask?.expectedImpact ?? null,
+			topRisk: latestDigest?.topRisk ?? topAnomaly?.description ?? null,
+			topWin: latestDigest?.topWin ?? null,
+			isQuietDay: latestDigest?.isQuietDay ?? false,
 			topTask: topTask
 				? {
 						text: topTask.taskText,
 						type: topTask.taskType,
-						priority: topTask.priority
+						priority: topTask.priority,
+						source: topTask.taskSource ?? null,
+						expectedImpact: topTask.expectedImpact ?? null
 					}
 				: null,
 			topAnomaly: topAnomaly

@@ -342,6 +342,94 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 - [x] Dedupe prompts per event so repeated syncs do not spam the same nudge
 - [x] Connect prompt CTA directly to X share flow
 
+### Phase 25 — Daily Habit Loop
+
+#### Daily Digest
+
+- [x] Create a daily digest model that summarizes repo changes, top risk, top win, and one recommended action
+- [x] Add a daily digest card to the dashboard with “what changed since yesterday”
+- [x] Trigger digest generation on schedule so each active repo gets a fresh morning brief
+- [x] Add a lightweight “nothing major changed” fallback so the digest still feels useful on quiet days
+
+#### Daily Focus
+
+- [x] Promote exactly one primary “do this today” action above the rest of the task list
+- [x] Add expected-impact copy to daily actions so users understand why the recommendation matters
+- [x] Highlight whether today’s action comes from anomaly, trend, dependency risk, or README weakness
+
+### Phase 26 — Goals & Progress
+
+#### Personalized Goals
+
+- [ ] Add repo goals table for user-defined targets like score milestones, streak targets, and issue response goals
+- [ ] Create goal setup UX with suggested starter goals for new repos
+- [ ] Show goal progress bars and completion states on the dashboard
+- [ ] Trigger celebration states when a goal is reached and suggest a follow-up goal
+
+#### Progress Memory
+
+- [ ] Build a timeline of key wins and regressions so users can see how the repo is evolving
+- [ ] Connect actions to outcomes where possible, such as README improvements followed by better repo health
+- [ ] Add “since last week” and “since last month” progress summaries to reinforce momentum
+
+### Phase 27 — Benchmarking & Context
+
+#### Repo Benchmarking
+
+- [ ] Define benchmark cohorts by repo size, language, and project type
+- [ ] Compare repo health, issue responsiveness, and contributor activity against similar repos
+- [ ] Add benchmark insights like “faster than similar repos” or “lagging on contributor activation”
+- [ ] Show benchmark context in dashboard and public-growth surfaces without overwhelming the user
+
+#### Watchlists
+
+- [ ] Let users subscribe to specific signals like stars, contributors, issue latency, dependency risk, and README quality
+- [ ] Add per-metric thresholds so users can choose what counts as noteworthy
+- [ ] Use watchlists to personalize alerts, digests, and share prompts
+
+### Phase 28 — Wins, Recovery & Celebration
+
+#### Win Detection
+
+- [ ] Expand growth moments to include streak milestones, contributor milestones, score recoveries, and best month
+- [ ] Add celebratory UI states for notable wins so the product feels rewarding, not only corrective
+- [ ] Generate reusable “win cards” for sharing recent milestones across public and private views
+
+#### Recovery Loops
+
+- [ ] Detect recovery states after a prior slowdown, not just the slowdown itself
+- [ ] Show “you recovered from” messaging to reinforce continued use after a bad week
+- [ ] Feed recovery moments into the daily digest and share nudge system
+
+### Phase 29 — Notification Preferences
+
+#### Alert Controls
+
+- [ ] Add notification preference settings for quiet mode, important-only, and growth mode
+- [ ] Let users choose channel preferences for in-app, email, and future Slack/Discord delivery
+- [ ] Add per-event toggles for anomalies, streaks, wins, dependency alerts, and share nudges
+- [ ] Respect snooze windows so the product does not over-notify during heavy activity
+
+#### Delivery Quality
+
+- [ ] Add dedupe and cooldown rules across all notification types, not just share prompts
+- [ ] Prioritize user-facing notifications by urgency and likely usefulness
+- [ ] Track notification engagement so low-value alerts can be refined or removed
+
+### Phase 30 — Workflow Integrations
+
+#### Delivery Channels
+
+- [ ] Add email delivery for daily digests and important repo alerts
+- [ ] Add Slack integration for teams who want sync summaries and anomalies in-channel
+- [ ] Add Discord integration for open-source maintainers managing communities there
+
+#### In-Flow Usage
+
+- [ ] Deliver “top action today” into external channels with a deep link back to the repo dashboard
+- [ ] Add GitHub-friendly surfaces where useful, such as optional issue/comment summaries for maintainers
+- [ ] Ensure integrations reuse the same digest, anomaly, and win engine so product logic stays consistent
+
 ---
 
 ## Working Rule

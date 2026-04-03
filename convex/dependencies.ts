@@ -1,4 +1,4 @@
-import { internalAction, internalMutation } from './_generated/server';
+import { internalAction, internalMutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
 import { fetchNpmAdvisorySummary, fetchNpmPackageMetadata } from './npmRegistry';
@@ -322,6 +322,18 @@ export const replaceRepoDependencies = internalMutation({
 				...dependency
 			});
 		}
+	}
+});
+
+export const getRepoDependencySummary = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		const dependencies = await ctx.db
+			.query('repoDependencies')
+			.withIndex('by_repoId', (q) => q.eq('repoId', repoId))
+			.collect();
+
+		return summarizeDependencies(dependencies);
 	}
 });
 

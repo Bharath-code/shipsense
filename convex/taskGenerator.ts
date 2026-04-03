@@ -4,11 +4,14 @@ import { internal } from './_generated/api';
 import type { Doc } from './_generated/dataModel';
 
 export type TaskType = 'commit' | 'issue' | 'pr' | 'general' | 'anomaly';
+export type TaskSource = 'anomaly' | 'trend' | 'dependency' | 'readme' | 'hygiene';
 
 export interface GeneratedTask {
 	taskText: string;
 	taskType: TaskType;
 	priority: number;
+	taskSource: TaskSource;
+	expectedImpact: string;
 }
 
 type ActiveAnomaly = Pick<
@@ -22,7 +25,9 @@ function anomalyTasks(anomalies: ActiveAnomaly[]): GeneratedTask[] {
 			return {
 				taskText: `Star spike active. ${anomaly.recommendedAction}`,
 				taskType: 'anomaly' as const,
-				priority: anomaly.severity === 'high' ? 1 : 2
+				priority: anomaly.severity === 'high' ? 1 : 2,
+				taskSource: 'anomaly',
+				expectedImpact: 'Helps you turn short-term attention into sustained distribution while momentum is high.'
 			};
 		}
 
@@ -30,14 +35,18 @@ function anomalyTasks(anomalies: ActiveAnomaly[]): GeneratedTask[] {
 			return {
 				taskText: `Contributor interest is up. ${anomaly.recommendedAction}`,
 				taskType: 'anomaly' as const,
-				priority: anomaly.severity === 'high' ? 1 : 2
+				priority: anomaly.severity === 'high' ? 1 : 2,
+				taskSource: 'anomaly',
+				expectedImpact: 'Improves contributor activation and increases the chance that first-time contributors return.'
 			};
 		}
 
 		return {
 			taskText: `Momentum slipped. ${anomaly.recommendedAction}`,
 			taskType: 'anomaly' as const,
-			priority: anomaly.severity === 'high' ? 1 : 2
+			priority: anomaly.severity === 'high' ? 1 : 2,
+			taskSource: 'anomaly',
+			expectedImpact: 'Stops the current slowdown before it turns into a longer-term drop in repo health.'
 		};
 	});
 }
@@ -63,13 +72,17 @@ export function determineTasks(
 			tasks.push({
 				taskText: 'No commits in 2+ days. Push something today to keep your streak alive!',
 				taskType: 'commit',
-				priority: 1
+				priority: 1,
+				taskSource: 'hygiene',
+				expectedImpact: 'Keeps your shipping streak alive and signals active maintenance to visitors and contributors.'
 			});
 		} else {
 			tasks.push({
 				taskText: 'Push a commit today to keep your streak alive.',
 				taskType: 'commit',
-				priority: 2
+				priority: 2,
+				taskSource: 'hygiene',
+				expectedImpact: 'Maintains visible repo activity so momentum does not stall between syncs.'
 			});
 		}
 	}
@@ -79,13 +92,17 @@ export function determineTasks(
 		tasks.push({
 			taskText: `${snapshot.issuesOpen} open issues. Consider triaging or closing some.`,
 			taskType: 'issue',
-			priority: 3
+			priority: 3,
+			taskSource: 'trend',
+			expectedImpact: 'Improves responsiveness and makes the project feel easier to join and trust.'
 		});
 	} else if (!isPrivate && snapshot.issuesOpen > 0) {
 		tasks.push({
 			taskText: 'Check for new issues that need triaging.',
 			taskType: 'issue',
-			priority: 5
+			priority: 5,
+			taskSource: 'trend',
+			expectedImpact: 'Prevents support debt from building up and keeps community questions from going cold.'
 		});
 	}
 
@@ -94,7 +111,9 @@ export function determineTasks(
 		tasks.push({
 			taskText: `${snapshot.prsOpen} open PRs with no merges this week. Follow up on reviews.`,
 			taskType: 'pr',
-			priority: 4
+			priority: 4,
+			taskSource: 'trend',
+			expectedImpact: 'Unlocks contribution flow so outside momentum does not stall in review.'
 		});
 	}
 
@@ -103,7 +122,9 @@ export function determineTasks(
 		tasks.push({
 			taskText: `${snapshot.contributors14d} new contributors this month. Welcome them!`,
 			taskType: 'general',
-			priority: 6
+			priority: 6,
+			taskSource: 'trend',
+			expectedImpact: 'Increases the odds that new contributors become repeat contributors instead of one-time visitors.'
 		});
 	}
 
@@ -118,13 +139,17 @@ export function determineTasks(
 			tasks.push({
 				taskText: `Health score dropped ${scoreDrop} points. Check what's changed.`,
 				taskType: 'anomaly',
-				priority: 1
+				priority: 1,
+				taskSource: 'anomaly',
+				expectedImpact: 'Helps you identify the largest regression quickly before it compounds.'
 			});
 		} else if (scoreDrop >= 10) {
 			tasks.push({
 				taskText: `Health score dropped ${scoreDrop} points. Review your metrics.`,
 				taskType: 'anomaly',
-				priority: 2
+				priority: 2,
+				taskSource: 'anomaly',
+				expectedImpact: 'Keeps a short-term decline from becoming a longer-term momentum problem.'
 			});
 		}
 	}
@@ -137,7 +162,7 @@ export const generateTasks = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
 		const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
-	if (!repo) return;
+		if (!repo) return;
 
 		const latestSnapshot = await ctx.runQuery(internal.collector.getLatestSnapshot, { repoId });
 		if (!latestSnapshot) return;
@@ -179,7 +204,9 @@ export const generateTasks = internalAction({
 				userId: repo.userId,
 				taskText: task.taskText,
 				taskType: task.taskType,
-				priority: task.priority
+				priority: task.priority,
+				taskSource: task.taskSource,
+				expectedImpact: task.expectedImpact
 			});
 		}
 	}
@@ -197,7 +224,17 @@ export const createTask = internalMutation({
 			v.literal('general'),
 			v.literal('anomaly')
 		),
-		priority: v.number()
+		priority: v.number(),
+		taskSource: v.optional(
+			v.union(
+				v.literal('anomaly'),
+				v.literal('trend'),
+				v.literal('dependency'),
+				v.literal('readme'),
+				v.literal('hygiene')
+			)
+		),
+		expectedImpact: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		// Avoid creating duplicate unresolved tasks of same type
