@@ -1,4 +1,4 @@
-import { internalAction, internalMutation, query } from './_generated/server';
+import { internalAction, internalMutation, internalQuery, query } from './_generated/server';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
 import { getAuthUserId } from '@convex-dev/auth/server';
@@ -164,6 +164,16 @@ export const getRepoAnomalies = query({
 			.query('repoAnomalies')
 			.withIndex('by_repoId_isActive', (q) => q.eq('repoId', repoId).eq('isActive', true))
 			.order('desc')
+			.collect();
+	}
+});
+
+export const listActiveRepoAnomalies = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		return await ctx.db
+			.query('repoAnomalies')
+			.withIndex('by_repoId_isActive', (q) => q.eq('repoId', repoId).eq('isActive', true))
 			.collect();
 	}
 });

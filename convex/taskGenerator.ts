@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
+import type { Doc } from './_generated/dataModel';
 
 export type TaskType = 'commit' | 'issue' | 'pr' | 'general' | 'anomaly';
 
@@ -8,6 +9,37 @@ export interface GeneratedTask {
 	taskText: string;
 	taskType: TaskType;
 	priority: number;
+}
+
+type ActiveAnomaly = Pick<
+	Doc<'repoAnomalies'>,
+	'kind' | 'severity' | 'title' | 'recommendedAction' | 'description'
+>;
+
+function anomalyTasks(anomalies: ActiveAnomaly[]): GeneratedTask[] {
+	return anomalies.map((anomaly) => {
+		if (anomaly.kind === 'star_spike') {
+			return {
+				taskText: `Star spike active. ${anomaly.recommendedAction}`,
+				taskType: 'anomaly' as const,
+				priority: anomaly.severity === 'high' ? 1 : 2
+			};
+		}
+
+		if (anomaly.kind === 'contributor_spike') {
+			return {
+				taskText: `Contributor interest is up. ${anomaly.recommendedAction}`,
+				taskType: 'anomaly' as const,
+				priority: anomaly.severity === 'high' ? 1 : 2
+			};
+		}
+
+		return {
+			taskText: `Momentum slipped. ${anomaly.recommendedAction}`,
+			taskType: 'anomaly' as const,
+			priority: anomaly.severity === 'high' ? 1 : 2
+		};
+	});
 }
 
 export function determineTasks(
@@ -19,10 +51,11 @@ export function determineTasks(
 		prsMerged7d: number;
 		contributors14d: number;
 	},
+	anomalies: ActiveAnomaly[] = [],
 	previousScore?: number,
 	currentScore?: number
 ): GeneratedTask[] {
-	const tasks: GeneratedTask[] = [];
+	const tasks: GeneratedTask[] = [...anomalyTasks(anomalies)];
 
 	// Commit gap task - highest priority if no recent commits
 	if (commitGapHours > 24) {
@@ -74,8 +107,12 @@ export function determineTasks(
 		});
 	}
 
-	// Score drop anomaly task - if score decreased significantly
-	if (previousScore !== undefined && currentScore !== undefined) {
+	// Score drop anomaly task - if score decreased significantly and no anomaly task already exists
+	if (
+		previousScore !== undefined &&
+		currentScore !== undefined &&
+		!anomalies.some((anomaly) => anomaly.kind === 'momentum_drop')
+	) {
 		const scoreDrop = previousScore - currentScore;
 		if (scoreDrop >= 15) {
 			tasks.push({
@@ -100,12 +137,16 @@ export const generateTasks = internalAction({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
 		const repo = await ctx.runQuery(internal.repos.getRepoById, { repoId });
-		if (!repo) return;
+	if (!repo) return;
 
 		const latestSnapshot = await ctx.runQuery(internal.collector.getLatestSnapshot, { repoId });
 		if (!latestSnapshot) return;
 
 		const latestScore = await ctx.runQuery(internal.scorer.getLatestScore, { repoId });
+		const activeAnomalies: ActiveAnomaly[] = await ctx.runQuery(
+			internal.anomalies.listActiveRepoAnomalies,
+			{ repoId }
+		);
 
 		// Get previous score for anomaly detection
 		let previousScore: number | undefined;
@@ -127,6 +168,7 @@ export const generateTasks = internalAction({
 				prsMerged7d: latestSnapshot.prsMerged7d,
 				contributors14d: latestSnapshot.contributors14d
 			},
+			activeAnomalies,
 			previousScore,
 			latestScore?.healthScore
 		);

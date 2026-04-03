@@ -47,4 +47,30 @@ describe('determineTasks', () => {
 		});
 		expect(tasks).toHaveLength(0);
 	});
+
+	it('turns active anomalies into top-priority tasks', () => {
+		const tasks = determineTasks(
+			true,
+			12,
+			{
+				issuesOpen: 0,
+				prsOpen: 0,
+				prsMerged7d: 0,
+				contributors14d: 0
+			},
+			[
+				{
+					kind: 'star_spike',
+					severity: 'high',
+					title: 'Star spike detected',
+					description: 'Stars jumped quickly.',
+					recommendedAction: 'Share the momentum publicly.'
+				}
+			]
+		);
+
+		expect(tasks[0].taskType).toBe('anomaly');
+		expect(tasks[0].priority).toBe(1);
+		expect(tasks[0].taskText).toContain('Share the momentum publicly.');
+	});
 });
