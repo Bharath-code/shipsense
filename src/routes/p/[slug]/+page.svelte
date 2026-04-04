@@ -76,6 +76,7 @@
 	/>
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content={publicUrl} />
+	<meta property="og:image" content={badgeUrl} />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta
 		name="twitter:title"
@@ -224,7 +225,11 @@
 				</h2>
 				<div class="mb-4 flex justify-center">
 					<a href={publicUrl}>
-						<img src={badgeUrl} alt="ShipSense Health Badge" class="h-5" />
+						<img
+							src={badgeUrl}
+							alt={`ShipSense health score badge for ${data?.repo?.fullName || 'repository'}`}
+							class="h-5"
+						/>
 					</a>
 				</div>
 				<div class="rounded-lg bg-muted p-3">

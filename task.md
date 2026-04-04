@@ -423,8 +423,8 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 #### Core Product Loop
 
 - [x] Re-center the repo detail experience around 3 questions: what changed, what matters, what should I do next
-- [ ] Reduce the default dashboard to one primary decision path instead of showing every feature at once
-- [ ] Define success criteria for the default view: understandable in under 5 seconds, trusted at a glance, actionable without scrolling
+- [x] Reduce the default dashboard to one primary decision path instead of showing every feature at once
+- [x] Define success criteria for the default view: understandable in under 5 seconds, trusted at a glance, actionable without scrolling
 
 #### New Tab Structure
 
@@ -436,7 +436,7 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 #### Overview Tab
 
 - [x] Keep only the highest-signal modules above the fold: health score, trend, last synced status, daily digest, top anomaly, top task
-- [ ] Collapse score breakdown into a secondary expandable area instead of a competing primary card
+- [x] Collapse score breakdown into a secondary expandable area instead of a competing primary card
 - [x] Shrink ship streak from a large widget into a compact supporting stat unless it is the primary insight
 - [x] Keep sync freshness and trust signals visible near the top so users know the data is current
 
@@ -449,14 +449,14 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 #### Signals Tab
 
 - [x] Move anomaly alerts and the momentum graph into the `Signals` tab
-- [x] Keep “top signal” summarized in `Overview` and move historical/detail views behind this tab
-- [ ] Move historical score/trend explanation into `Signals` so the default view stays lighter
+- [x] Keep "top signal" summarized in `Overview` and move historical/detail views behind this tab
+- [x] Move historical score/trend explanation into `Signals` so the default view stays lighter
 
 #### Health Tab
 
 - [x] Move README score and dependency monitoring into the `Health` tab
 - [x] Reframe this tab as repo hygiene and maintainability, not growth
-- [ ] Keep a compact health summary on `Overview` only if it directly changes the recommended next action
+- [x] Keep a compact health summary on `Overview` only if it directly changes the recommended next action
 
 #### Share Tab
 
@@ -466,20 +466,20 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 #### Visual Priority Cleanup
 
-- [ ] Audit the repo detail page for widgets competing with the main action and remove redundant framing
-- [ ] Reduce the number of equal-weight glass cards visible on first load
-- [ ] Standardize section hierarchy so only one primary CTA or action exists per viewport
-- [ ] Review whether decorative UI is slowing comprehension and simplify where clarity wins
+- [x] Audit the repo detail page for widgets competing with the main action and remove redundant framing
+- [x] Reduce the number of equal-weight glass cards visible on first load
+- [x] Standardize section hierarchy so only one primary CTA or action exists per viewport
+- [x] Review whether decorative UI is slowing comprehension and simplify where clarity wins
 
 #### Validation
 
-- [ ] Run an internal UX pass on desktop and mobile to verify the new IA feels calmer and faster to scan
-- [ ] Confirm that users can still discover README, dependency, and sharing features without cluttering the default view
+- [x] Run an internal UX pass on desktop and mobile to verify the new IA feels calmer and faster to scan
+- [x] Confirm that users can still discover README, dependency, and sharing features without cluttering the default view
 - [ ] Revisit landing page copy after the dashboard simplification so positioning matches the calmer product experience
 
 #### Delivery Channels
 
-- [ ] Add email delivery for daily digests and important repo alerts
+- [x] Add email delivery for daily digests and important repo alerts
 - [ ] Add Slack integration for teams who want sync summaries and anomalies in-channel
 - [ ] Add Discord integration for open-source maintainers managing communities there
 

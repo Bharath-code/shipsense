@@ -17,6 +17,7 @@ export default defineSchema({
 		dodoSubscriptionId: v.optional(v.string()),
 		emailReportsEnabled: v.boolean(),
 		lastReportSentAt: v.optional(v.number()),
+		lastDailyDigestSentAt: v.optional(v.number()),
 		createdAt: v.number()
 	})
 		.index('by_userId', ['userId'])

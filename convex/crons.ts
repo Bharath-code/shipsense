@@ -20,4 +20,11 @@ crons.weekly(
 	internal.orchestrator.sendWeeklyReports
 );
 
+// Delivery: send daily digests every weekday at 7am UTC
+crons.daily(
+	'send-daily-digests',
+	{ hourUTC: 7, minuteUTC: 0 },
+	internal.orchestrator.sendDailyDigests
+);
+
 export default crons;

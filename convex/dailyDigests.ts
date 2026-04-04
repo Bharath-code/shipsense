@@ -1,4 +1,9 @@
-import { internalAction, internalMutation, internalQuery, type ActionCtx } from './_generated/server';
+import {
+	internalAction,
+	internalMutation,
+	internalQuery,
+	type ActionCtx
+} from './_generated/server';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
 import { deriveGrowthMoments, type GrowthMoment } from './dashboard';
@@ -42,12 +47,11 @@ type DailyDigestInput = {
 	latestScore: Pick<Doc<'repoScores'>, 'healthScore'> | null;
 	previousScore?: number;
 	insight: Pick<Doc<'repoInsights'>, 'summary' | 'risk' | 'actions'> | null;
-	topTask:
-		| Pick<Doc<'repoTasks'>, 'taskText' | 'taskSource' | 'expectedImpact'>
-		| null;
-	topAnomaly:
-		| Pick<Doc<'repoAnomalies'>, 'title' | 'description' | 'recommendedAction' | 'severity'>
-		| null;
+	topTask: Pick<Doc<'repoTasks'>, 'taskText' | 'taskSource' | 'expectedImpact'> | null;
+	topAnomaly: Pick<
+		Doc<'repoAnomalies'>,
+		'title' | 'description' | 'recommendedAction' | 'severity'
+	> | null;
 	growthMoments: GrowthMoment[];
 	dependencySummary: DependencySummary;
 };
@@ -106,9 +110,12 @@ function inferFallbackAction(input: DailyDigestInput): {
 
 	if ((input.latestSnapshot.readmeSuggestions?.length ?? 0) > 0) {
 		return {
-			action: input.latestSnapshot.readmeSuggestions?.[0] ?? 'Improve your README guidance for new visitors.',
+			action:
+				input.latestSnapshot.readmeSuggestions?.[0] ??
+				'Improve your README guidance for new visitors.',
 			source: 'readme',
-			impact: 'Improves onboarding clarity so interested visitors are more likely to try or contribute.'
+			impact:
+				'Improves onboarding clarity so interested visitors are more likely to try or contribute.'
 		};
 	}
 
@@ -124,7 +131,7 @@ function inferFallbackAction(input: DailyDigestInput): {
 		return {
 			action: input.insight.actions[0],
 			source: 'trend',
-			impact: 'Keeps your next move aligned with the repo\'s current momentum signals.'
+			impact: "Keeps your next move aligned with the repo's current momentum signals."
 		};
 	}
 
@@ -151,8 +158,9 @@ export function buildDailyDigest(input: DailyDigestInput): DailyDigestRecord {
 						? input.insight.summary
 						: 'No urgent risk is standing out right now.';
 
-	const topWin = input.growthMoments[0]?.description
-		?? (input.latestSnapshot.starsLast7d > 0
+	const topWin =
+		input.growthMoments[0]?.description ??
+		(input.latestSnapshot.starsLast7d > 0
 			? `${input.repoName} picked up +${input.latestSnapshot.starsLast7d} stars this week.`
 			: input.latestSnapshot.contributors14d >= 2
 				? `${input.repoName} has ${input.latestSnapshot.contributors14d} active contributors in the last 14 days.`
@@ -189,6 +197,17 @@ export function buildDailyDigest(input: DailyDigestInput): DailyDigestRecord {
 		isQuietDay
 	};
 }
+
+export const getLatestDigest = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		return await ctx.db
+			.query('repoDailyDigests')
+			.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.first();
+	}
+});
 
 export const getRecentScoresForDigest = internalQuery({
 	args: { repoId: v.id('repos') },

@@ -1,27 +1,13 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import {
-		SunMedium,
-		Sparkles,
-		AlertTriangle,
-		ListTodo,
-		ArrowRight,
-		TrendingUp,
-		Zap
-	} from 'lucide-svelte';
+	import { SunMedium, Sparkles, Zap, TrendingUp } from 'lucide-svelte';
 
 	let { repoId } = $props<{ repoId: string }>();
 
 	const briefQuery = useQuery(api.dashboard.getRepoDailyBrief, () => ({ repoId }));
 	let brief = $derived(briefQuery.data);
 	let isLoading = $derived(briefQuery.isLoading);
-
-	function riskTone(severity: string | null | undefined): string {
-		if (severity === 'high') return 'text-destructive';
-		if (severity === 'medium') return 'text-warning';
-		return 'text-primary';
-	}
 
 	function formatSyncTime(timestamp: number | null): string {
 		if (!timestamp) return 'Waiting for first sync';
@@ -47,7 +33,9 @@
 	<div class="p-6 sm:p-8">
 		<div class="mb-5 flex items-start justify-between gap-4">
 			<div class="flex items-center gap-3">
-				<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+				<div
+					class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+				>
 					<SunMedium class="h-5 w-5" />
 				</div>
 				<div>
@@ -102,81 +90,18 @@
 						</div>
 						<p class="text-sm leading-relaxed text-muted-foreground">{brief.changeSummary}</p>
 					</div>
-
-					<div class="rounded-2xl border border-primary/10 bg-primary/5 p-4">
-						<div class="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-							<ArrowRight class="h-4 w-4 text-primary" />
-							Today&apos;s focus
-						</div>
-						<div class="mb-2 flex flex-wrap items-center gap-2">
-							{#if brief.todayFocusSource}
-								<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
-									{sourceLabel(brief.todayFocusSource)}
-								</span>
-							{/if}
-							{#if brief.isQuietDay}
-								<span class="rounded-full bg-success/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-success uppercase">
-									Quiet day
-								</span>
-							{/if}
-						</div>
-						<p class="text-sm leading-relaxed text-foreground">
-							{brief.todayFocus ?? 'Keep monitoring this repo while more signals accumulate.'}
-						</p>
-						{#if brief.todayFocusImpact}
-							<p class="mt-2 text-xs leading-relaxed text-muted-foreground">
-								Expected impact: {brief.todayFocusImpact}
-							</p>
-						{/if}
-					</div>
 				</div>
 
 				<div class="space-y-3">
-					<div class="rounded-2xl border border-border/50 bg-background/40 p-4">
-						<div class="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-							<AlertTriangle
-								class="h-4 w-4 {riskTone(brief.topAnomaly?.severity ?? null)}"
-							/>
-							Top signal
-						</div>
-						{#if brief.topAnomaly}
-							<p class="text-sm font-medium text-foreground">{brief.topAnomaly.title}</p>
-							<p class="mt-1 text-xs leading-relaxed text-muted-foreground">
-								{brief.topAnomaly.recommendedAction}
-							</p>
-						{:else}
-							<p class="text-xs text-muted-foreground">No active anomalies. Momentum looks stable.</p>
-						{/if}
-					</div>
-
 					<div class="rounded-2xl border border-border/50 bg-background/40 p-4">
 						<div class="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
 							<Zap class="h-4 w-4 text-success" />
 							Top win
 						</div>
 						<p class="text-sm leading-relaxed text-foreground">
-							{brief.topWin ?? 'No standout win yet. Keep shipping to create the next momentum signal.'}
+							{brief.topWin ??
+								'No standout win yet. Keep shipping to create the next momentum signal.'}
 						</p>
-					</div>
-
-					<div class="rounded-2xl border border-border/50 bg-background/40 p-4">
-						<div class="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-							<ListTodo class="h-4 w-4 text-primary" />
-							Top task
-						</div>
-						{#if brief.topTask}
-							<p class="text-sm font-medium text-foreground">{brief.topTask.text}</p>
-							<p class="mt-1 text-xs text-muted-foreground">
-								Priority {brief.topTask.priority} / {brief.topTask.type}
-							</p>
-							{#if brief.topTask.expectedImpact}
-								<p class="mt-2 text-xs leading-relaxed text-muted-foreground">
-									{brief.topTask.expectedImpact}
-								</p>
-							{/if}
-						{:else}
-							<p class="text-xs text-muted-foreground">No open tasks right now.</p>
-						{/if}
 					</div>
 
 					<div class="rounded-2xl border border-border/50 bg-background/40 p-4">

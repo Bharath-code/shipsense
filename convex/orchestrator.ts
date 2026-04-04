@@ -190,3 +190,19 @@ export const sendWeeklyReports = internalAction({
 		}
 	}
 });
+
+export const sendDailyDigests = internalAction({
+	args: {},
+	handler: async (ctx) => {
+		const profiles = await ctx.runQuery(internal.users.listAllUserProfiles);
+
+		for (const profile of profiles) {
+			if (!profile.email || !profile.emailReportsEnabled) continue;
+
+			await ctx.runAction(internal.email.sendDailyDigest, {
+				userId: profile.userId,
+				email: profile.email
+			});
+		}
+	}
+});

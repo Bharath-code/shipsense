@@ -273,6 +273,219 @@ export const setEmailPreference = internalMutation({
 	}
 });
 
+function buildDigestHtml(
+	userName: string,
+	repos: Array<{
+		name: string;
+		owner: string;
+		summary: string;
+		changeSummary: string;
+		topRisk: string;
+		topWin: string;
+		recommendedAction: string;
+		recommendedActionImpact: string;
+		recommendedActionSource: string;
+		isQuietDay: boolean;
+		healthScore: number;
+		trend: string;
+	}>
+): string {
+	const repoRows = repos
+		.map(
+			(repo) => `
+		<tr>
+			<td style="padding: 12px; border-bottom: 1px solid #333;">
+				<strong style="color: #fff;">${repo.name}</strong><br>
+				<span style="color: #888; font-size: 12px;">by ${repo.owner}</span>
+			</td>
+			<td style="padding: 12px; border-bottom: 1px solid #333; text-align: center;">
+				<span style="font-size: 20px; font-weight: bold; color: ${repo.healthScore >= 70 ? '#22c55e' : repo.healthScore >= 40 ? '#fbbf24' : '#ef4444'};">${repo.healthScore}</span>
+			</td>
+			<td style="padding: 12px; border-bottom: 1px solid #333; text-align: center;">
+				<span style="color: ${repo.trend === 'up' ? '#22c55e' : repo.trend === 'down' ? '#ef4444' : '#888'};">${repo.trend === 'up' ? '↑' : repo.trend === 'down' ? '↓' : '→'}</span>
+			</td>
+			<td style="padding: 12px; border-bottom: 1px solid #333; color: #ccc; font-size: 13px; max-width: 200px;">
+				${repo.summary}
+			</td>
+		</tr>`
+		)
+		.join('');
+
+	const actions = repos
+		.filter((r) => !r.isQuietDay)
+		.map((r) => ({
+			action: r.recommendedAction,
+			impact: r.recommendedActionImpact,
+			source: r.recommendedActionSource,
+			repo: r.name
+		}))
+		.slice(0, 5);
+
+	const actionRows = actions
+		.map(
+			(item) => `
+		<tr>
+			<td style="padding: 8px; border-bottom: 1px solid #333;">
+				<span style="color: #6366f1; font-size: 12px; font-weight: 600; text-transform: uppercase;">${item.source}</span>
+			</td>
+			<td style="padding: 8px; border-bottom: 1px solid #333; color: #ccc;">
+				${item.action}
+			</td>
+			<td style="padding: 8px; border-bottom: 1px solid #333; color: #888; font-size: 12px;">
+				${item.repo}
+			</td>
+		</tr>`
+		)
+		.join('');
+
+	return `
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ShipSense Daily Digest</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0f0f0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+	<div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+		<div style="text-align: center; margin-bottom: 40px;">
+			<h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: 700;">ShipSense</h1>
+			<p style="color: #888; margin: 8px 0 0 0;">Daily Digest</p>
+		</div>
+
+		<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #333;">
+			<h2 style="color: #fff; margin: 0 0 16px 0; font-size: 18px;">Good morning, ${userName}</h2>
+			<p style="color: #aaa; margin: 0; line-height: 1.6;">
+				Here's what changed across your ${repos.length} repos today.
+			</p>
+		</div>
+
+		<div style="background: #1a1a2e; border-radius: 16px; overflow: hidden; margin-bottom: 24px; border: 1px solid #333;">
+			<table style="width: 100%; border-collapse: collapse;">
+				<thead>
+					<tr style="background: #0f0f0f;">
+						<th style="padding: 16px 12px; text-align: left; color: #888; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Repo</th>
+						<th style="padding: 16px 12px; text-align: center; color: #888; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Score</th>
+						<th style="padding: 16px 12px; text-align: center; color: #888; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Trend</th>
+						<th style="padding: 16px 12px; text-align: left; color: #888; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">What changed</th>
+					</tr>
+				</thead>
+				<tbody>
+					${repoRows}
+				</tbody>
+			</table>
+		</div>
+
+		${
+			actionRows
+				? `
+		<div style="background: #1a1a2e; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #333;">
+			<h3 style="color: #fff; margin: 0 0 16px 0; font-size: 16px;">Top actions today</h3>
+			<table style="width: 100%; border-collapse: collapse;">
+				<tbody>
+					${actionRows}
+				</tbody>
+			</table>
+		</div>
+		`
+				: ''
+		}
+
+		<div style="text-align: center; padding: 20px;">
+			<p style="color: #666; font-size: 12px; margin: 0;">
+				Sent by <a href="https://shipsense.app" style="color: #6366f1; text-decoration: none;">ShipSense</a> — Track your open-source growth
+			</p>
+			<p style="color: #444; font-size: 11px; margin: 8px 0 0 0;">
+				<a href="https://shipsense.app/dashboard/settings" style="color: #666; text-decoration: underline;">Manage email preferences</a>
+			</p>
+		</div>
+	</div>
+</body>
+</html>`;
+}
+
+export const sendDailyDigest = internalAction({
+	args: { userId: v.id('users'), email: v.string() },
+	handler: async (ctx, { userId, email }) => {
+		if (!RESEND_API_KEY) {
+			console.warn('RESEND_API_KEY not configured. Skipping daily digest.');
+			return;
+		}
+
+		const profile = await ctx.runQuery(internal.users.getUserProfile, { userId });
+		if (!profile) return;
+
+		if (!profile.emailReportsEnabled) {
+			console.log(`User ${userId} has email reports disabled. Skipping daily digest.`);
+			return;
+		}
+
+		const repos = await ctx.runQuery(internal.repos.getUserReposForReport, { userId });
+		if (repos.length === 0) return;
+
+		const repoData = await Promise.all(
+			repos.map(async (repo) => {
+				const digest = await ctx.runQuery(internal.dailyDigests.getLatestDigest, {
+					repoId: repo._id
+				});
+				const score = await ctx.runQuery(internal.scorer.getLatestScore, { repoId: repo._id });
+
+				return {
+					name: repo.name,
+					owner: repo.owner,
+					summary: digest?.summary ?? 'No changes detected',
+					changeSummary: digest?.changeSummary ?? '',
+					topRisk: digest?.topRisk ?? 'No urgent risk',
+					topWin: digest?.topWin ?? '',
+					recommendedAction: digest?.recommendedAction ?? '',
+					recommendedActionImpact: digest?.recommendedActionImpact ?? '',
+					recommendedActionSource: digest?.recommendedActionSource ?? 'hygiene',
+					isQuietDay: digest?.isQuietDay ?? true,
+					healthScore: score?.healthScore ?? 0,
+					trend: score?.trend ?? 'stable'
+				};
+			})
+		);
+
+		const html = buildDigestHtml(profile.githubUsername || 'Developer', repoData);
+
+		const response = await fetch('https://api.resend.com/emails', {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${RESEND_API_KEY}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				from: 'ShipSense <reports@shipsense.app>',
+				to: email,
+				subject: `Your Daily ShipSense Digest — ${repoData.length} repos`,
+				html
+			})
+		});
+
+		if (response.ok) {
+			await ctx.runMutation(internal.email.updateLastDailyDigestSent, { userId });
+			console.log(`Daily digest sent to ${email}`);
+		} else {
+			console.error('Failed to send daily digest:', await response.text());
+		}
+	}
+});
+
+export const updateLastDailyDigestSent = internalMutation({
+	args: { userId: v.id('users') },
+	handler: async (ctx, { userId }) => {
+		const profile = await ctx.db
+			.query('userProfiles')
+			.withIndex('by_userId', (q) => q.eq('userId', userId))
+			.unique();
+
+		if (profile) {
+			await ctx.db.patch(profile._id, { lastDailyDigestSentAt: Date.now() });
+		}
+	}
+});
+
 export const toggleEmailReports = mutation({
 	args: { enabled: v.boolean() },
 	handler: async (ctx, args) => {
