@@ -418,6 +418,65 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 ### Phase 30 — Workflow Integrations
 
+### Phase 31 — Dashboard Simplification & Information Architecture
+
+#### Core Product Loop
+
+- [ ] Re-center the repo detail experience around 3 questions: what changed, what matters, what should I do next
+- [ ] Reduce the default dashboard to one primary decision path instead of showing every feature at once
+- [ ] Define success criteria for the default view: understandable in under 5 seconds, trusted at a glance, actionable without scrolling
+
+#### New Tab Structure
+
+- [ ] Add tab navigation to the repo detail page: `Overview`, `Tasks`, `Signals`, `Health`, `Share`
+- [ ] Make `Overview` the default tab for every repo
+- [ ] Preserve direct deep-linking to tabs with URL params so shared links can open the right section
+- [ ] Ensure mobile tab behavior remains compact and touch-friendly
+
+#### Overview Tab
+
+- [ ] Keep only the highest-signal modules above the fold: health score, trend, last synced status, daily digest, top anomaly, top task
+- [ ] Collapse score breakdown into a secondary expandable area instead of a competing primary card
+- [ ] Shrink ship streak from a large widget into a compact supporting stat unless it is the primary insight
+- [ ] Keep sync freshness and trust signals visible near the top so users know the data is current
+
+#### Tasks Tab
+
+- [ ] Move the full task checklist out of the main dashboard flow into the dedicated `Tasks` tab
+- [ ] Highlight one “today’s focus” task at the top of the `Tasks` tab
+- [ ] Group remaining tasks by priority or source so the list feels operational, not noisy
+
+#### Signals Tab
+
+- [ ] Move anomaly alerts and the momentum graph into the `Signals` tab
+- [ ] Keep “top signal” summarized in `Overview` and move historical/detail views behind this tab
+- [ ] Move historical score/trend explanation into `Signals` so the default view stays lighter
+
+#### Health Tab
+
+- [ ] Move README score and dependency monitoring into the `Health` tab
+- [ ] Reframe this tab as repo hygiene and maintainability, not growth
+- [ ] Keep a compact health summary on `Overview` only if it directly changes the recommended next action
+
+#### Share Tab
+
+- [ ] Move growth card, badge, public health page link, and share nudges into the `Share` tab
+- [ ] Remove share actions from the main above-the-fold workflow unless a notable win is detected
+- [ ] Keep sharing available but clearly secondary to repo operations
+
+#### Visual Priority Cleanup
+
+- [ ] Audit the repo detail page for widgets competing with the main action and remove redundant framing
+- [ ] Reduce the number of equal-weight glass cards visible on first load
+- [ ] Standardize section hierarchy so only one primary CTA or action exists per viewport
+- [ ] Review whether decorative UI is slowing comprehension and simplify where clarity wins
+
+#### Validation
+
+- [ ] Run an internal UX pass on desktop and mobile to verify the new IA feels calmer and faster to scan
+- [ ] Confirm that users can still discover README, dependency, and sharing features without cluttering the default view
+- [ ] Revisit landing page copy after the dashboard simplification so positioning matches the calmer product experience
+
 #### Delivery Channels
 
 - [ ] Add email delivery for daily digests and important repo alerts

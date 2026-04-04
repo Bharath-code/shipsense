@@ -320,13 +320,16 @@ export const saveSnapshot = internalMutation({
 		forks: v.number()
 	},
 	handler: async (ctx, args) => {
+		const syncedAt = Date.now();
 		const snapshotId = await ctx.db.insert('repoSnapshots', {
 			...args,
-			capturedAt: Date.now()
+			capturedAt: syncedAt
 		});
 
 		await ctx.db.patch(args.repoId, {
-			lastSyncedAt: Date.now(),
+			starsCount: args.stars,
+			forksCount: args.forks,
+			lastSyncedAt: syncedAt,
 			lastError: undefined
 		});
 

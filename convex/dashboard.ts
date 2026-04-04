@@ -72,6 +72,8 @@ export const getRepoDetails = query({
 
 		return {
 			...repo,
+			starsCount: latestSnapshot?.stars ?? repo.starsCount,
+			forksCount: latestSnapshot?.forks ?? repo.forksCount,
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0
 		};
 	}
@@ -596,8 +598,8 @@ export const getPublicRepoHealth = query({
 				fullName: repo.fullName,
 				description: repo.description,
 				language: repo.language,
-				starsCount: repo.starsCount,
-				forksCount: repo.forksCount,
+				starsCount: latestSnapshot?.stars ?? repo.starsCount,
+				forksCount: latestSnapshot?.forks ?? repo.forksCount,
 				isPrivate: repo.isPrivate,
 				lastSyncedAt: repo.lastSyncedAt
 			},
@@ -642,6 +644,11 @@ export const getPublicRepoBySlug = query({
 			.first();
 
 		if (!repo || !repo.isActive) return null;
+		const latestSnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repo._id))
+			.order('desc')
+			.first();
 
 		return {
 			_id: repo._id,
@@ -650,8 +657,8 @@ export const getPublicRepoBySlug = query({
 			fullName: repo.fullName,
 			description: repo.description,
 			language: repo.language,
-			starsCount: repo.starsCount,
-			forksCount: repo.forksCount,
+			starsCount: latestSnapshot?.stars ?? repo.starsCount,
+			forksCount: latestSnapshot?.forks ?? repo.forksCount,
 			isPrivate: repo.isPrivate
 		};
 	}
@@ -668,6 +675,11 @@ export const getPublicRepoHealthById = query({
 			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
 			.order('desc')
 			.first();
+		const latestSnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
 
 		return {
 			repo: {
@@ -676,8 +688,8 @@ export const getPublicRepoHealthById = query({
 				fullName: repo.fullName,
 				description: repo.description,
 				language: repo.language,
-				starsCount: repo.starsCount,
-				forksCount: repo.forksCount,
+				starsCount: latestSnapshot?.stars ?? repo.starsCount,
+				forksCount: latestSnapshot?.forks ?? repo.forksCount,
 				isPrivate: repo.isPrivate,
 				lastSyncedAt: repo.lastSyncedAt
 			},
