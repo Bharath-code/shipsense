@@ -13,7 +13,8 @@
 		PackageSearch,
 		Siren,
 		X,
-		RefreshCw
+		RefreshCw,
+		PartyPopper
 	} from 'lucide-svelte';
 
 	const client = useConvexClient();
@@ -33,7 +34,8 @@
 		weekly_report: Mail,
 		new_task: ClipboardList,
 		dependency_alert: PackageSearch,
-		anomaly_alert: Siren
+		anomaly_alert: Siren,
+		win: PartyPopper
 	};
 
 	const typeColors: Record<string, string> = {
@@ -44,7 +46,8 @@
 		weekly_report: 'text-primary',
 		new_task: 'text-primary',
 		dependency_alert: 'text-warning',
-		anomaly_alert: 'text-destructive'
+		anomaly_alert: 'text-destructive',
+		win: 'text-success'
 	};
 
 	function formatTimeAgo(timestamp: number): string {

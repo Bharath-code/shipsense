@@ -3,20 +3,34 @@ import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 
 export type GrowthMoment = {
-	kind: 'best_week' | 'momentum_recovered';
+	kind:
+		| 'best_week'
+		| 'momentum_recovered'
+		| 'streak_milestone'
+		| 'contributor_milestone'
+		| 'score_milestone'
+		| 'best_month'
+		| 'longest_streak';
 	title: string;
 	description: string;
+	metric?: number;
 };
 
 export function deriveGrowthMoments(input: {
 	starsLast7d: number;
 	scoreHistory: Array<{ healthScore: number }>;
-	recentSnapshots: Array<{ starsLast7d: number }>;
+	recentSnapshots: Array<{ starsLast7d: number; contributors14d: number; capturedAt: number }>;
+	currentStreak?: number;
+	longestStreak?: number;
+	previousStreak?: number;
 }): GrowthMoment[] {
 	const moments: GrowthMoment[] = [];
 
-	const previousSnapshotStars = input.recentSnapshots.slice(1).map((snapshot) => snapshot.starsLast7d);
-	const previousBestWeek = previousSnapshotStars.length > 0 ? Math.max(...previousSnapshotStars) : 0;
+	const previousSnapshotStars = input.recentSnapshots
+		.slice(1)
+		.map((snapshot) => snapshot.starsLast7d);
+	const previousBestWeek =
+		previousSnapshotStars.length > 0 ? Math.max(...previousSnapshotStars) : 0;
 	if (input.starsLast7d > 0 && input.starsLast7d >= previousBestWeek && input.starsLast7d >= 5) {
 		moments.push({
 			kind: 'best_week',
@@ -24,7 +38,8 @@ export function deriveGrowthMoments(input: {
 			description:
 				previousBestWeek > 0
 					? `This repo is at +${input.starsLast7d} stars this week, matching or beating the previous best of +${previousBestWeek}.`
-					: `This repo picked up +${input.starsLast7d} stars this week and is starting to show real momentum.`
+					: `This repo picked up +${input.starsLast7d} stars this week and is starting to show real momentum.`,
+			metric: input.starsLast7d
 		});
 	}
 
@@ -37,9 +52,64 @@ export function deriveGrowthMoments(input: {
 			moments.push({
 				kind: 'momentum_recovered',
 				title: 'Momentum recovered',
-				description: `Health score bounced from ${previous} to ${latest}, reversing the previous slowdown.`
+				description: `Health score bounced from ${previous} to ${latest}, reversing the previous slowdown.`,
+				metric: latest - previous
 			});
 		}
+	}
+
+	if (input.currentStreak && [7, 14, 30, 50, 100].includes(input.currentStreak)) {
+		const isNewRecord = input.longestStreak === input.currentStreak;
+		moments.push({
+			kind: 'streak_milestone',
+			title: isNewRecord
+				? `${input.currentStreak}-day streak record!`
+				: `${input.currentStreak}-day shipping streak`,
+			description: isNewRecord
+				? `You just set a new personal record of ${input.currentStreak} consecutive days of shipping!`
+				: `You've shipped consistently for ${input.currentStreak} days in a row.`,
+			metric: input.currentStreak
+		});
+	}
+
+	if (input.longestStreak && input.longestStreak > (input.previousStreak ?? 0)) {
+		moments.push({
+			kind: 'longest_streak',
+			title: 'New longest streak',
+			description: `Your longest streak is now ${input.longestStreak} days!`,
+			metric: input.longestStreak
+		});
+	}
+
+	const latestContributors = input.recentSnapshots[0]?.contributors14d ?? 0;
+	const previousContributorsSnapshots = input.recentSnapshots
+		.slice(1)
+		.map((s) => s.contributors14d);
+	const previousBestContributors =
+		previousContributorsSnapshots.length > 0 ? Math.max(...previousContributorsSnapshots) : 0;
+	if (
+		latestContributors >= 3 &&
+		latestContributors >= previousBestContributors &&
+		previousBestContributors > 0
+	) {
+		moments.push({
+			kind: 'contributor_milestone',
+			title: 'Contributors milestone',
+			description:
+				latestContributors > previousBestContributors
+					? `${latestContributors} active contributors this week - a new record!`
+					: `${latestContributors} active contributors - matching your best week.`,
+			metric: latestContributors
+		});
+	}
+
+	if (input.currentStreak && input.currentStreak >= 30) {
+		moments.push({
+			kind: 'longest_streak',
+			title: '30-day streak milestone',
+			description: `Amazing! You've maintained a shipping streak for a full month.`,
+			metric: input.currentStreak
+		});
 	}
 
 	return moments;
@@ -163,39 +233,39 @@ export const getRepoDailyBrief = query({
 
 		const [latestSnapshot, latestScore, latestInsight, topTask, topAnomaly, latestDigest] =
 			await Promise.all([
-			ctx.db
-				.query('repoSnapshots')
-				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
-				.order('desc')
-				.first(),
-			ctx.db
-				.query('repoScores')
-				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
-				.order('desc')
-				.first(),
-			ctx.db
-				.query('repoInsights')
-				.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
-				.order('desc')
-				.first(),
-			ctx.db
-				.query('repoTasks')
-				.withIndex('by_repoId_isCompleted', (q) =>
-					q.eq('repoId', args.repoId).eq('isCompleted', false)
-				)
-				.order('asc')
-				.first(),
-			ctx.db
-				.query('repoAnomalies')
-				.withIndex('by_repoId_isActive', (q) => q.eq('repoId', args.repoId).eq('isActive', true))
-				.order('desc')
-				.first(),
-			ctx.db
-				.query('repoDailyDigests')
-				.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
-				.order('desc')
-				.first()
-		]);
+				ctx.db
+					.query('repoSnapshots')
+					.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+					.order('desc')
+					.first(),
+				ctx.db
+					.query('repoScores')
+					.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+					.order('desc')
+					.first(),
+				ctx.db
+					.query('repoInsights')
+					.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
+					.order('desc')
+					.first(),
+				ctx.db
+					.query('repoTasks')
+					.withIndex('by_repoId_isCompleted', (q) =>
+						q.eq('repoId', args.repoId).eq('isCompleted', false)
+					)
+					.order('asc')
+					.first(),
+				ctx.db
+					.query('repoAnomalies')
+					.withIndex('by_repoId_isActive', (q) => q.eq('repoId', args.repoId).eq('isActive', true))
+					.order('desc')
+					.first(),
+				ctx.db
+					.query('repoDailyDigests')
+					.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', args.repoId))
+					.order('desc')
+					.first()
+			]);
 
 		const summaryLine =
 			latestDigest?.summary ??
@@ -374,7 +444,7 @@ export const getRepoGrowthMoments = query({
 		const repo = await ctx.db.get(args.repoId);
 		if (!repo || repo.userId !== userId) return [];
 
-		const [scoreHistory, recentSnapshots] = await Promise.all([
+		const [scoreHistory, recentSnapshots, streak] = await Promise.all([
 			ctx.db
 				.query('repoScores')
 				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
@@ -384,7 +454,11 @@ export const getRepoGrowthMoments = query({
 				.query('repoSnapshots')
 				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
 				.order('desc')
-				.take(5)
+				.take(5),
+			ctx.db
+				.query('shipStreaks')
+				.withIndex('by_repoId', (q) => q.eq('repoId', args.repoId))
+				.first()
 		]);
 
 		const chronologicalScores = scoreHistory.reverse();
@@ -393,7 +467,13 @@ export const getRepoGrowthMoments = query({
 		return deriveGrowthMoments({
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			scoreHistory: chronologicalScores.map((score) => ({ healthScore: score.healthScore })),
-			recentSnapshots: recentSnapshots.map((snapshot) => ({ starsLast7d: snapshot.starsLast7d }))
+			recentSnapshots: recentSnapshots.map((snapshot) => ({
+				starsLast7d: snapshot.starsLast7d,
+				contributors14d: snapshot.contributors14d,
+				capturedAt: snapshot.capturedAt
+			})),
+			currentStreak: streak?.currentStreak,
+			longestStreak: streak?.longestStreak
 		});
 	}
 });
@@ -605,7 +685,11 @@ export const getPublicRepoHealth = query({
 		const growthMoments = deriveGrowthMoments({
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			scoreHistory: recentScores.reverse().map((score) => ({ healthScore: score.healthScore })),
-			recentSnapshots: recentCommits.map((snapshot) => ({ starsLast7d: snapshot.starsLast7d }))
+			recentSnapshots: recentCommits.map((snapshot) => ({
+				starsLast7d: snapshot.starsLast7d,
+				contributors14d: snapshot.contributors14d,
+				capturedAt: snapshot.capturedAt
+			}))
 		});
 
 		return {

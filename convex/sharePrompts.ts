@@ -11,7 +11,15 @@ import { deriveGrowthMoments } from './dashboard';
 import { getAuthUserId } from '@convex-dev/auth/server';
 
 export type PromptCandidate = {
-	kind: 'star_spike' | 'best_week' | 'momentum_recovered' | 'streak_milestone' | 'score_milestone';
+	kind:
+		| 'star_spike'
+		| 'best_week'
+		| 'momentum_recovered'
+		| 'streak_milestone'
+		| 'score_milestone'
+		| 'contributor_milestone'
+		| 'longest_streak'
+		| 'best_month';
 	title: string;
 	message: string;
 	shareText: string;
@@ -96,6 +104,30 @@ export function buildSharePrompt(input: {
 		};
 	}
 
+	for (const moment of input.growthMoments) {
+		if (moment.kind === 'contributor_milestone' && moment.metric && moment.metric >= 3) {
+			return {
+				kind: 'contributor_milestone',
+				title: 'Share contributors milestone',
+				message: moment.description,
+				shareText: `👥 ${input.repoName} now has ${moment.metric} active contributors! Check it out on ShipSense.`,
+				shareUrl,
+				fingerprint: `contributor_milestone:${moment.metric}`
+			};
+		}
+
+		if (moment.kind === 'longest_streak') {
+			return {
+				kind: 'longest_streak',
+				title: 'Share longest streak',
+				message: moment.description,
+				shareText: `🔥 ${input.repoName} set a new streak record of ${moment.metric} days on ShipSense!`,
+				shareUrl,
+				fingerprint: `longest_streak:${moment.metric}`
+			};
+		}
+	}
+
 	return null;
 }
 
@@ -110,7 +142,10 @@ export const upsertSharePrompt = internalMutation({
 					v.literal('best_week'),
 					v.literal('momentum_recovered'),
 					v.literal('streak_milestone'),
-					v.literal('score_milestone')
+					v.literal('score_milestone'),
+					v.literal('contributor_milestone'),
+					v.literal('longest_streak'),
+					v.literal('best_month')
 				),
 				title: v.string(),
 				message: v.string(),
@@ -184,17 +219,29 @@ export const generateSharePrompt = internalAction({
 		]);
 
 		if (!latestSnapshot) {
-			await ctx.runMutation(internal.sharePrompts.upsertSharePrompt, { repoId, userId, prompt: null });
+			await ctx.runMutation(internal.sharePrompts.upsertSharePrompt, {
+				repoId,
+				userId,
+				prompt: null
+			});
 			return null;
 		}
 
 		const growthMoments = deriveGrowthMoments({
 			starsLast7d: latestSnapshot.starsLast7d,
 			scoreHistory: recentScores.map((score) => ({ healthScore: score.healthScore })),
-			recentSnapshots: recentSnapshots.map((snapshot) => ({ starsLast7d: snapshot.starsLast7d }))
+			recentSnapshots: recentSnapshots.map((snapshot) => ({
+				starsLast7d: snapshot.starsLast7d,
+				contributors14d: snapshot.contributors14d,
+				capturedAt: snapshot.capturedAt
+			})),
+			currentStreak: streak?.currentStreak,
+			longestStreak: streak?.longestStreak
 		});
 
-		const bestPreviousScore = recentScores.slice(0, -1).reduce((best, score) => Math.max(best, score.healthScore), 0);
+		const bestPreviousScore = recentScores
+			.slice(0, -1)
+			.reduce((best, score) => Math.max(best, score.healthScore), 0);
 		const prompt = buildSharePrompt({
 			repoName,
 			repoSlug,

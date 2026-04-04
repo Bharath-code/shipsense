@@ -1,6 +1,7 @@
 import { internalAction } from './_generated/server';
 import { internal } from './_generated/api';
 import { v } from 'convex/values';
+import { deriveGrowthMoments } from './dashboard';
 
 export const syncRepoNow = internalAction({
 	args: { repoId: v.id('repos') },
@@ -67,6 +68,32 @@ export const syncRepoNow = internalAction({
 					currentScore: newScore.healthScore
 				});
 
+				const [latestSnapshot, streak] = await Promise.all([
+					ctx.runQuery(internal.collector.getLatestSnapshot, { repoId }),
+					ctx.runQuery(internal.dashboard.getRepoStreakInternal, { repoId })
+				]);
+
+				const growthMoments = deriveGrowthMoments({
+					starsLast7d: latestSnapshot?.starsLast7d ?? 0,
+					scoreHistory: [],
+					recentSnapshots: [],
+					currentStreak: streak?.currentStreak,
+					longestStreak: streak?.longestStreak
+				});
+
+				for (const moment of growthMoments) {
+					if (moment.kind === 'streak_milestone' || moment.kind === 'longest_streak') {
+						await ctx.runMutation(internal.notifications.createNotification, {
+							userId: repo.userId,
+							type: 'win',
+							title: moment.title,
+							message: moment.description,
+							repoId,
+							repoName: repo.name
+						});
+					}
+				}
+
 				if (previousScore && newScore.healthScore < previousScore.healthScore - 5) {
 					await ctx.runMutation(internal.notifications.createNotification, {
 						userId: repo.userId,
@@ -89,7 +116,6 @@ export const syncRepoNow = internalAction({
 					});
 				}
 
-				const streak = await ctx.runQuery(internal.dashboard.getRepoStreakInternal, { repoId });
 				if (streak) {
 					if (streak.currentStreak === 0 && streak.streakBrokenAt) {
 						const brokenRecently = Date.now() - streak.streakBrokenAt < 24 * 60 * 60 * 1000;

@@ -40,6 +40,7 @@
 	import DailyBrief from '$lib/components/dashboard/DailyBrief.svelte';
 	import SharePromptToast from '$lib/components/dashboard/SharePromptToast.svelte';
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
+	import WinCard from '$lib/components/dashboard/WinCard.svelte';
 
 	const repoTabs = [
 		{ value: 'overview', label: 'Overview' },
@@ -770,6 +771,10 @@
 					</div>
 
 					<div class="space-y-6">
+						<ErrorBoundary>
+							<WinCard repoId={repoId as string} />
+						</ErrorBoundary>
+
 						<ErrorBoundary>
 							<AnomalyAlerts repoId={repoId as string} />
 						</ErrorBoundary>

@@ -182,7 +182,10 @@ export default defineSchema({
 			v.literal('best_week'),
 			v.literal('momentum_recovered'),
 			v.literal('streak_milestone'),
-			v.literal('score_milestone')
+			v.literal('score_milestone'),
+			v.literal('contributor_milestone'),
+			v.literal('longest_streak'),
+			v.literal('best_month')
 		),
 		title: v.string(),
 		message: v.string(),
@@ -248,7 +251,8 @@ export default defineSchema({
 			v.literal('weekly_report'),
 			v.literal('new_task'),
 			v.literal('dependency_alert'),
-			v.literal('anomaly_alert')
+			v.literal('anomaly_alert'),
+			v.literal('win')
 		),
 		title: v.string(),
 		message: v.string(),

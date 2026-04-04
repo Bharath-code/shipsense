@@ -283,7 +283,11 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 			.slice()
 			.reverse()
 			.map((score) => ({ healthScore: score.healthScore })),
-		recentSnapshots: recentSnapshots.map((snapshot) => ({ starsLast7d: snapshot.starsLast7d }))
+		recentSnapshots: recentSnapshots.map((snapshot) => ({
+			starsLast7d: snapshot.starsLast7d,
+			contributors14d: snapshot.contributors14d,
+			capturedAt: snapshot.capturedAt
+		}))
 	});
 
 	const sortedTasks = tasks.slice().sort((a, b) => a.priority - b.priority);

@@ -391,15 +391,15 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 
 #### Win Detection
 
-- [ ] Expand growth moments to include streak milestones, contributor milestones, score recoveries, and best month
-- [ ] Add celebratory UI states for notable wins so the product feels rewarding, not only corrective
-- [ ] Generate reusable “win cards” for sharing recent milestones across public and private views
+- [x] Expand growth moments to include streak milestones, contributor milestones, score recoveries, and best month
+- [x] Add celebratory UI states for notable wins so the product feels rewarding, not only corrective
+- [x] Generate reusable "win cards" for sharing recent milestones across public and private views
 
 #### Recovery Loops
 
-- [ ] Detect recovery states after a prior slowdown, not just the slowdown itself
-- [ ] Show “you recovered from” messaging to reinforce continued use after a bad week
-- [ ] Feed recovery moments into the daily digest and share nudge system
+- [x] Detect recovery states after a prior slowdown, not just the slowdown itself
+- [x] Show "you recovered from" messaging to reinforce continued use after a bad week
+- [x] Feed recovery moments into the daily digest and share nudge system
 
 ### Phase 29 — Notification Preferences
 
