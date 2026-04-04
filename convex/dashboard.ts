@@ -64,17 +64,34 @@ export const getRepoDetails = query({
 		const repo = await ctx.db.get(args.repoId);
 		if (!repo || repo.userId !== userId) return null;
 
-		const latestSnapshot = await ctx.db
-			.query('repoSnapshots')
-			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
-			.order('desc')
-			.first();
+		const [latestSnapshot, latestScore] = await Promise.all([
+			ctx.db
+				.query('repoSnapshots')
+				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first(),
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first()
+		]);
+
+		const momentum =
+			latestScore?.previousScore !== undefined
+				? latestScore.healthScore - latestScore.previousScore
+				: null;
 
 		return {
 			...repo,
 			starsCount: latestSnapshot?.stars ?? repo.starsCount,
 			forksCount: latestSnapshot?.forks ?? repo.forksCount,
-			starsLast7d: latestSnapshot?.starsLast7d ?? 0
+			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
+			healthScore: latestScore?.healthScore ?? null,
+			momentum,
+			trend: latestScore?.trend ?? 'stable',
+			hasScore: !!latestScore,
+			hasTrend: latestScore?.previousScore !== undefined
 		};
 	}
 });

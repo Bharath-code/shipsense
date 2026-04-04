@@ -6,28 +6,32 @@
 	import { api } from '$convex/_generated/api';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Badge } from '$lib/components/ui/badge';
-	import { HelpTooltip } from '$lib/components/ui/tooltip';
-	import { LABELS, MESSAGES, TOOLTIPS } from '$lib/constants/labels';
+	import { LABELS, MESSAGES } from '$lib/constants/labels';
 	import Toast from '$lib/components/ui/toast/toast.svelte';
 	import {
 		ArrowLeft,
 		GitBranch,
 		Star,
-		Activity,
 		GitFork,
 		Lock,
 		Globe,
 		Trash2,
-		AlertTriangle,
-		CheckCircle2,
+		Activity,
 		Clock,
 		RefreshCw,
-		Share2
+		AlertTriangle,
+		ListTodo,
+		Share2,
+		FileText,
+		Package,
+		BadgeCheck,
+		ExternalLink,
+		ChevronRight,
+		CheckCircle2,
+		Flame,
+		Sparkles
 	} from 'lucide-svelte';
-
 	import InsightCard from '$lib/components/dashboard/InsightCard.svelte';
-	import TaskChecklist from '$lib/components/dashboard/TaskChecklist.svelte';
-	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
 	import ScoreBreakdown from '$lib/components/dashboard/ScoreBreakdown.svelte';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
@@ -36,53 +40,57 @@
 	import AnomalyAlerts from '$lib/components/dashboard/AnomalyAlerts.svelte';
 	import DailyBrief from '$lib/components/dashboard/DailyBrief.svelte';
 	import SharePromptToast from '$lib/components/dashboard/SharePromptToast.svelte';
+	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 
-	// Get repoId from route params
-	let repoId = $derived($page.params.repoId as string);
+	const repoTabs = [
+		{ value: 'overview', label: 'Overview' },
+		{ value: 'tasks', label: 'Tasks' },
+		{ value: 'signals', label: 'Signals' },
+		{ value: 'health', label: 'Health' },
+		{ value: 'share', label: 'Share' }
+	] as const;
 
-	// Get Convex client
-	const client = useConvexClient();
+	type RepoTab = (typeof repoTabs)[number]['value'];
 
-	// Badge modal state
-	let showBadgeModal = $state(false);
-	let badgeCopied = $state(false);
-
-	const repoQuery2 = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
-	let repoForBadge = $derived(repoQuery2.data);
-	let badgeUrl = $derived(`/api/badge/${repoForBadge?.slug || repoId}.svg`);
-	let publicUrl = $derived(`/p/${repoForBadge?.slug || repoId}`);
-	let badgeMarkdown = $derived(`![ShipSense Health](https://shipsense.app${badgeUrl})`);
-
-	async function copyBadgeUrl() {
-		try {
-			await navigator.clipboard.writeText(badgeMarkdown);
-			badgeCopied = true;
-			setTimeout(() => (badgeCopied = false), 2000);
-		} catch {
-			// Fallback for older browsers
-		}
+	function isRepoTab(value: string | null): value is RepoTab {
+		return repoTabs.some((tab) => tab.value === value);
 	}
 
-	// Lazy load GrowthCardModal - only load when modal opens
-	let GrowthCardModal = $state<
-		typeof import('$lib/components/dashboard/GrowthCardModal.svelte').default | null
-	>(null);
-	let showGrowthCard = $state(false);
+	function sourceLabel(source: string | null | undefined): string {
+		if (source === 'anomaly') return 'Anomaly';
+		if (source === 'dependency') return 'Dependency';
+		if (source === 'readme') return 'README';
+		if (source === 'hygiene') return 'Maintenance';
+		return 'Trend';
+	}
 
-	// Load modal when opened
-	$effect(() => {
-		if (showGrowthCard && !GrowthCardModal) {
-			import('$lib/components/dashboard/GrowthCardModal.svelte').then((module) => {
-				GrowthCardModal = module.default;
-			});
-		}
-	});
+	function trendLabel(trend: 'up' | 'down' | 'stable', hasTrend: boolean): string {
+		if (!hasTrend) return 'Baseline';
+		if (trend === 'up') return 'Improving';
+		if (trend === 'down') return 'Slipping';
+		return 'Holding steady';
+	}
 
-	// Note: We need to cast repoId to the expected type for convex-svelte
-	// This is because route params are strings but Convex expects Id<"repos">
-	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
+	function trendTone(trend: 'up' | 'down' | 'stable', hasTrend: boolean): string {
+		if (!hasTrend || trend === 'stable') return 'text-muted-foreground';
+		return trend === 'up' ? 'text-success' : 'text-destructive';
+	}
 
-	// Helper function
+	function formatMomentum(momentum: number | null | undefined): string {
+		if (typeof momentum !== 'number') return 'No prior score';
+		if (momentum > 0) return `+${momentum}`;
+		if (momentum < 0) return `${momentum}`;
+		return '0';
+	}
+
+	function scoreTone(score: number | null | undefined): string {
+		if (typeof score !== 'number') return 'text-muted-foreground';
+		if (score >= 80) return 'text-success';
+		if (score >= 60) return 'text-warning';
+		if (score >= 40) return 'text-orange-500';
+		return 'text-destructive';
+	}
+
 	function formatTimeAgo(timestamp: number): string {
 		const seconds = Math.floor((Date.now() - timestamp) / 1000);
 		if (seconds < 60) return 'Just now';
@@ -94,16 +102,73 @@
 		return `${days}d ago`;
 	}
 
+	function formatStreakSummary(lastCommitDate: string | undefined, currentStreak: number | undefined): string {
+		if (!lastCommitDate) return 'No history yet';
+		if ((currentStreak ?? 0) > 0) return `${currentStreak} day streak`;
+		return 'Streak paused';
+	}
+
+	function taskTypeLabel(taskType: string): string {
+		if (taskType === 'pr') return 'PR';
+		if (taskType === 'issue') return 'Issue';
+		if (taskType === 'commit') return 'Commit';
+		if (taskType === 'anomaly') return 'Signal';
+		return 'General';
+	}
+
+	let repoId = $derived($page.params.repoId as string);
+	let activeTab = $derived.by<RepoTab>(() => {
+		const tab = $page.url.searchParams.get('tab');
+		return isRepoTab(tab) ? tab : 'overview';
+	});
+
+	const client = useConvexClient();
+	const repoQuery = useQuery(api.dashboard.getRepoDetails, () => ({ repoId: repoId as any }));
+	const dailyBriefQuery = useQuery(api.dashboard.getRepoDailyBrief, () => ({ repoId: repoId as any }));
+	const tasksQuery = useQuery(api.dashboard.getRepoTasks, () => ({ repoId: repoId as any }));
+	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId: repoId as any }));
+
 	let repo = $derived(repoQuery.data);
 	let isLoading = $derived(repoQuery.isLoading);
+	let dailyBrief = $derived(dailyBriefQuery.data);
+	let tasks = $derived(tasksQuery.data || []);
+	let streak = $derived(streakQuery.data);
+	let primaryTask = $derived(tasks[0] ?? null);
+	let groupedTasks = $derived.by(() => {
+		const grouped = new Map<string, typeof tasks>();
+		for (const task of tasks.slice(1)) {
+			const key = sourceLabel(task.taskSource);
+			grouped.set(key, [...(grouped.get(key) ?? []), task]);
+		}
+
+		return Array.from(grouped.entries()).map(([label, items]) => ({
+			label,
+			items
+		}));
+	});
+
 	let isDisconnecting = $state(false);
 	let isSyncing = $state(false);
+	let showBadgeModal = $state(false);
+	let badgeCopied = $state(false);
+	let publicLinkCopied = $state(false);
 
-	// Toast state for first sync prompt
 	let showFirstSyncToast = $state(false);
 	let toastDismissed = $state(false);
 
-	// Check localStorage on mount to see if user previously dismissed
+	let GrowthCardModal = $state<
+		typeof import('$lib/components/dashboard/GrowthCardModal.svelte').default | null
+	>(null);
+	let showGrowthCard = $state(false);
+
+	$effect(() => {
+		if (showGrowthCard && !GrowthCardModal) {
+			import('$lib/components/dashboard/GrowthCardModal.svelte').then((module) => {
+				GrowthCardModal = module.default;
+			});
+		}
+	});
+
 	$effect(() => {
 		if (!browser) return;
 		const dismissed = localStorage.getItem(`shipsense_toast_dismissed_${repoId}`);
@@ -112,13 +177,10 @@
 		}
 	});
 
-	// Check if first sync completed and show toast
 	$effect(() => {
 		if (!browser || !repo || toastDismissed) return;
 
-		// Check if we have sync data (first sync completed)
 		if (repo.lastSyncedAt) {
-			// Show toast after a short delay to let the UI settle
 			const timer = setTimeout(() => {
 				if (!toastDismissed) {
 					showFirstSyncToast = true;
@@ -129,10 +191,16 @@
 		}
 	});
 
+	let badgeUrl = $derived(`/api/badge/${repo?.slug || repoId}.svg`);
+	let publicUrl = $derived(`/p/${repo?.slug || repoId}`);
+	let badgeMarkdown = $derived(`![ShipSense Health](https://shipsense.app${badgeUrl})`);
+	let healthSummary = $derived(
+		repo?.hasScore ? `${repo.healthScore}/100` : repo?.lastSyncedAt ? 'Calculating' : 'Pending'
+	);
+
 	function dismissToast() {
 		showFirstSyncToast = false;
 		toastDismissed = true;
-		// Store in localStorage to not show again
 		if (browser) {
 			localStorage.setItem(`shipsense_toast_dismissed_${repoId}`, 'true');
 		}
@@ -162,14 +230,49 @@
 			isSyncing = false;
 		}
 	}
+
+	async function completeTask(taskId: string) {
+		await client.mutation(api.dashboard.completeTask, { taskId: taskId as any });
+	}
+
+	async function copyText(value: string, kind: 'badge' | 'public') {
+		if (!browser) return;
+		try {
+			await navigator.clipboard.writeText(value);
+			if (kind === 'badge') {
+				badgeCopied = true;
+				setTimeout(() => (badgeCopied = false), 2000);
+			} else {
+				publicLinkCopied = true;
+				setTimeout(() => (publicLinkCopied = false), 2000);
+			}
+		} catch {
+			// Clipboard fallback is intentionally silent.
+		}
+	}
+
+	function switchTab(tab: RepoTab) {
+		const params = new URLSearchParams($page.url.searchParams);
+		if (tab === 'overview') {
+			params.delete('tab');
+		} else {
+			params.set('tab', tab);
+		}
+
+		const queryString = params.toString();
+		void goto(`${$page.url.pathname}${queryString ? `?${queryString}` : ''}`, {
+			replaceState: true,
+			noScroll: true,
+			keepFocus: true
+		});
+	}
 </script>
 
 <svelte:head>
 	<title>{repo ? `${repo.name} | ShipSense` : 'Loading Repo...'}</title>
 </svelte:head>
 
-<div class="space-y-8 pb-12">
-	<!-- Navigation Header back to Dashboard -->
+<div class="space-y-6 pb-12">
 	<div class="flex items-center justify-between">
 		<Button
 			variant="ghost"
@@ -181,8 +284,8 @@
 			Back to Ecosystem
 		</Button>
 
-		<div class="flex items-center gap-3">
-			{#if repo}
+		{#if repo}
+			<div class="flex items-center gap-3">
 				<Button
 					variant="outline"
 					size="sm"
@@ -203,31 +306,19 @@
 					<Trash2 class="mr-2 h-4 w-4" />
 					{isDisconnecting ? LABELS.DISCONNECTING : LABELS.DISCONNECT}
 				</Button>
-			{/if}
-			{#if repo && repo.lastSyncedAt}
-				<div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-					<Clock class="h-3 w-3" />
-					<span>{formatTimeAgo(repo.lastSyncedAt)}</span>
-				</div>
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 
 	{#if isLoading}
-		<div class="grid grid-cols-1 gap-6">
-			<div class="h-64 animate-pulse rounded-3xl border border-white/10 bg-white/5"></div>
-			<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-				<div
-					class="h-[600px] animate-pulse rounded-3xl border border-white/10 bg-white/5 lg:col-span-8"
-				></div>
-				<div
-					class="h-[600px] animate-pulse rounded-3xl border border-white/10 bg-white/5 lg:col-span-4"
-				></div>
-			</div>
+		<div class="space-y-6">
+			<div class="h-56 animate-pulse rounded-[2rem] border border-white/10 bg-white/5"></div>
+			<div class="h-14 animate-pulse rounded-2xl border border-white/10 bg-white/5"></div>
+			<div class="h-[28rem] animate-pulse rounded-[2rem] border border-white/10 bg-white/5"></div>
 		</div>
 	{:else if !repo}
 		<div
-			class="flex h-96 flex-col items-center justify-center space-y-6 rounded-3xl glass-panel border-white/10 text-center"
+			class="flex h-96 flex-col items-center justify-center space-y-6 rounded-3xl border border-white/10 glass-panel text-center"
 		>
 			<div
 				class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 text-muted-foreground"
@@ -237,191 +328,580 @@
 			<div>
 				<h3 class="text-2xl font-bold text-foreground">Repository Not Found</h3>
 				<p class="mt-2 max-w-sm text-muted-foreground">
-					This repository either doesn't exist or you do not have permission to view it.
+					This repository either doesn&apos;t exist or you do not have permission to view it.
 				</p>
 			</div>
 			<Button
 				href="/dashboard"
 				variant="outline"
 				class="rounded-full border-white/10 bg-white/5 hover:bg-white/10"
-				>Return to Ecosystem</Button
 			>
+				Return to Ecosystem
+			</Button>
 		</div>
 	{:else}
-		<!-- Repository Overview Header -->
-		<div
-			class="relative flex flex-col justify-between gap-8 overflow-hidden rounded-[2.5rem] glass-panel border-white/10 p-8 shadow-2xl transition-all lg:flex-row lg:items-center lg:p-12"
-		>
-			<div class="z-10 flex w-full items-start gap-8 lg:w-3/5">
-				<div
-					class="hidden h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-transparent shadow-inner sm:flex"
-				>
-					<GitBranch class="h-10 w-10 text-primary" />
-				</div>
-
-				<div class="space-y-3">
+		<div class="overflow-hidden rounded-[2.5rem] border border-white/10 glass-panel shadow-2xl">
+			<div class="grid gap-6 p-6 sm:p-8 xl:grid-cols-[minmax(0,1.45fr)_minmax(22rem,0.95fr)] xl:p-10">
+				<div class="space-y-5">
 					<div class="flex flex-wrap items-center gap-3">
-						<h1 class="text-3xl font-black tracking-tight text-foreground sm:text-5xl">
-							{repo.name}
-						</h1>
-						{#if repo.isPrivate}
-							<Badge
-								variant="outline"
-								class="rounded-full border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-								><Lock class="-mt-0.5 mr-1 inline h-3 w-3" /> Private</Badge
-							>
-						{:else}
-							<Badge
-								variant="outline"
-								class="rounded-full border-success/20 bg-success/5 px-3 py-1 text-[10px] font-bold tracking-widest text-success uppercase"
-								><Globe class="-mt-0.5 mr-1 inline h-3 w-3" /> Public</Badge
-							>
-						{/if}
+						<div
+							class="hidden h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-transparent sm:flex"
+						>
+							<GitBranch class="h-8 w-8 text-primary" />
+						</div>
+
+						<div class="min-w-0 space-y-2">
+							<div class="flex flex-wrap items-center gap-3">
+								<h1 class="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+									{repo.name}
+								</h1>
+								{#if repo.isPrivate}
+									<Badge
+										variant="outline"
+										class="rounded-full border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+									>
+										<Lock class="-mt-0.5 mr-1 inline h-3 w-3" /> Private
+									</Badge>
+								{:else}
+									<Badge
+										variant="outline"
+										class="rounded-full border-success/20 bg-success/5 px-3 py-1 text-[10px] font-bold tracking-widest text-success uppercase"
+									>
+										<Globe class="-mt-0.5 mr-1 inline h-3 w-3" /> Public
+									</Badge>
+								{/if}
+							</div>
+
+							<p class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground sm:text-base">
+								<span class="font-medium text-foreground/60">{repo.owner}</span>
+								{#if repo.language}
+									<span class="h-1.5 w-1.5 rounded-full bg-white/20"></span>
+									<span
+										class="rounded-full border border-white/5 bg-white/5 px-3 py-1 font-mono text-xs text-primary sm:text-sm"
+									>
+										{repo.language}
+									</span>
+								{/if}
+							</p>
+						</div>
 					</div>
 
-					<p class="flex items-center gap-3 text-lg text-muted-foreground">
-						<span class="font-medium text-foreground/60">{repo.owner}</span>
-						{#if repo.language}
-							<span class="h-1.5 w-1.5 rounded-full bg-white/20"></span>
-							<span
-								class="flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-4 py-1 font-mono text-sm text-primary"
-							>
-								{repo.language}
-							</span>
-						{/if}
-					</p>
-
 					{#if repo.description}
-						<p class="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+						<p class="max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
 							{repo.description}
 						</p>
 					{/if}
-				</div>
-			</div>
 
-			<!-- Key GitHub Metrics -->
-			<div
-				class="z-10 flex flex-wrap items-center gap-8 rounded-[2rem] border border-white/5 bg-white/[0.03] p-8 lg:border-none lg:bg-transparent lg:p-0"
-			>
-				<HelpTooltip content={TOOLTIPS.STARS}>
-					<div class="flex cursor-help flex-col text-center lg:text-left">
-						<span
-							class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
-							><Star class="h-3 w-3 text-warning/60" /> {LABELS.STARS}</span
-						>
-						<div class="flex items-center gap-2">
-							<span class="text-4xl font-black text-foreground">{repo.starsCount}</span>
-							{#if repo.starsLast7d && repo.starsLast7d > 0}
-								<span class="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
-									+{repo.starsLast7d}
+					<div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
+						<div class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
+							<Star class="h-4 w-4 text-warning" />
+							<span class="font-medium text-foreground">{repo.starsCount}</span>
+							<span>stars</span>
+							{#if repo.starsLast7d > 0}
+								<span class="rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold text-success">
+									+{repo.starsLast7d} this week
 								</span>
 							{/if}
 						</div>
+
+						<div class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
+							<GitFork class="h-4 w-4 text-primary" />
+							<span class="font-medium text-foreground">{repo.forksCount}</span>
+							<span>forks</span>
+						</div>
+
+						{#if repo.lastSyncedAt}
+							<div
+								class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2"
+							>
+								<Clock class="h-4 w-4 text-muted-foreground" />
+								<span>Synced {formatTimeAgo(repo.lastSyncedAt)}</span>
+							</div>
+						{/if}
 					</div>
-				</HelpTooltip>
 
-				<div class="hidden h-16 w-px bg-white/10 lg:block"></div>
-
-				<HelpTooltip content={TOOLTIPS.FORKS}>
-					<div class="flex cursor-help flex-col text-center lg:text-left">
-						<span
-							class="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase lg:justify-start"
-							><GitFork class="h-3 w-3 text-primary/60" /> {LABELS.FORKS}</span
-						>
-						<span class="text-4xl font-black text-foreground">{repo.forksCount}</span>
-					</div>
-				</HelpTooltip>
-
-				<div class="hidden h-16 w-px bg-white/10 lg:block"></div>
-
-				<div class="w-full lg:w-auto">
-					{#if GrowthCardModal}
-						{@const GrowthCard = GrowthCardModal}
-						<GrowthCard repoId={repoId as string} bind:open={showGrowthCard} />
-					{:else}
-						<Button
-							variant="outline"
-							class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
-							onclick={() => (showGrowthCard = true)}
-							aria-label={LABELS.SHARE_GROWTH_CARD}
-						>
-							<Share2 class="mr-2 h-4 w-4" />
-							{LABELS.SHARE_GROWTH_CARD}
-						</Button>
+					{#if repo.lastError}
+						<div class="rounded-2xl border border-destructive/20 bg-destructive/10 p-4">
+							<div class="flex items-start gap-3">
+								<AlertTriangle class="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+								<div>
+									<p class="text-sm font-semibold text-foreground">Last sync needs attention</p>
+									<p class="mt-1 text-sm leading-relaxed text-muted-foreground">{repo.lastError}</p>
+								</div>
+							</div>
+						</div>
 					{/if}
 				</div>
 
-				<div class="w-full lg:w-auto">
-					<Button
-						variant="outline"
-						class="border-primary/30 font-medium text-primary transition-all hover:bg-primary/10 hover:text-primary/80"
-						onclick={() => (showBadgeModal = true)}
-						aria-label="Get health badge"
-					>
-						<svg class="mr-2 h-4 w-4" viewBox="0 0 100 20" fill="none">
-							<rect width="55" height="20" rx="3" fill="#555" />
-							<rect x="55" width="45" height="20" rx="3" fill="#4c1" />
-							<text
-								x="27"
-								y="14"
-								fill="#fff"
-								font-family="Verdana"
-								font-size="11"
-								text-anchor="middle">S</text
-							>
-							<text
-								x="77"
-								y="14"
-								fill="#fff"
-								font-family="Verdana"
-								font-size="11"
-								text-anchor="middle">85</text
-							>
-						</svg>
-						Get Badge
-					</Button>
+				<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
+							Health
+						</p>
+						<p class="mt-3 text-3xl font-black {scoreTone(repo.healthScore)}">{healthSummary}</p>
+						<p class="mt-2 text-sm text-muted-foreground">
+							{repo.hasScore
+								? 'Current repo health score'
+								: repo.lastSyncedAt
+									? 'Score is being calculated'
+									: 'Run the first sync to score this repo'}
+						</p>
+					</div>
+
+					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
+							Trend
+						</p>
+						<p class="mt-3 text-2xl font-black {trendTone(repo.trend, repo.hasTrend)}">
+							{trendLabel(repo.trend, repo.hasTrend)}
+						</p>
+						<p class="mt-2 text-sm text-muted-foreground">
+							{repo.hasTrend ? `Score delta ${formatMomentum(repo.momentum)}` : 'Waiting for a second score'}
+						</p>
+					</div>
+
+					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
+							Freshness
+						</p>
+						<p class="mt-3 text-2xl font-black text-foreground">
+							{repo.lastSyncedAt ? formatTimeAgo(repo.lastSyncedAt) : 'Not synced'}
+						</p>
+						<p class="mt-2 text-sm text-muted-foreground">
+							Trust signal for the view you&apos;re seeing now
+						</p>
+					</div>
+
+					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
+							Streak
+						</p>
+						<p class="mt-3 text-2xl font-black text-foreground">
+							{streak?.currentStreak ?? 0}
+						</p>
+						<p class="mt-2 text-sm text-muted-foreground">
+							{formatStreakSummary(streak?.lastCommitDate, streak?.currentStreak)}
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- Score Breakdown Section -->
-		<ScoreBreakdown repoId={repoId as string} />
-		<DailyBrief repoId={repoId as string} />
-
-		<!-- Main Dashboard Grid -->
-		<div class="grid w-full grid-cols-1 gap-8 lg:grid-cols-12">
-			<!-- Left Column (Heavy Content) -->
-			<div class="flex flex-col gap-8 lg:col-span-7 xl:col-span-8">
-				<ErrorBoundary>
-					<InsightCard repoId={repoId as string} />
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<MomentumGraph repoId={repoId as string} />
-				</ErrorBoundary>
-			</div>
-
-			<!-- Right Column (Widgets) -->
-			<div class="flex flex-col gap-8 lg:col-span-5 xl:col-span-4">
-				<ErrorBoundary>
-					<ShipStreak repoId={repoId as string} />
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<ReadmeScore repoId={repoId as string} />
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<AnomalyAlerts repoId={repoId as string} />
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<DependencyList repoId={repoId as string} />
-				</ErrorBoundary>
-				<ErrorBoundary>
-					<TaskChecklist repoId={repoId as string} />
-				</ErrorBoundary>
+		<div class="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+			<div class="flex gap-2 overflow-x-auto">
+				{#each repoTabs as tab}
+					<button
+						type="button"
+						class={`min-h-11 shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
+							activeTab === tab.value
+								? 'bg-background text-foreground shadow-sm'
+								: 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+						}`}
+						onclick={() => switchTab(tab.value)}
+						aria-current={activeTab === tab.value ? 'page' : undefined}
+					>
+						{tab.label}
+					</button>
+				{/each}
 			</div>
 		</div>
+
+		{#if activeTab === 'overview'}
+			<div class="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.95fr)]">
+				<div class="space-y-6">
+					<DailyBrief repoId={repoId as string} />
+
+					<ErrorBoundary>
+						<InsightCard repoId={repoId as string} />
+					</ErrorBoundary>
+
+					<ScoreBreakdown repoId={repoId as string} />
+				</div>
+
+				<div class="space-y-6">
+					<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+						<div class="mb-4 flex items-center gap-3">
+							<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-warning/10 text-warning">
+								<AlertTriangle class="h-5 w-5" />
+							</div>
+							<div>
+								<h2 class="text-lg font-bold text-foreground">What matters now</h2>
+								<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+									Top signal
+								</p>
+							</div>
+						</div>
+
+						{#if dailyBrief?.topAnomaly}
+							<p class="text-base font-semibold text-foreground">{dailyBrief.topAnomaly.title}</p>
+							<p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+								{dailyBrief.topAnomaly.description}
+							</p>
+							<p class="mt-3 text-sm font-medium text-foreground">
+								Next move: {dailyBrief.topAnomaly.recommendedAction}
+							</p>
+							<button
+								type="button"
+								class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+								onclick={() => switchTab('signals')}
+							>
+								Open full signals
+								<ChevronRight class="h-4 w-4" />
+							</button>
+						{:else}
+							<p class="text-sm leading-relaxed text-muted-foreground">
+								No active anomaly is competing for your attention. Signals look steady right now.
+							</p>
+						{/if}
+					</div>
+
+					<div class="rounded-[2rem] border border-primary/15 bg-primary/5 p-6 shadow-2xl">
+						<div class="mb-4 flex items-center gap-3">
+							<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+								<ListTodo class="h-5 w-5" />
+							</div>
+							<div>
+								<h2 class="text-lg font-bold text-foreground">What should I do next</h2>
+								<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+									Top task
+								</p>
+							</div>
+						</div>
+
+						{#if primaryTask}
+							<p class="text-base font-semibold text-foreground">{primaryTask.taskText}</p>
+							<div class="mt-3 flex flex-wrap items-center gap-2">
+								<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
+									{sourceLabel(primaryTask.taskSource)}
+								</span>
+								<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
+									Priority {primaryTask.priority}
+								</span>
+							</div>
+							{#if primaryTask.expectedImpact}
+								<p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+									Expected impact: {primaryTask.expectedImpact}
+								</p>
+							{/if}
+							<div class="mt-4 flex flex-wrap gap-3">
+								<Button size="sm" class="rounded-full" onclick={() => completeTask(primaryTask._id)}>
+									<CheckCircle2 class="mr-2 h-4 w-4" />
+									Mark complete
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									class="rounded-full"
+									onclick={() => switchTab('tasks')}
+								>
+									Open tasks
+								</Button>
+							</div>
+						{:else}
+							<p class="text-sm leading-relaxed text-muted-foreground">
+								Nothing urgent is open right now. Keep syncing to surface the next best move.
+							</p>
+						{/if}
+					</div>
+
+					<div class="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
+						<div class="mb-4 flex items-center gap-3">
+							<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-foreground">
+								<Flame class="h-5 w-5" />
+							</div>
+							<div>
+								<h2 class="text-lg font-bold text-foreground">Supporting context</h2>
+								<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+									Compact status
+								</p>
+							</div>
+						</div>
+
+						<div class="grid gap-3 sm:grid-cols-2">
+							<div class="rounded-2xl bg-background/40 p-4">
+								<p class="text-xs font-medium text-muted-foreground">Ship streak</p>
+								<p class="mt-2 text-2xl font-black text-foreground">{streak?.currentStreak ?? 0}</p>
+								<p class="mt-1 text-sm text-muted-foreground">
+									{formatStreakSummary(streak?.lastCommitDate, streak?.currentStreak)}
+								</p>
+							</div>
+							<div class="rounded-2xl bg-background/40 p-4">
+								<p class="text-xs font-medium text-muted-foreground">Repo hygiene</p>
+								<p class="mt-2 text-base font-semibold text-foreground">
+									README, dependencies, and maintainability
+								</p>
+								<button
+									type="button"
+									class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+									onclick={() => switchTab('health')}
+								>
+									Open health tab
+									<ChevronRight class="h-4 w-4" />
+								</button>
+							</div>
+						</div>
+
+						{#if dailyBrief?.topWin}
+							<div class="mt-4 rounded-2xl border border-success/20 bg-success/10 p-4">
+								<p class="text-xs font-bold tracking-widest text-success uppercase">Share-worthy win</p>
+								<p class="mt-2 text-sm leading-relaxed text-foreground">{dailyBrief.topWin}</p>
+								<button
+									type="button"
+									class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-success hover:underline"
+									onclick={() => switchTab('share')}
+								>
+									Open share tools
+									<ChevronRight class="h-4 w-4" />
+								</button>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		{:else if activeTab === 'tasks'}
+			<div class="space-y-6">
+				<div class="rounded-[2rem] border border-primary/15 bg-primary/5 p-6 shadow-2xl">
+					<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+						<div class="max-w-2xl">
+							<p class="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Today&apos;s focus</p>
+							{#if primaryTask}
+								<h2 class="mt-2 text-2xl font-black text-foreground">{primaryTask.taskText}</h2>
+								<div class="mt-3 flex flex-wrap items-center gap-2">
+									<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
+										{sourceLabel(primaryTask.taskSource)}
+									</span>
+									<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
+										{taskTypeLabel(primaryTask.taskType)}
+									</span>
+									<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
+										Priority {primaryTask.priority}
+									</span>
+								</div>
+								{#if primaryTask.expectedImpact}
+									<p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+										Expected impact: {primaryTask.expectedImpact}
+									</p>
+								{/if}
+							{:else}
+								<h2 class="mt-2 text-2xl font-black text-foreground">Nothing urgent is open</h2>
+								<p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+									You&apos;re clear for now. The next sync will repopulate this queue if new work appears.
+								</p>
+							{/if}
+						</div>
+
+						{#if primaryTask}
+							<Button class="rounded-full" onclick={() => completeTask(primaryTask._id)}>
+								<CheckCircle2 class="mr-2 h-4 w-4" />
+								Mark today&apos;s focus complete
+							</Button>
+						{/if}
+					</div>
+				</div>
+
+				{#if tasks.length === 0}
+					<div class="rounded-[2rem] border border-white/10 glass-panel p-8 text-center shadow-2xl">
+						<p class="text-lg font-semibold text-foreground">Task queue is clear.</p>
+						<p class="mt-2 text-sm text-muted-foreground">
+							Ship some work, sync again, and ShipSense will surface the next operational move.
+						</p>
+					</div>
+				{:else}
+					<div class="grid gap-6 xl:grid-cols-2">
+						{#each groupedTasks as group}
+							<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+								<div class="mb-5 flex items-center justify-between">
+									<div>
+										<h3 class="text-lg font-bold text-foreground">{group.label}</h3>
+										<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+											Operational queue
+										</p>
+									</div>
+									<span class="rounded-full bg-white/10 px-2.5 py-1 text-xs text-muted-foreground">
+										{group.items.length}
+									</span>
+								</div>
+
+								<div class="space-y-3">
+									{#each group.items as task}
+										<div class="rounded-2xl border border-white/10 bg-background/30 p-4">
+											<div class="flex items-start justify-between gap-4">
+												<div>
+													<p class="text-sm font-medium text-foreground">{task.taskText}</p>
+													<div class="mt-3 flex flex-wrap items-center gap-2">
+														<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
+															{taskTypeLabel(task.taskType)}
+														</span>
+														<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase">
+															Priority {task.priority}
+														</span>
+													</div>
+													{#if task.expectedImpact}
+														<p class="mt-3 text-xs leading-relaxed text-muted-foreground">
+															{task.expectedImpact}
+														</p>
+													{/if}
+												</div>
+												<Button
+													size="sm"
+													variant="outline"
+													class="rounded-full"
+													onclick={() => completeTask(task._id)}
+												>
+													Done
+												</Button>
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		{:else if activeTab === 'signals'}
+			<div class="space-y-6">
+				<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+					<h2 class="text-2xl font-black text-foreground">Signals and momentum</h2>
+					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+						Historical movement lives here, so the default view can stay focused. Use this tab to inspect anomalies, score movement, and the deeper trend context behind today&apos;s recommendation.
+					</p>
+				</div>
+
+				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.9fr)]">
+					<div class="space-y-6">
+						<ErrorBoundary>
+							<MomentumGraph repoId={repoId as string} />
+						</ErrorBoundary>
+
+						<ScoreBreakdown repoId={repoId as string} />
+					</div>
+
+					<div class="space-y-6">
+						<ErrorBoundary>
+							<AnomalyAlerts repoId={repoId as string} />
+						</ErrorBoundary>
+
+						<ErrorBoundary>
+							<ShipStreak repoId={repoId as string} />
+						</ErrorBoundary>
+					</div>
+				</div>
+			</div>
+		{:else if activeTab === 'health'}
+			<div class="space-y-6">
+				<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+					<h2 class="text-2xl font-black text-foreground">Repo hygiene and maintainability</h2>
+					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+						README quality and dependency health live here so they stay discoverable without crowding the main operating view.
+					</p>
+				</div>
+
+				<div class="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+					<ErrorBoundary>
+						<ReadmeScore repoId={repoId as string} />
+					</ErrorBoundary>
+
+					<ErrorBoundary>
+						<DependencyList repoId={repoId as string} />
+					</ErrorBoundary>
+				</div>
+			</div>
+		{:else if activeTab === 'share'}
+			<div class="space-y-6">
+				<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+					<h2 class="text-2xl font-black text-foreground">Share and external surfaces</h2>
+					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+						Sharing stays available, but secondary to day-to-day repo operations. Use these tools when you have a real win to amplify or want a public health surface.
+					</p>
+				</div>
+
+				<div class="grid gap-6 xl:grid-cols-2">
+					<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+						<div class="mb-4 flex items-center gap-3">
+							<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+								<Share2 class="h-5 w-5" />
+							</div>
+							<div>
+								<h3 class="text-lg font-bold text-foreground">Growth card</h3>
+								<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+									Shareable snapshot
+								</p>
+							</div>
+						</div>
+						<p class="text-sm leading-relaxed text-muted-foreground">
+							Export a polished share card when this repo has momentum worth showing publicly.
+						</p>
+						<Button class="mt-4 rounded-full" onclick={() => (showGrowthCard = true)}>
+							<Share2 class="mr-2 h-4 w-4" />
+							Open growth card
+						</Button>
+
+						{#if dailyBrief?.topWin}
+							<div class="mt-4 rounded-2xl border border-success/20 bg-success/10 p-4">
+								<p class="text-xs font-bold tracking-widest text-success uppercase">Top win</p>
+								<p class="mt-2 text-sm leading-relaxed text-foreground">{dailyBrief.topWin}</p>
+							</div>
+						{/if}
+					</div>
+
+					<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+						<div class="mb-4 flex items-center gap-3">
+							<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+								<BadgeCheck class="h-5 w-5" />
+							</div>
+							<div>
+								<h3 class="text-lg font-bold text-foreground">Badge and public page</h3>
+								<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+									Embed and link
+								</p>
+							</div>
+						</div>
+
+						<div class="rounded-2xl bg-muted/40 p-4">
+							<img src={badgeUrl} alt="Health Badge" class="h-5" />
+						</div>
+
+						<div class="mt-4 flex flex-wrap gap-3">
+							<Button variant="outline" class="rounded-full" onclick={() => (showBadgeModal = true)}>
+								<BadgeCheck class="mr-2 h-4 w-4" />
+								Get badge
+							</Button>
+							<Button
+								variant="outline"
+								class="rounded-full"
+								href={publicUrl}
+								target="_blank"
+								rel="noreferrer"
+							>
+								<ExternalLink class="mr-2 h-4 w-4" />
+								Open public page
+							</Button>
+						</div>
+
+						<div class="mt-4 rounded-2xl border border-white/10 bg-background/30 p-4">
+							<p class="text-xs font-medium text-muted-foreground">Public link</p>
+							<p class="mt-2 break-all text-sm text-foreground">{publicUrl}</p>
+							<Button
+								size="sm"
+								variant="ghost"
+								class="mt-3 rounded-full"
+								onclick={() => copyText(publicUrl, 'public')}
+							>
+								{publicLinkCopied ? 'Copied' : 'Copy link'}
+							</Button>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
 	{/if}
 
-	<!-- First sync toast prompt -->
+	{#if GrowthCardModal}
+		{@const GrowthCard = GrowthCardModal}
+		<GrowthCard repoId={repoId as string} bind:open={showGrowthCard} />
+	{/if}
+
 	<SharePromptToast repoId={repoId as string} />
 
 	<Toast
@@ -452,40 +932,43 @@
 		</div>
 	</Toast>
 
-	<!-- Badge Modal -->
 	{#if showBadgeModal}
-		<div
-			class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-			onclick={() => (showBadgeModal = false)}
-		>
+		<div class="fixed inset-0 z-50 flex items-center justify-center">
+			<button
+				type="button"
+				class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+				aria-label="Close health badge modal"
+				onclick={() => (showBadgeModal = false)}
+			></button>
 			<div
-				class="mx-4 w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-background p-8 shadow-2xl"
-				onclick={(e) => e.stopPropagation()}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="health-badge-title"
+				class="relative mx-4 w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-background p-8 shadow-2xl"
 			>
 				<div class="mb-6 flex items-center justify-between">
-					<h2 class="text-xl font-bold text-foreground">Health Badge</h2>
+					<h2 id="health-badge-title" class="text-xl font-bold text-foreground">Health Badge</h2>
 					<button
 						type="button"
 						onclick={() => (showBadgeModal = false)}
+						aria-label="Close health badge modal"
 						class="text-muted-foreground hover:text-foreground"
 					>
-						<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-							><path
+						<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
 								d="M6 18L18 6M6 6l12 12"
-							/></svg
-						>
+							/>
+						</svg>
 					</button>
 				</div>
 
-				<!-- Badge Preview -->
 				<div class="mb-6 flex justify-center rounded-xl bg-muted/50 p-6">
 					<img src={badgeUrl} alt="Health Badge" class="h-5" />
 				</div>
 
-				<!-- Markdown Code -->
 				<div class="mb-4">
 					<p class="mb-2 text-sm font-medium text-muted-foreground">
 						Copy this markdown to your README:
@@ -494,7 +977,7 @@
 						<code class="flex-1 text-xs break-all text-foreground">{badgeMarkdown}</code>
 						<button
 							type="button"
-							onclick={copyBadgeUrl}
+							onclick={() => copyText(badgeMarkdown, 'badge')}
 							class="shrink-0 cursor-pointer rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
 						>
 							{badgeCopied ? 'Copied!' : 'Copy'}
@@ -502,7 +985,6 @@
 					</div>
 				</div>
 
-				<!-- Public Page Link -->
 				<div class="mb-6">
 					<p class="mb-2 text-sm font-medium text-muted-foreground">Public health page:</p>
 					<a href={publicUrl} target="_blank" class="text-sm break-all text-primary hover:underline"
@@ -512,7 +994,7 @@
 
 				<p class="text-xs text-muted-foreground">
 					The badge updates automatically when your health score changes. After deploying, replace
-					the relative URL with your app's domain.
+					the relative URL with your app&apos;s domain.
 				</p>
 			</div>
 		</div>
