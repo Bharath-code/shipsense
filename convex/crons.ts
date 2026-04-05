@@ -6,6 +6,13 @@ const crons = cronJobs();
 // Collector Agent: runs every 6 hours (was hourly - reduced to avoid rate limits)
 crons.interval('collect-repo-data', { hours: 6 }, internal.orchestrator.runDataCollection);
 
+// Traffic Agent: runs daily (GitHub traffic data updates daily)
+crons.daily(
+	'collect-traffic-data',
+	{ hourUTC: 9, minuteUTC: 0 },
+	internal.orchestrator.runTrafficCollection
+);
+
 // Insight & Task Agents: run daily
 crons.daily(
 	'generate-insights',

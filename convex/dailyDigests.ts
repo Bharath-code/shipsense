@@ -39,10 +39,19 @@ type DailyDigestInput = {
 		| 'readmeSuggestions'
 		| 'readmeScore'
 		| 'prsMerged7d'
+		| 'views'
+		| 'uniqueVisitors'
+		| 'clones'
+		| 'uniqueCloners'
 	>;
 	previousSnapshot: Pick<
 		Doc<'repoSnapshots'>,
-		'starsLast7d' | 'contributors14d' | 'commitGapHours' | 'prsMerged7d'
+		| 'starsLast7d'
+		| 'contributors14d'
+		| 'commitGapHours'
+		| 'prsMerged7d'
+		| 'views'
+		| 'uniqueVisitors'
 	> | null;
 	latestScore: Pick<Doc<'repoScores'>, 'healthScore'> | null;
 	previousScore?: number;
@@ -54,6 +63,7 @@ type DailyDigestInput = {
 	> | null;
 	growthMoments: GrowthMoment[];
 	dependencySummary: DependencySummary;
+	latestReferrers: Pick<Doc<'repoReferrers'>, 'referrers' | 'paths'> | null;
 };
 
 function describeChange(input: DailyDigestInput): string {
@@ -87,6 +97,17 @@ function describeChange(input: DailyDigestInput): string {
 		input.latestSnapshot.commitGapHours - input.previousSnapshot.commitGapHours;
 	if (commitGapDelta <= -12) changes.push('Commit freshness improved noticeably.');
 	else if (commitGapDelta >= 12) changes.push('Recent commit activity slowed.');
+
+	// Traffic changes
+	if (input.latestSnapshot.views && input.previousSnapshot?.views) {
+		const trafficDelta = input.latestSnapshot.views - input.previousSnapshot.views;
+		const trafficPercent = Math.round((trafficDelta / input.previousSnapshot.views) * 100);
+		if (trafficPercent >= 20) {
+			changes.push(`Traffic up ${trafficPercent}% (${input.latestSnapshot.views} views).`);
+		} else if (trafficPercent <= -20) {
+			changes.push(`Traffic down ${Math.abs(trafficPercent)}%.`);
+		}
+	}
 
 	if (changes.length === 0) {
 		return 'No major movement since the last snapshot. This looks like a steady maintenance day.';
@@ -262,7 +283,8 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 		insight,
 		anomalies,
 		tasks,
-		dependencySummary
+		dependencySummary,
+		latestReferrers
 	] = await Promise.all([
 		ctx.runQuery(internal.collector.getLatestSnapshot, { repoId }),
 		ctx.runQuery(internal.collector.getSnapshotBeforeLatest, { repoId }),
@@ -272,7 +294,8 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 		ctx.runQuery(internal.dashboard.getRepoInsightsForReport, { repoId }),
 		ctx.runQuery(internal.anomalies.listActiveRepoAnomalies, { repoId }),
 		ctx.runQuery(internal.taskGenerator.getOpenTasks, { repoId }),
-		ctx.runQuery(internal.dependencies.getRepoDependencySummary, { repoId })
+		ctx.runQuery(internal.dependencies.getRepoDependencySummary, { repoId }),
+		ctx.runQuery(internal.collector.getLatestReferrers, { repoId })
 	]);
 
 	if (!latestSnapshot) return null;
@@ -301,7 +324,8 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 		topTask: sortedTasks[0] ?? null,
 		topAnomaly: anomalies[0] ?? null,
 		growthMoments,
-		dependencySummary
+		dependencySummary,
+		latestReferrers
 	});
 
 	await ctx.runMutation(internal.dailyDigests.saveDailyDigest, { repoId, digest });

@@ -163,6 +163,10 @@ export const syncRepoNow = internalAction({
 				}
 			}
 
+			// Collect traffic data (GitHub REST API - views, clones, referrers)
+			await ctx.runAction(internal.collector.fetchRepoTraffic, { repoId });
+			console.log('[Orchestrator] Traffic data collected');
+
 			await ctx.runAction(internal.insightGenerator.generateInsights, { repoId });
 			console.log('[Orchestrator] Insights generated');
 
@@ -198,6 +202,24 @@ export const runInsightGeneration = internalAction({
 				await ctx.runAction(internal.dailyDigests.generateRepoDailyDigest, { repoId: repo._id });
 			})
 		);
+	}
+});
+
+export const runTrafficCollection = internalAction({
+	args: {},
+	handler: async (ctx) => {
+		const repos = await ctx.runQuery(internal.repos.listAllActiveRepos);
+
+		await Promise.all(
+			repos.map(async (repo) => {
+				console.log('[Orchestrator] Collecting traffic for repo:', repo.fullName);
+				await ctx.runAction(internal.collector.fetchRepoTraffic, { repoId: repo._id });
+			})
+		);
+
+		// Clean up old referrer data (keep 30 days)
+		await ctx.runMutation(internal.collector.cleanupOldReferrers, {});
+		console.log('[Orchestrator] Traffic collection complete');
 	}
 });
 

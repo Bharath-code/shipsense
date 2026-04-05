@@ -46,6 +46,7 @@
 		{ value: 'overview', label: 'Overview' },
 		{ value: 'tasks', label: 'Tasks' },
 		{ value: 'signals', label: 'Signals' },
+		{ value: 'traffic', label: 'Traffic' },
 		{ value: 'health', label: 'Health' },
 		{ value: 'share', label: 'Share' }
 	] as const;
@@ -62,6 +63,19 @@
 		if (source === 'readme') return 'README';
 		if (source === 'hygiene') return 'Maintenance';
 		return 'Trend';
+	}
+
+	function getReferrerSource(referrer: string): string | null {
+		const lower = referrer.toLowerCase();
+		if (lower.includes('hacker news') || lower.includes('news.ycombinator')) return 'Hacker News';
+		if (lower.includes('reddit')) return 'Reddit';
+		if (lower.includes('twitter') || lower.includes('x.com')) return 'Twitter';
+		if (lower.includes('linkedin')) return 'LinkedIn';
+		if (lower.includes('dev.to')) return 'Dev.to';
+		if (lower.includes('youtube')) return 'YouTube';
+		if (lower.includes('google')) return 'Google Search';
+		if (lower.includes('bing') || lower.includes('duckduckgo')) return 'Search';
+		return null;
 	}
 
 	function trendLabel(trend: 'up' | 'down' | 'stable', hasTrend: boolean): string {
@@ -132,12 +146,20 @@
 	}));
 	const tasksQuery = useQuery(api.dashboard.getRepoTasks, () => ({ repoId: repoId as any }));
 	const streakQuery = useQuery(api.dashboard.getRepoStreak, () => ({ repoId: repoId as any }));
+	const referrersQuery = useQuery(api.collector.getLatestReferrersPublic, () => ({
+		repoId: repoId as any
+	}));
+	const snapshotQuery = useQuery(api.collector.getLatestSnapshotWithTrafficPublic, () => ({
+		repoId: repoId as any
+	}));
 
 	let repo = $derived(repoQuery.data);
 	let isLoading = $derived(repoQuery.isLoading);
 	let dailyBrief = $derived(dailyBriefQuery.data);
 	let tasks = $derived(tasksQuery.data || []);
 	let streak = $derived(streakQuery.data);
+	let snapshot = $derived(snapshotQuery.data);
+	let referrers = $derived(referrersQuery.data);
 	let primaryTask = $derived(tasks[0] ?? null);
 	let groupedTasks = $derived.by(() => {
 		const grouped = new Map<string, typeof tasks>();
@@ -803,6 +825,119 @@
 					<ErrorBoundary>
 						<DependencyList repoId={repoId as string} />
 					</ErrorBoundary>
+				</div>
+			</div>
+		{:else if activeTab === 'traffic'}
+			<div role="tabpanel" id="panel-traffic" aria-labelledby="tab-traffic" class="space-y-6">
+				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+					<h2 class="text-2xl font-black text-foreground">Traffic and referrers</h2>
+					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+						See where your visitors come from, track views and clones over time, and spot traffic
+						spikes from specific sources.
+					</p>
+				</div>
+
+				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.9fr)]">
+					<div class="space-y-6">
+						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+							<h3 class="mb-4 text-lg font-bold text-foreground">Views & Clones (14 days)</h3>
+							{#if snapshot}
+								<div class="grid grid-cols-2 gap-4">
+									<div class="rounded-xl bg-background/50 p-4">
+										<p class="text-sm text-muted-foreground">Total Views</p>
+										<p class="text-2xl font-black text-foreground">{snapshot.views ?? 0}</p>
+										<p class="text-xs text-muted-foreground">
+											{snapshot.uniqueVisitors ?? 0} unique visitors
+										</p>
+									</div>
+									<div class="rounded-xl bg-background/50 p-4">
+										<p class="text-sm text-muted-foreground">Total Clones</p>
+										<p class="text-2xl font-black text-foreground">{snapshot.clones ?? 0}</p>
+										<p class="text-xs text-muted-foreground">
+											{snapshot.uniqueCloners ?? 0} unique cloners
+										</p>
+									</div>
+								</div>
+							{:else}
+								<p class="text-sm text-muted-foreground">No traffic data available yet.</p>
+							{/if}
+						</div>
+
+						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+							<h3 class="mb-4 text-lg font-bold text-foreground">Top Referrers</h3>
+							{#if referrers && referrers.referrers && referrers.referrers.length > 0}
+								<div class="space-y-3">
+									{#each referrers.referrers.slice(0, 8) as ref}
+										<div class="flex items-center justify-between">
+											<span class="text-sm font-medium text-foreground">{ref.referrer}</span>
+											<div class="flex items-center gap-2">
+												<span class="text-sm text-muted-foreground">{ref.count} views</span>
+												<div class="h-2 w-20 overflow-hidden rounded-full bg-background">
+													<div
+														class="h-full bg-primary"
+														style="width: {(ref.count / (referrers.referrers[0]?.count || 1)) *
+															100}%"
+													/>
+												</div>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-sm text-muted-foreground">
+									No referrer data yet. Traffic data collects daily.
+								</p>
+							{/if}
+						</div>
+
+						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+							<h3 class="mb-4 text-lg font-bold text-foreground">Popular Content</h3>
+							{#if referrers && referrers.paths && referrers.paths.length > 0}
+								<div class="space-y-2">
+									{#each referrers.paths.slice(0, 5) as path}
+										<div class="flex items-center justify-between rounded-lg bg-background/50 p-3">
+											<span class="font-mono text-sm text-foreground">{path.path}</span>
+											<span class="text-sm text-muted-foreground">{path.count} views</span>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-sm text-muted-foreground">No popular content data yet.</p>
+							{/if}
+						</div>
+					</div>
+
+					<div class="space-y-6">
+						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+							<div class="flex items-center gap-2">
+								<Sparkles class="h-5 w-5 text-primary" />
+								<h3 class="text-lg font-bold text-foreground">Traffic Insights</h3>
+							</div>
+							<p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+								{#if referrers && referrers.referrers && referrers.referrers.length > 0}
+									{#each referrers.referrers.slice(0, 3) as ref}
+										{@const source = getReferrerSource(ref.referrer)}
+										{#if source}
+											<div class="mt-2 rounded-lg bg-primary/5 p-3">
+												<p class="font-medium text-foreground">Traffic from {source}!</p>
+												<p class="text-sm text-muted-foreground">
+													{ref.count} visitors. Engage with the community there.
+												</p>
+											</div>
+										{/if}
+									{/each}
+									{#if !referrers.referrers.some((r) => getReferrerSource(r.referrer))}
+										<p class="mt-2 text-sm text-muted-foreground">
+											Waiting for external traffic sources (Hacker News, Reddit, etc.) to show up.
+										</p>
+									{/if}
+								{:else}
+									Traffic data collects daily from GitHub. Check back tomorrow to see referrer
+									sources.
+								{/if}
+							</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		{:else if activeTab === 'share'}

@@ -35,7 +35,8 @@ describe('buildDailyDigest', () => {
 				majorOutdated: 0,
 				deprecated: 0,
 				vulnerable: 0
-			}
+			},
+			latestReferrers: null
 		});
 
 		expect(digest.isQuietDay).toBe(true);
@@ -91,7 +92,8 @@ describe('buildDailyDigest', () => {
 				majorOutdated: 1,
 				deprecated: 0,
 				vulnerable: 0
-			}
+			},
+			latestReferrers: null
 		});
 
 		expect(digest.isQuietDay).toBe(false);

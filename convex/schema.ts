@@ -61,7 +61,39 @@ export default defineSchema({
 		medianIssueResponseHours: v.float64(),
 		forks: v.number(),
 		readmeScore: v.optional(v.number()),
-		readmeSuggestions: v.optional(v.array(v.string()))
+		readmeSuggestions: v.optional(v.array(v.string())),
+		// Traffic data (collected daily)
+		views: v.optional(v.number()),
+		uniqueVisitors: v.optional(v.number()),
+		clones: v.optional(v.number()),
+		uniqueCloners: v.optional(v.number())
+	})
+		.index('by_repoId', ['repoId'])
+		.index('by_repoId_capturedAt', ['repoId', 'capturedAt']),
+
+	// Rolling referrer data (30 days, collected daily)
+	repoReferrers: defineTable({
+		repoId: v.id('repos'),
+		capturedAt: v.number(),
+		referrers: v.array(
+			v.object({
+				referrer: v.string(),
+				count: v.number(),
+				uniques: v.number()
+			})
+		),
+		paths: v.array(
+			v.object({
+				path: v.string(),
+				title: v.string(),
+				count: v.number(),
+				uniques: v.number()
+			})
+		),
+		totalViews: v.number(),
+		totalUniques: v.number(),
+		totalClones: v.number(),
+		totalCloners: v.number()
 	})
 		.index('by_repoId', ['repoId'])
 		.index('by_repoId_capturedAt', ['repoId', 'capturedAt']),
@@ -158,7 +190,10 @@ export default defineSchema({
 		kind: v.union(
 			v.literal('star_spike'),
 			v.literal('contributor_spike'),
-			v.literal('momentum_drop')
+			v.literal('momentum_drop'),
+			v.literal('traffic_spike'),
+			v.literal('referrer_spike'),
+			v.literal('conversion_leak')
 		),
 		severity: v.union(v.literal('low'), v.literal('medium'), v.literal('high')),
 		title: v.string(),
@@ -167,7 +202,14 @@ export default defineSchema({
 		metricValue: v.number(),
 		baselineValue: v.number(),
 		detectedAt: v.number(),
-		isActive: v.boolean()
+		isActive: v.boolean(),
+		// For traffic anomalies - extra context
+		metadata: v.optional(
+			v.object({
+				referrer: v.optional(v.string()),
+				source: v.optional(v.string())
+			})
+		)
 	})
 		.index('by_repoId', ['repoId'])
 		.index('by_repoId_isActive', ['repoId', 'isActive'])
@@ -252,6 +294,7 @@ export default defineSchema({
 			v.literal('new_task'),
 			v.literal('dependency_alert'),
 			v.literal('anomaly_alert'),
+			v.literal('traffic_alert'),
 			v.literal('win')
 		),
 		title: v.string(),

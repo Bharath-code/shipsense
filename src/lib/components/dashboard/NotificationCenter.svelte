@@ -35,6 +35,7 @@
 		new_task: ClipboardList,
 		dependency_alert: PackageSearch,
 		anomaly_alert: Siren,
+		traffic_alert: Siren,
 		win: PartyPopper
 	};
 
@@ -47,6 +48,7 @@
 		new_task: 'text-primary',
 		dependency_alert: 'text-warning',
 		anomaly_alert: 'text-destructive',
+		traffic_alert: 'text-orange-500',
 		win: 'text-success'
 	};
 

@@ -792,7 +792,11 @@ export const getPublicRepoHealthById = query({
 				starsCount: latestSnapshot?.stars ?? repo.starsCount,
 				forksCount: latestSnapshot?.forks ?? repo.forksCount,
 				isPrivate: repo.isPrivate,
-				lastSyncedAt: repo.lastSyncedAt
+				lastSyncedAt: repo.lastSyncedAt,
+				views: latestSnapshot?.views ?? null,
+				uniqueVisitors: latestSnapshot?.uniqueVisitors ?? null,
+				clones: latestSnapshot?.clones ?? null,
+				uniqueCloners: latestSnapshot?.uniqueCloners ?? null
 			},
 			healthScore: latestScore?.healthScore ?? null,
 			trend: latestScore?.trend ?? null

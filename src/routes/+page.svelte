@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-	<title>ShipSense | GitHub Health, Daily Briefs, and Next Actions</title>
+	<title>ShipSense | Daily Repo Clarity</title>
 	<style>
 		@keyframes float {
 			0%,
@@ -107,9 +107,9 @@
 	</div>
 
 	<!-- Pill Navigation -->
-	<div class="fixed top-6 right-0 left-0 z-50 flex justify-center px-4">
+	<div class="fixed top-4 right-0 left-0 z-50 flex justify-center px-4">
 		<header
-			class="glass-nav flex w-full max-w-4xl items-center justify-between rounded-full px-4 py-3 shadow-xl transition-all duration-500 sm:px-6"
+			class="glass-nav flex w-full max-w-4xl items-center justify-between rounded-full px-4 py-2 shadow-xl transition-all duration-500 sm:px-6 sm:py-3"
 		>
 			<div class="flex items-center gap-2 text-lg font-bold tracking-tight">
 				<div
@@ -146,10 +146,10 @@
 		</header>
 	</div>
 
-	<main class="relative z-10 pt-32 pb-24">
+	<main class="relative z-10 pt-24 pb-24">
 		<!-- Hero Area -->
 		<section
-			class="container mx-auto flex max-w-6xl flex-col items-center px-6 py-20 text-center lg:py-32"
+			class="container mx-auto flex max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-24"
 		>
 			<div
 				class="animate-float-delayed mb-8 inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5"
@@ -161,7 +161,7 @@
 			</div>
 
 			<h1
-				class="mb-8 max-w-5xl text-5xl leading-[1.05] font-bold tracking-tight md:text-7xl lg:text-[5.5rem]"
+				class="mb-6 max-w-5xl text-4xl leading-[1.05] font-bold tracking-tight md:text-6xl lg:text-6xl"
 			>
 				Know what changed in your repos <br class="hidden md:block" />
 				<span
@@ -173,9 +173,8 @@
 			<p
 				class="mb-12 max-w-3xl text-lg leading-relaxed font-normal tracking-normal text-foreground/60 md:text-2xl"
 			>
-				ShipSense turns GitHub activity into a clear operating system for your projects. Track
-				repo health, momentum, streaks, anomalies, dependency risk, README quality, and
-				priority next actions from one dashboard.
+				ShipSense turns GitHub activity into a calm operating system for your projects. Connect your
+				repos, get a daily brief, and know exactly what to do next.
 			</p>
 
 			<div
@@ -200,7 +199,7 @@
 
 			<!-- Hero Dashboard Preview (Enhanced Glass Panel) -->
 			<div
-				class="group relative mt-24 flex h-[450px] w-full max-w-5xl flex-col overflow-hidden rounded-[2.5rem] glass-panel p-8 transition-all duration-700 hover:shadow-[0_40px_100px_rgba(0,0,0,0.15)]"
+				class="group relative mt-16 flex h-[350px] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] glass-panel p-6 transition-all duration-700 hover:shadow-[0_40px_100px_rgba(0,0,0,0.15)]"
 			>
 				<div
 					class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-success/5"
@@ -303,11 +302,10 @@
 		<section id="capabilities" class="relative container mx-auto max-w-6xl px-6 py-24">
 			<div class="mb-16 text-center">
 				<h2 class="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
-					Everything you need to stay on top of repo health.
+					Stay on top of your repos without the noise.
 				</h2>
 				<p class="mx-auto max-w-2xl text-lg tracking-normal text-foreground/60">
-					From daily monitoring to shareable growth proof, ShipSense helps you see what matters,
-					catch problems early, and keep momentum alive.
+					One dashboard. Daily clarity on what changed, what matters, and what to do next.
 				</p>
 			</div>
 
@@ -321,11 +319,10 @@
 					>
 						<BarChart3 size={24} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Health Score and Momentum</h3>
+					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Health Score</h3>
 					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>See repo health at a glance.</strong> ShipSense combines stars, commit recency,
-						PR activity, issue load, contributors, and trend history into one clear score you can
-						trust.
+						<strong>See repo health at a glance.</strong> One score combines stars, commits, PRs, issues,
+						and contributors into a number you can trust.
 					</p>
 				</div>
 
@@ -340,8 +337,8 @@
 					</div>
 					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Daily Digest and AI Read</h3>
 					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Start every session with clarity.</strong> Get a daily brief, change summary,
-						top risk, top win, and an AI summary that tells you what deserves attention first.
+						<strong>Start every session with clarity.</strong> Get a daily brief, change summary, top
+						risk, top win, and an AI summary that tells you what deserves attention first.
 					</p>
 				</div>
 
@@ -356,8 +353,8 @@
 					</div>
 					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Priority Tasks and Streaks</h3>
 					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Keep momentum visible.</strong> Turn repo signals into actionable tasks, then
-						track commit streaks so consistency becomes part of your workflow instead of an accident.
+						<strong>Keep momentum visible.</strong> Turn repo signals into actionable tasks, then track
+						commit streaks so consistency becomes part of your workflow instead of an accident.
 					</p>
 				</div>
 
@@ -372,8 +369,8 @@
 					</div>
 					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Dependency Risk Monitoring</h3>
 					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Spot maintenance risk before it piles up.</strong> Review outdated, deprecated,
-						and vulnerable dependencies without digging through every manifest by hand.
+						<strong>Spot maintenance risk before it piles up.</strong> Review outdated, deprecated, and
+						vulnerable dependencies without digging through every manifest by hand.
 					</p>
 				</div>
 
@@ -388,8 +385,8 @@
 					</div>
 					<h3 class="mb-3 text-2xl font-semibold tracking-tight">README and Repo Quality Checks</h3>
 					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Tighten the parts contributors actually feel.</strong> Score your README,
-						review documentation gaps, and keep repo hygiene visible alongside shipping velocity.
+						<strong>Tighten the parts contributors actually feel.</strong> Score your README, review documentation
+						gaps, and keep repo hygiene visible alongside shipping velocity.
 					</p>
 				</div>
 
@@ -404,9 +401,8 @@
 					</div>
 					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Alerts, Reports, and Sharing</h3>
 					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Stay informed and show progress publicly.</strong> Get anomaly alerts,
-						in-app notifications, weekly reports, public health pages, badges, and growth cards you
-						can share.
+						<strong>Stay informed and show progress publicly.</strong> Get anomaly alerts, in-app notifications,
+						weekly reports, public health pages, badges, and growth cards you can share.
 					</p>
 				</div>
 			</div>
@@ -426,8 +422,7 @@
 						Operate your repos with <span class="text-primary italic">clarity</span>.
 					</h2>
 					<p class="mb-8 text-xl leading-relaxed text-foreground/70">
-						Open-source maintenance gets messy when the signal is scattered across GitHub tabs,
-						notifications, dashboards, and gut feel. ShipSense brings it back into one place.
+						ShipSense brings scattered GitHub signals back into one calm place.
 					</p>
 					<div class="space-y-6">
 						<div class="flex gap-4">
@@ -436,9 +431,7 @@
 							>
 								<Check size={14} class="text-primary" />
 							</div>
-							<p class="text-foreground/80">
-								Move from reactive maintenance to a repeatable shipping rhythm.
-							</p>
+							<p class="text-foreground/80">One daily brief instead of checking five tabs.</p>
 						</div>
 						<div class="flex gap-4">
 							<div
@@ -446,9 +439,7 @@
 							>
 								<Check size={14} class="text-primary" />
 							</div>
-							<p class="text-foreground/80">
-								Catch score drops, stale PRs, dependency risk, and momentum changes earlier.
-							</p>
+							<p class="text-foreground/80">See what needs attention before it becomes a fire.</p>
 						</div>
 						<div class="flex gap-4">
 							<div
@@ -456,9 +447,7 @@
 							>
 								<Check size={14} class="text-primary" />
 							</div>
-							<p class="text-foreground/80">
-								Share wins with public badges, growth cards, and repo health pages.
-							</p>
+							<p class="text-foreground/80">Share progress with public health badges.</p>
 						</div>
 					</div>
 				</div>
@@ -472,8 +461,7 @@
 					</div>
 					<h3 class="mb-4 text-3xl font-bold italic">A calmer maintainer workflow</h3>
 					<p class="max-w-sm text-foreground/50">
-						Less time piecing together signals. More time shipping the changes that actually move
-						your project forward.
+						Less time piecing together signals. More time shipping.
 					</p>
 				</div>
 			</div>
@@ -486,11 +474,11 @@
 		>
 			<div class="mb-20 text-center">
 				<h2 class="mb-6 text-4xl font-bold tracking-tight md:text-6xl">
-					Start free. Upgrade for guided action and reporting.
+					Start free. Upgrade for more.
 				</h2>
 				<p class="mx-auto max-w-2xl text-xl text-foreground/60">
-					Every plan includes repo monitoring. Paid plans add stronger operating loops for people
-					who want ShipSense to guide the work, not just visualize it.
+					Free plan gives you daily clarity on any repo. Paid plans add reporting and more connected
+					repos.
 				</p>
 			</div>
 
@@ -527,6 +515,7 @@
 						</div>
 					</div>
 					<Button
+						href="/auth/login"
 						variant="outline"
 						class="h-12 w-full rounded-full border-foreground/20 font-semibold hover:bg-foreground/5"
 					>
@@ -569,6 +558,7 @@
 						</div>
 					</div>
 					<Button
+						href="/auth/login"
 						class="h-12 w-full rounded-full bg-primary font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
 					>
 						Get Started
@@ -607,6 +597,7 @@
 						</div>
 					</div>
 					<Button
+						href="mailto:hello@shipsense.ai"
 						variant="outline"
 						class="h-12 w-full rounded-full border-foreground/20 font-semibold hover:bg-foreground/5"
 					>
@@ -637,17 +628,17 @@
 				<div class="relative z-10">
 					<Rocket size={48} class="mx-auto mb-8 animate-float text-primary" />
 					<h2 class="mb-8 max-w-3xl text-4xl leading-tight font-bold tracking-tighter md:text-7xl">
-						Ready to run your repos <br /> with less guesswork?
+						Ready for a clearer view of your repos?
 					</h2>
 					<p class="mx-auto mb-12 max-w-xl text-xl text-background/60">
-						ShipSense helps you understand repo health, catch momentum changes early, and always
-						know the next best move.
+						One dashboard. Daily clarity. ShipSense helps you see what matters and know what to do
+						next.
 					</p>
 					<Button
 						href="/auth/login"
 						class="h-16 rounded-full bg-primary px-12 text-xl font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-105 hover:bg-primary/90"
 					>
-						Open My Repo Command Center
+						Get Started Free
 						<ArrowRight class="ml-2 h-6 w-6" />
 					</Button>
 				</div>
