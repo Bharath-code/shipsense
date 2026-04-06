@@ -41,6 +41,8 @@
 	import SharePromptToast from '$lib/components/dashboard/SharePromptToast.svelte';
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import WinCard from '$lib/components/dashboard/WinCard.svelte';
+	import TrafficIntelligence from '$lib/components/dashboard/TrafficIntelligence.svelte';
+	import { onMount } from 'svelte';
 
 	const repoTabs = [
 		{ value: 'overview', label: 'Overview' },
@@ -830,14 +832,17 @@
 		{:else if activeTab === 'traffic'}
 			<div role="tabpanel" id="panel-traffic" aria-labelledby="tab-traffic" class="space-y-6">
 				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
-					<h2 class="text-2xl font-black text-foreground">Traffic and referrers</h2>
+					<h2 class="text-2xl font-black text-foreground">Traffic Intelligence</h2>
 					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-						See where your visitors come from, track views and clones over time, and spot traffic
-						spikes from specific sources.
+						AI-powered analysis of your repo's traffic patterns, conversion rates, and sources with actionable recommendations.
 					</p>
 				</div>
 
+				<!-- AI-powered intelligence -->
+				<TrafficIntelligence repoId={repoId as string} />
+
 				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.9fr)]">
+					<!-- Raw data -->
 					<div class="space-y-6">
 						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
 							<h3 class="mb-4 text-lg font-bold text-foreground">Views & Clones (14 days)</h3>
@@ -907,6 +912,7 @@
 						</div>
 					</div>
 
+					<!-- Traffic insights sidebar -->
 					<div class="space-y-6">
 						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
 							<div class="flex items-center gap-2">

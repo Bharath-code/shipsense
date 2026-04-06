@@ -31,6 +31,7 @@ import type * as scorer from "../scorer.js";
 import type * as sharePrompts from "../sharePrompts.js";
 import type * as streakTracker from "../streakTracker.js";
 import type * as taskGenerator from "../taskGenerator.js";
+import type * as trafficIntelligence from "../trafficIntelligence.js";
 import type * as users from "../users.js";
 
 import type {
@@ -63,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   sharePrompts: typeof sharePrompts;
   streakTracker: typeof streakTracker;
   taskGenerator: typeof taskGenerator;
+  trafficIntelligence: typeof trafficIntelligence;
   users: typeof users;
 }>;
 
