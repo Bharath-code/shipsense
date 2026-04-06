@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import { SunMedium, Sparkles, Zap, TrendingUp } from 'lucide-svelte';
+	import {
+		SunMedium,
+		Sparkles,
+		Zap,
+		TrendingUp,
+		Globe,
+		ArrowUpRight,
+		ArrowDownRight
+	} from 'lucide-svelte';
 
 	let { repoId } = $props<{ repoId: string }>();
 
@@ -103,6 +111,21 @@
 								'No standout win yet. Keep shipping to create the next momentum signal.'}
 						</p>
 					</div>
+
+					{#if brief.trafficInsight}
+						<div class="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+							<div class="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+								<Globe class="h-4 w-4 text-primary" />
+								Traffic Intelligence
+							</div>
+							<p class="text-sm font-medium text-primary">{brief.trafficInsight}</p>
+							{#if brief.topReferrer}
+								<p class="mt-2 text-xs text-muted-foreground">
+									Top referrer: {brief.topReferrer}
+								</p>
+							{/if}
+						</div>
+					{/if}
 
 					<div class="rounded-2xl border border-border/50 bg-background/40 p-4">
 						<div class="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">

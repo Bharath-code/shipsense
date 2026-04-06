@@ -36,7 +36,9 @@ describe('buildDailyDigest', () => {
 				deprecated: 0,
 				vulnerable: 0
 			},
-			latestReferrers: null
+			latestReferrers: null,
+			previousReferrers: null,
+			trafficIntelligence: null
 		});
 
 		expect(digest.isQuietDay).toBe(true);
@@ -93,7 +95,9 @@ describe('buildDailyDigest', () => {
 				deprecated: 0,
 				vulnerable: 0
 			},
-			latestReferrers: null
+			latestReferrers: null,
+			previousReferrers: null,
+			trafficIntelligence: null
 		});
 
 		expect(digest.isQuietDay).toBe(false);

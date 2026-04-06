@@ -7,6 +7,7 @@ import {
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
 import { deriveGrowthMoments, type GrowthMoment } from './dashboard';
+import { computeTrafficIntelligence } from './trafficIntelligence.js';
 import type { Doc, Id } from './_generated/dataModel';
 import type { TaskSource } from './taskGenerator';
 
@@ -27,6 +28,10 @@ type DailyDigestRecord = {
 	recommendedActionSource: TaskSource;
 	recommendedActionImpact: string;
 	isQuietDay: boolean;
+	trafficInsight: string;
+	trafficVelocity: string;
+	trafficConversion: string;
+	topReferrer: string;
 };
 
 type DailyDigestInput = {
@@ -64,6 +69,8 @@ type DailyDigestInput = {
 	growthMoments: GrowthMoment[];
 	dependencySummary: DependencySummary;
 	latestReferrers: Pick<Doc<'repoReferrers'>, 'referrers' | 'paths'> | null;
+	previousReferrers: Pick<Doc<'repoReferrers'>, 'referrers'> | null;
+	trafficIntelligence: ReturnType<typeof computeTrafficIntelligence> | null | undefined;
 };
 
 function describeChange(input: DailyDigestInput): string {
@@ -207,6 +214,22 @@ export function buildDailyDigest(input: DailyDigestInput): DailyDigestRecord {
 			? `${input.topAnomaly.title}. ${topWin}`
 			: `${topWin} ${topRisk}`;
 
+	// Extract traffic intelligence if available
+	let trafficInsight = '';
+	let trafficVelocity = '';
+	let trafficConversion = '';
+	let topReferrer = '';
+
+	if (input.trafficIntelligence) {
+		const ti = input.trafficIntelligence;
+		trafficVelocity = ti.velocity.analysis;
+		trafficConversion = ti.conversion.analysis;
+		if (ti.topSources.length > 0) {
+			topReferrer = `${ti.topSources[0].source}: ${ti.topSources[0].views} views`;
+		}
+		trafficInsight = ti.oneThing;
+	}
+
 	return {
 		summary,
 		changeSummary,
@@ -215,7 +238,11 @@ export function buildDailyDigest(input: DailyDigestInput): DailyDigestRecord {
 		recommendedAction,
 		recommendedActionSource,
 		recommendedActionImpact,
-		isQuietDay
+		isQuietDay,
+		trafficInsight: trafficInsight || 'No traffic data yet',
+		trafficVelocity: trafficVelocity || 'No velocity data',
+		trafficConversion: trafficConversion || 'No conversion data',
+		topReferrer: topReferrer || 'No referrer data'
 	};
 }
 
@@ -258,7 +285,11 @@ export const saveDailyDigest = internalMutation({
 				v.literal('hygiene')
 			),
 			recommendedActionImpact: v.string(),
-			isQuietDay: v.boolean()
+			isQuietDay: v.boolean(),
+			trafficInsight: v.optional(v.string()),
+			trafficVelocity: v.optional(v.string()),
+			trafficConversion: v.optional(v.string()),
+			topReferrer: v.optional(v.string())
 		})
 	},
 	handler: async (ctx, { repoId, digest }) => {
@@ -284,7 +315,9 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 		anomalies,
 		tasks,
 		dependencySummary,
-		latestReferrers
+		latestReferrers,
+		trafficIntelligence,
+		previousReferrers
 	] = await Promise.all([
 		ctx.runQuery(internal.collector.getLatestSnapshot, { repoId }),
 		ctx.runQuery(internal.collector.getSnapshotBeforeLatest, { repoId }),
@@ -295,7 +328,9 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 		ctx.runQuery(internal.anomalies.listActiveRepoAnomalies, { repoId }),
 		ctx.runQuery(internal.taskGenerator.getOpenTasks, { repoId }),
 		ctx.runQuery(internal.dependencies.getRepoDependencySummary, { repoId }),
-		ctx.runQuery(internal.collector.getLatestReferrers, { repoId })
+		ctx.runQuery(internal.collector.getLatestReferrers, { repoId }),
+		ctx.runQuery(internal.trafficIntelligence.computeTrafficIntelligenceInternal, { repoId }),
+		ctx.runQuery(internal.collector.getPreviousReferrers, { repoId })
 	]);
 
 	if (!latestSnapshot) return null;
@@ -313,7 +348,7 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 		}))
 	});
 
-	const sortedTasks = tasks.slice().sort((a, b) => a.priority - b.priority);
+	const sortedTasks = tasks.slice().sort((a: any, b: any) => a.priority - b.priority);
 	const digest = buildDailyDigest({
 		repoName: repo.name,
 		latestSnapshot,
@@ -325,7 +360,9 @@ async function generateDigestForRepo(ctx: ActionCtx, repoId: Id<'repos'>) {
 		topAnomaly: anomalies[0] ?? null,
 		growthMoments,
 		dependencySummary,
-		latestReferrers
+		latestReferrers,
+		previousReferrers,
+		trafficIntelligence: trafficIntelligence ?? null
 	});
 
 	await ctx.runMutation(internal.dailyDigests.saveDailyDigest, { repoId, digest });

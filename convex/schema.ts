@@ -144,7 +144,11 @@ export default defineSchema({
 			v.literal('hygiene')
 		),
 		recommendedActionImpact: v.string(),
-		isQuietDay: v.boolean()
+		isQuietDay: v.boolean(),
+		trafficInsight: v.optional(v.string()),
+		trafficVelocity: v.optional(v.string()),
+		trafficConversion: v.optional(v.string()),
+		topReferrer: v.optional(v.string())
 	})
 		.index('by_repoId', ['repoId'])
 		.index('by_repoId_generatedAt', ['repoId', 'generatedAt']),

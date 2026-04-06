@@ -298,6 +298,10 @@ export const getRepoDailyBrief = query({
 			topRisk: latestDigest?.topRisk ?? topAnomaly?.description ?? null,
 			topWin: latestDigest?.topWin ?? null,
 			isQuietDay: latestDigest?.isQuietDay ?? false,
+			trafficInsight: latestDigest?.trafficInsight ?? null,
+			trafficVelocity: latestDigest?.trafficVelocity ?? null,
+			trafficConversion: latestDigest?.trafficConversion ?? null,
+			topReferrer: latestDigest?.topReferrer ?? null,
 			topTask: topTask
 				? {
 						text: topTask.taskText,

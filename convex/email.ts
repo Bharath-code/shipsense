@@ -288,6 +288,10 @@ function buildDigestHtml(
 		isQuietDay: boolean;
 		healthScore: number;
 		trend: string;
+		trafficInsight: string;
+		trafficVelocity: string;
+		trafficConversion: string;
+		topReferrer: string;
 	}>
 ): string {
 	const repoRows = repos
@@ -391,6 +395,28 @@ function buildDigestHtml(
 				: ''
 		}
 
+		${
+			repos.some((r) => r.trafficInsight && r.trafficInsight !== 'No traffic data yet')
+				? `
+		<div style="background: linear-gradient(135deg, #1e3a5f 0%, #172554 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #3b82f6;">
+			<h3 style="color: #60a5fa; margin: 0 0 16px 0; font-size: 16px;">🚄 Traffic Intelligence</h3>
+			${repos
+				.filter((r) => r.trafficInsight && r.trafficInsight !== 'No traffic data yet')
+				.map(
+					(repo) => `
+			<div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #3b82f6/30;">
+				<p style="color: #fff; font-size: 14px; font-weight: 600; margin: 0 0 8px 0;">${repo.name}</p>
+				<p style="color: #93c5fd; font-size: 13px; margin: 0;">${repo.trafficInsight}</p>
+				${repo.topReferrer ? `<p style="color: #64748b; font-size: 12px; margin: 8px 0 0 0;">Top referrer: ${repo.topReferrer}</p>` : ''}
+			</div>
+			`
+				)
+				.join('')}
+		</div>
+		`
+				: ''
+		}
+
 		<div style="text-align: center; padding: 20px;">
 			<p style="color: #666; font-size: 12px; margin: 0;">
 				Sent by <a href="https://shipsense.app" style="color: #6366f1; text-decoration: none;">ShipSense</a> — Track your open-source growth
@@ -442,7 +468,11 @@ export const sendDailyDigest = internalAction({
 					recommendedActionSource: digest?.recommendedActionSource ?? 'hygiene',
 					isQuietDay: digest?.isQuietDay ?? true,
 					healthScore: score?.healthScore ?? 0,
-					trend: score?.trend ?? 'stable'
+					trend: score?.trend ?? 'stable',
+					trafficInsight: digest?.trafficInsight ?? '',
+					trafficVelocity: digest?.trafficVelocity ?? '',
+					trafficConversion: digest?.trafficConversion ?? '',
+					topReferrer: digest?.topReferrer ?? ''
 				};
 			})
 		);

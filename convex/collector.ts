@@ -611,6 +611,18 @@ export const getLatestReferrers = internalQuery({
 	}
 });
 
+export const getPreviousReferrers = internalQuery({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, { repoId }) => {
+		const all = await ctx.db
+			.query('repoReferrers')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', repoId))
+			.order('desc')
+			.take(2);
+		return all[1] ?? null;
+	}
+});
+
 export const getReferrersHistory = internalQuery({
 	args: { repoId: v.id('repos') },
 	handler: async (ctx, { repoId }) => {
