@@ -626,3 +626,242 @@ export const computeTrafficIntelligenceInternal = internalQuery({
 		});
 	}
 });
+
+// ── Conversion Funnel Composite ──────────────────────────────────────────────
+// Views → Stars → Clones → Contributors with conversion rates + Momentum Vector
+
+export type FunnelStage = {
+	label: string;
+	value: number;
+	subLabel: string;
+	conversionRate: number | null; // % from previous stage, null for first stage
+	conversionLabel: string;
+	sentiment: 'excellent' | 'good' | 'weak' | 'none';
+};
+
+export type MomentumVector = 'accelerating' | 'coasting' | 'stalling';
+
+export type ConversionFunnelReport = {
+	stages: [FunnelStage, FunnelStage, FunnelStage, FunnelStage];
+	momentumVector: MomentumVector;
+	momentumReason: string;
+	oneThing: string;
+	hasData: boolean;
+};
+
+function computeFunnelStages(input: {
+	views: number;
+	uniqueVisitors: number;
+	starsLast7d: number;
+	clones: number;
+	uniqueCloners: number;
+	contributors14d: number;
+}): [FunnelStage, FunnelStage, FunnelStage, FunnelStage] {
+	const { views, uniqueVisitors, starsLast7d, clones, uniqueCloners, contributors14d } = input;
+
+	const stage1: FunnelStage = {
+		label: 'Views',
+		value: views,
+		subLabel: `${uniqueVisitors} unique visitors`,
+		conversionRate: null,
+		conversionLabel: 'Traffic in',
+		sentiment: views > 100 ? 'excellent' : views > 20 ? 'good' : views > 0 ? 'weak' : 'none'
+	};
+
+	const viewsToStarsRate = views > 0 ? (starsLast7d / views) * 100 : null;
+	const stage2: FunnelStage = {
+		label: 'Stars',
+		value: starsLast7d,
+		subLabel: 'this week',
+		conversionRate: viewsToStarsRate,
+		conversionLabel:
+			viewsToStarsRate !== null
+				? viewsToStarsRate >= 5
+					? 'Exceptional'
+					: viewsToStarsRate >= 2
+						? 'Healthy'
+						: viewsToStarsRate >= 0.5
+							? 'Below avg'
+							: 'Very low'
+				: '—',
+		sentiment:
+			viewsToStarsRate === null
+				? 'none'
+				: viewsToStarsRate >= 5
+					? 'excellent'
+					: viewsToStarsRate >= 2
+						? 'good'
+						: 'weak'
+	};
+
+	const baseline = starsLast7d > 0 ? starsLast7d : uniqueVisitors;
+	const starsToCloneRate = baseline > 0 ? (uniqueCloners / baseline) * 100 : null;
+	const stage3: FunnelStage = {
+		label: 'Clones',
+		value: clones,
+		subLabel: `${uniqueCloners} unique cloners`,
+		conversionRate: starsToCloneRate,
+		conversionLabel:
+			starsToCloneRate !== null
+				? starsToCloneRate >= 50
+					? 'Developer-grade'
+					: starsToCloneRate >= 20
+						? 'Strong interest'
+						: starsToCloneRate >= 5
+							? 'Some adoption'
+							: 'Low intent'
+				: '—',
+		sentiment:
+			starsToCloneRate === null
+				? 'none'
+				: starsToCloneRate >= 50
+					? 'excellent'
+					: starsToCloneRate >= 20
+						? 'good'
+						: 'weak'
+	};
+
+	const clonerToContribRate =
+		uniqueCloners > 0 ? (contributors14d / uniqueCloners) * 100 : null;
+	const stage4: FunnelStage = {
+		label: 'Contributors',
+		value: contributors14d,
+		subLabel: 'last 14 days',
+		conversionRate: clonerToContribRate,
+		conversionLabel:
+			clonerToContribRate !== null
+				? clonerToContribRate >= 40
+					? 'Elite activation'
+					: clonerToContribRate >= 15
+						? 'Good activation'
+						: clonerToContribRate >= 5
+							? 'Moderate'
+							: 'Low activation'
+				: contributors14d > 0
+					? `${contributors14d} active`
+					: '—',
+		sentiment:
+			contributors14d === 0
+				? 'none'
+				: clonerToContribRate === null
+					? 'good'
+					: clonerToContribRate >= 40
+						? 'excellent'
+						: clonerToContribRate >= 15
+							? 'good'
+							: 'weak'
+	};
+
+	return [stage1, stage2, stage3, stage4];
+}
+
+function computeMomentumVector(input: {
+	scoreTrend: 'up' | 'down' | 'stable';
+	starsLast7d: number;
+	prevStarsLast7d: number | null;
+	commitGapHours: number;
+}): { vector: MomentumVector; reason: string } {
+	const { scoreTrend, starsLast7d, prevStarsLast7d, commitGapHours } = input;
+	const starAccelerating =
+		prevStarsLast7d !== null && prevStarsLast7d >= 0 && starsLast7d > prevStarsLast7d;
+	const commitFresh = commitGapHours <= 48;
+
+	if (scoreTrend === 'up' && starAccelerating && commitFresh) {
+		return { vector: 'accelerating', reason: 'Score improving, stars growing, commits fresh' };
+	}
+	if (scoreTrend === 'down' || commitGapHours > 168) {
+		return {
+			vector: 'stalling',
+			reason:
+				scoreTrend === 'down'
+					? 'Health score is declining'
+					: 'No commits in the last 7 days'
+		};
+	}
+	if (starAccelerating || scoreTrend === 'up') {
+		return { vector: 'accelerating', reason: 'Stars growing or score on the rise' };
+	}
+	return { vector: 'coasting', reason: 'Steady but not growing — needs a catalyst' };
+}
+
+function computeFunnelOneThing(
+	stages: [FunnelStage, FunnelStage, FunnelStage, FunnelStage],
+	vector: MomentumVector
+): string {
+	const [viewsStage, starsStage, clonesStage, contributorsStage] = stages;
+
+	if (viewsStage.value > 50 && (starsStage.conversionRate ?? 0) < 1) {
+		return "🔴 Visitors aren't converting to stars. Fix your README — add a one-liner value prop, demo GIF, and a \"⭐ Star if useful\" CTA.";
+	}
+	if (starsStage.value > 5 && clonesStage.value === 0) {
+		return '📦 Stars but no clones — people are curious but not trying it. Add a 30-second quick-start section to your README.';
+	}
+	if (clonesStage.value > 0 && contributorsStage.value === 0) {
+		return '👥 Developers are cloning but not contributing. Add a CONTRIBUTING.md with a clear "first issue" label.';
+	}
+	if (vector === 'stalling') {
+		return '⚠️ Momentum is stalling. Push one commit or reply to an open issue today to keep the signals alive.';
+	}
+	if (vector === 'accelerating') {
+		return '🚀 Everything is pointing up. Find the traffic source driving this and double down there.';
+	}
+	return '✅ Funnel looks healthy. Focus on growing top-of-funnel traffic to amplify the results.';
+}
+
+export const getConversionFunnel = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args): Promise<ConversionFunnelReport | null> => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
+
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
+
+		const snapshots = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.take(2);
+
+		const latest = snapshots[0] ?? null;
+		const previous = snapshots[1] ?? null;
+
+		const latestScore = await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
+
+		const hasData = latest !== null && (latest.views ?? 0) > 0;
+
+		const views = latest?.views ?? 0;
+		const uniqueVisitors = latest?.uniqueVisitors ?? 0;
+		const starsLast7d = latest?.starsLast7d ?? 0;
+		const clones = latest?.clones ?? 0;
+		const uniqueCloners = latest?.uniqueCloners ?? 0;
+		const contributors14d = latest?.contributors14d ?? 0;
+		const commitGapHours = latest?.commitGapHours ?? 999;
+		const prevStarsLast7d = previous?.starsLast7d ?? null;
+		const scoreTrend = latestScore?.trend ?? 'stable';
+
+		const stages = computeFunnelStages({
+			views,
+			uniqueVisitors,
+			starsLast7d,
+			clones,
+			uniqueCloners,
+			contributors14d
+		});
+
+		const { vector, reason } = computeMomentumVector({
+			scoreTrend,
+			starsLast7d,
+			prevStarsLast7d,
+			commitGapHours
+		});
+
+		const oneThing = computeFunnelOneThing(stages, vector);
+
+		return { stages, momentumVector: vector, momentumReason: reason, oneThing, hasData };
+	}
+});

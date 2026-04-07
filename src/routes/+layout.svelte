@@ -1,15 +1,18 @@
 <script lang="ts">
 	import './layout.css';
 	import { ModeWatcher } from 'mode-watcher';
-	import { setupConvex } from 'convex-svelte';
+	import { setConvexClientContext } from 'convex-svelte';
 	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/svelte';
 	import { PUBLIC_CONVEX_URL } from '$env/static/public';
+	import { ConvexClient } from 'convex/browser';
 
-	// Initialize core Convex client
-	setupConvex(PUBLIC_CONVEX_URL);
-
-	// Initialize Auth glue
-	setupConvexAuth({ convexUrl: PUBLIC_CONVEX_URL });
+	// Create ONE auth-aware ConvexClient.
+	// Pass it to setupConvexAuth so it sets auth tokens on it,
+	// AND register it as the convex-svelte context client so
+	// useConvexClient() (used for actions) gets the same authenticated instance.
+	const client = new ConvexClient(PUBLIC_CONVEX_URL);
+	setConvexClientContext(client);
+	setupConvexAuth({ convexUrl: PUBLIC_CONVEX_URL, client });
 
 	let { children } = $props();
 </script>

@@ -23,7 +23,10 @@
 
 	// Data fetching
 	const activeReposQuery = useQuery(api.repos.listMyRepos, {});
+	const viewerQuery = useQuery(api.users.getMyProfile, {});
 	const client = useConvexClient();
+
+	let isAuthed = $derived(viewerQuery.data != null);
 
 	let githubRepos = $state<any[]>([]);
 	let loadingGithub = $state(false);
@@ -36,19 +39,28 @@
 	let bulkConnecting = $state(false);
 	let bulkResults = $state<{ success: number; failed: number } | null>(null);
 
-	async function loadGithubRepos() {
+	async function loadGithubRepos(attempt = 0) {
 		loadingGithub = true;
 		connectError = null;
 		bulkResults = null;
 		try {
 			githubRepos = (await client.action(api.github.fetchUserReposFromGithub, {})) || [];
+			hasLoaded = true;
 		} catch (err: any) {
+			// JWT propagation can take up to 3s after OAuth — retry with backoff
+			if (attempt < 3 && err?.message?.includes('Unauthenticated')) {
+				await new Promise((r) => setTimeout(r, 1500));
+				return loadGithubRepos(attempt + 1);
+			}
 			console.error(err);
-			connectError = err.message || 'Failed to fetch repositories';
+			connectError = 'Could not connect to GitHub. Please try refreshing.';
 		} finally {
 			loadingGithub = false;
 		}
 	}
+
+	// Wrapper for button onclick handlers
+	const refreshRepos = () => loadGithubRepos();
 
 	async function connectRepo(repo: any) {
 		if (connectingRepoId === repo.githubRepoId) return;
@@ -139,13 +151,14 @@
 		}
 	}
 
-	// Load right away or let user click
+	// Remove auto-load — connect page is always intentionally visited,
+	// so explicit user click avoids the post-OAuth JWT propagation race.
 	let hasLoaded = $state(false);
 
 	$effect(() => {
-		if (!hasLoaded && githubRepos.length === 0) {
-			hasLoaded = true;
-			loadGithubRepos();
+		if (!isAuthed) {
+			hasLoaded = false;
+			githubRepos = [];
 		}
 	});
 
@@ -201,7 +214,7 @@
 				class="flex h-9 w-full rounded-md border border-border bg-card px-3 py-1 pl-9 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 			/>
 		</div>
-		<Button variant="outline" onclick={loadGithubRepos} disabled={loadingGithub}>
+		<Button variant="outline" onclick={refreshRepos} disabled={loadingGithub}>
 			{loadingGithub ? LABELS.SYNCING : LABELS.REFRESH_LIST}
 		</Button>
 	</div>
@@ -272,6 +285,17 @@
 				<p class="text-lg font-medium text-foreground">Loading your repositories...</p>
 				<p class="mt-1 text-sm text-muted-foreground">Fetching from GitHub</p>
 			</div>
+		{:else if !hasLoaded}
+			<div
+				class="col-span-full flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/50 bg-muted/20 py-16 text-center"
+			>
+				<div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+					<Link class="h-8 w-8 text-primary" />
+				</div>
+				<p class="text-lg font-medium text-foreground">Ready to connect your repos</p>
+				<p class="mt-1 text-sm text-muted-foreground">Click below to fetch your GitHub repositories</p>
+				<Button class="mt-6" onclick={refreshRepos}>Load repositories</Button>
+			</div>
 		{:else if filteredRepos.length === 0}
 			<div
 				class="col-span-full flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/50 bg-muted/20 py-16 text-center"
@@ -287,7 +311,7 @@
 					<p class="mt-1 text-sm text-muted-foreground">
 						Make sure you have repositories on GitHub
 					</p>
-					<Button variant="outline" class="mt-6" onclick={loadGithubRepos} disabled={loadingGithub}>
+					<Button variant="outline" class="mt-6" onclick={refreshRepos} disabled={loadingGithub}>
 						Try Again
 					</Button>
 				{/if}

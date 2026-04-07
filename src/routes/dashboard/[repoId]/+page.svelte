@@ -42,20 +42,23 @@
 	import ShipStreak from '$lib/components/dashboard/ShipStreak.svelte';
 	import WinCard from '$lib/components/dashboard/WinCard.svelte';
 	import TrafficIntelligence from '$lib/components/dashboard/TrafficIntelligence.svelte';
+	import ConversionFunnel from '$lib/components/dashboard/ConversionFunnel.svelte';
+	import PaywallBlur from '$lib/components/ui/PaywallBlur.svelte';
 	import { onMount } from 'svelte';
 
 	const repoTabs = [
 		{ value: 'overview', label: 'Overview' },
-		{ value: 'tasks', label: 'Tasks' },
-		{ value: 'signals', label: 'Signals' },
-		{ value: 'traffic', label: 'Traffic' },
+		{ value: 'growth', label: 'Growth' },
 		{ value: 'health', label: 'Health' },
+		{ value: 'tasks', label: 'Tasks' },
 		{ value: 'share', label: 'Share' }
 	] as const;
 
 	type RepoTab = (typeof repoTabs)[number]['value'];
 
 	function isRepoTab(value: string | null): value is RepoTab {
+		// Legacy tab aliases for deep links that used old tab names
+		if (value === 'signals' || value === 'traffic') return true;
 		return repoTabs.some((tab) => tab.value === value);
 	}
 
@@ -138,6 +141,8 @@
 	let repoId = $derived($page.params.repoId as string);
 	let activeTab = $derived.by<RepoTab>(() => {
 		const tab = $page.url.searchParams.get('tab');
+		// Map legacy tab names to new structure
+		if (tab === 'signals' || tab === 'traffic') return 'growth';
 		return isRepoTab(tab) ? tab : 'overview';
 	});
 
@@ -154,6 +159,10 @@
 	const snapshotQuery = useQuery(api.collector.getLatestSnapshotWithTrafficPublic, () => ({
 		repoId: repoId as any
 	}));
+	const funnelQuery = useQuery(api.trafficIntelligence.getConversionFunnel, () => ({
+		repoId: repoId as any
+	}));
+	const planQuery = useQuery(api.billing.getUserPlan, () => ({}));
 
 	let repo = $derived(repoQuery.data);
 	let isLoading = $derived(repoQuery.isLoading);
@@ -162,6 +171,8 @@
 	let streak = $derived(streakQuery.data);
 	let snapshot = $derived(snapshotQuery.data);
 	let referrers = $derived(referrersQuery.data);
+	let funnel = $derived(funnelQuery.data);
+	let userPlan = $derived(planQuery.data ?? 'free');
 	let primaryTask = $derived(tasks[0] ?? null);
 	let groupedTasks = $derived.by(() => {
 		const grouped = new Map<string, typeof tasks>();
@@ -621,9 +632,9 @@
 								<button
 									type="button"
 									class="mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 text-xs font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
-									onclick={() => switchTab('signals')}
+									onclick={() => switchTab('growth')}
 								>
-									View signals
+									View in Growth
 									<ChevronRight class="h-3 w-3" />
 								</button>
 							{:else}
@@ -641,9 +652,9 @@
 								<button
 									type="button"
 									class="flex min-h-[44px] w-full items-center justify-between rounded-xl bg-white/5 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
-									onclick={() => switchTab('health')}
+									onclick={() => switchTab('growth')}
 								>
-									<span>Hygiene check</span>
+									<span>Growth & traffic</span>
 									<ChevronRight class="h-3 w-3" />
 								</button>
 								{#if dailyBrief?.topWin}
@@ -658,6 +669,98 @@
 								{/if}
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		{:else if activeTab === 'growth'}
+			<div role="tabpanel" id="panel-growth" aria-labelledby="tab-growth" class="space-y-6">
+				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+					<h2 class="text-2xl font-black text-foreground">Growth Intelligence</h2>
+					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+						Your full conversion funnel, traffic intelligence, and anomaly signals — combined into
+						one view to show exactly where you are winning and where to focus next.
+					</p>
+				</div>
+
+				<PaywallBlur plan={userPlan} feature="Conversion Funnel">
+					<ConversionFunnel repoId={repoId as string} />
+				</PaywallBlur>
+
+				<div class="grid gap-6 xl:grid-cols-2">
+					<ErrorBoundary>
+						<MomentumGraph repoId={repoId as string} />
+					</ErrorBoundary>
+
+					<ErrorBoundary>
+						<AnomalyAlerts repoId={repoId as string} />
+					</ErrorBoundary>
+				</div>
+
+				<PaywallBlur plan={userPlan} feature="AI Traffic Intelligence">
+					<TrafficIntelligence repoId={repoId as string} />
+				</PaywallBlur>
+
+				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.9fr)]">
+					<div class="space-y-6">
+						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+							<h3 class="mb-4 text-lg font-bold text-foreground">Views &amp; Clones (14 days)</h3>
+							{#if snapshot}
+								<div class="grid grid-cols-2 gap-4">
+									<div class="rounded-xl bg-background/50 p-4">
+										<p class="text-sm text-muted-foreground">Total Views</p>
+										<p class="text-2xl font-black text-foreground">{snapshot.views ?? 0}</p>
+										<p class="text-xs text-muted-foreground">
+											{snapshot.uniqueVisitors ?? 0} unique visitors
+										</p>
+									</div>
+									<div class="rounded-xl bg-background/50 p-4">
+										<p class="text-sm text-muted-foreground">Total Clones</p>
+										<p class="text-2xl font-black text-foreground">{snapshot.clones ?? 0}</p>
+										<p class="text-xs text-muted-foreground">
+											{snapshot.uniqueCloners ?? 0} unique cloners
+										</p>
+									</div>
+								</div>
+							{:else}
+								<p class="text-sm text-muted-foreground">No traffic data available yet.</p>
+							{/if}
+						</div>
+
+						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+							<h3 class="mb-4 text-lg font-bold text-foreground">Top Referrers</h3>
+							{#if referrers && referrers.referrers && referrers.referrers.length > 0}
+								<div class="space-y-3">
+									{#each referrers.referrers.slice(0, 8) as ref}
+										<div class="flex items-center justify-between">
+											<span class="text-sm font-medium text-foreground">{ref.referrer}</span>
+											<div class="flex items-center gap-2">
+												<span class="text-sm text-muted-foreground">{ref.count} views</span>
+												<div class="h-2 w-20 overflow-hidden rounded-full bg-background">
+													<div
+														class="h-full bg-primary"
+														style="width: {(ref.count / (referrers.referrers[0]?.count || 1)) *
+															100}%"
+													></div>
+												</div>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-sm text-muted-foreground">
+									No referrer data yet. Traffic data collects daily.
+								</p>
+							{/if}
+						</div>
+					</div>
+
+					<div class="space-y-6">
+						<ErrorBoundary>
+							<ShipStreak repoId={repoId as string} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<InsightCard repoId={repoId as string} />
+						</ErrorBoundary>
 					</div>
 				</div>
 			</div>
@@ -775,47 +878,12 @@
 					</div>
 				{/if}
 			</div>
-		{:else if activeTab === 'signals'}
-			<div role="tabpanel" id="panel-signals" aria-labelledby="tab-signals" class="space-y-6">
-				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
-					<h2 class="text-2xl font-black text-foreground">Signals and momentum</h2>
-					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-						See your health score history, spot unusual momentum changes, and review your commit
-						streak.
-					</p>
-				</div>
-
-				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.9fr)]">
-					<div class="space-y-6">
-						<ErrorBoundary>
-							<MomentumGraph repoId={repoId as string} />
-						</ErrorBoundary>
-
-						<ScoreBreakdown repoId={repoId as string} />
-					</div>
-
-					<div class="space-y-6">
-						<ErrorBoundary>
-							<WinCard repoId={repoId as string} />
-						</ErrorBoundary>
-
-						<ErrorBoundary>
-							<AnomalyAlerts repoId={repoId as string} />
-						</ErrorBoundary>
-
-						<ErrorBoundary>
-							<ShipStreak repoId={repoId as string} />
-						</ErrorBoundary>
-					</div>
-				</div>
-			</div>
 		{:else if activeTab === 'health'}
 			<div role="tabpanel" id="panel-health" aria-labelledby="tab-health" class="space-y-6">
 				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
 					<h2 class="text-2xl font-black text-foreground">Repo hygiene and maintainability</h2>
 					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-						Check your README quality score, see actionable suggestions, and review dependency
-						health for outdated, deprecated, or vulnerable packages.
+						Check your README quality, dependency health, score breakdown, and recent wins.
 					</p>
 				</div>
 
@@ -828,122 +896,12 @@
 						<DependencyList repoId={repoId as string} />
 					</ErrorBoundary>
 				</div>
-			</div>
-		{:else if activeTab === 'traffic'}
-			<div role="tabpanel" id="panel-traffic" aria-labelledby="tab-traffic" class="space-y-6">
-				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
-					<h2 class="text-2xl font-black text-foreground">Traffic Intelligence</h2>
-					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-						AI-powered analysis of your repo's traffic patterns, conversion rates, and sources with actionable recommendations.
-					</p>
-				</div>
 
-				<!-- AI-powered intelligence -->
-				<TrafficIntelligence repoId={repoId as string} />
-
-				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.9fr)]">
-					<!-- Raw data -->
-					<div class="space-y-6">
-						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
-							<h3 class="mb-4 text-lg font-bold text-foreground">Views & Clones (14 days)</h3>
-							{#if snapshot}
-								<div class="grid grid-cols-2 gap-4">
-									<div class="rounded-xl bg-background/50 p-4">
-										<p class="text-sm text-muted-foreground">Total Views</p>
-										<p class="text-2xl font-black text-foreground">{snapshot.views ?? 0}</p>
-										<p class="text-xs text-muted-foreground">
-											{snapshot.uniqueVisitors ?? 0} unique visitors
-										</p>
-									</div>
-									<div class="rounded-xl bg-background/50 p-4">
-										<p class="text-sm text-muted-foreground">Total Clones</p>
-										<p class="text-2xl font-black text-foreground">{snapshot.clones ?? 0}</p>
-										<p class="text-xs text-muted-foreground">
-											{snapshot.uniqueCloners ?? 0} unique cloners
-										</p>
-									</div>
-								</div>
-							{:else}
-								<p class="text-sm text-muted-foreground">No traffic data available yet.</p>
-							{/if}
-						</div>
-
-						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
-							<h3 class="mb-4 text-lg font-bold text-foreground">Top Referrers</h3>
-							{#if referrers && referrers.referrers && referrers.referrers.length > 0}
-								<div class="space-y-3">
-									{#each referrers.referrers.slice(0, 8) as ref}
-										<div class="flex items-center justify-between">
-											<span class="text-sm font-medium text-foreground">{ref.referrer}</span>
-											<div class="flex items-center gap-2">
-												<span class="text-sm text-muted-foreground">{ref.count} views</span>
-												<div class="h-2 w-20 overflow-hidden rounded-full bg-background">
-													<div
-														class="h-full bg-primary"
-														style="width: {(ref.count / (referrers.referrers[0]?.count || 1)) *
-															100}%"
-													/>
-												</div>
-											</div>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<p class="text-sm text-muted-foreground">
-									No referrer data yet. Traffic data collects daily.
-								</p>
-							{/if}
-						</div>
-
-						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
-							<h3 class="mb-4 text-lg font-bold text-foreground">Popular Content</h3>
-							{#if referrers && referrers.paths && referrers.paths.length > 0}
-								<div class="space-y-2">
-									{#each referrers.paths.slice(0, 5) as path}
-										<div class="flex items-center justify-between rounded-lg bg-background/50 p-3">
-											<span class="font-mono text-sm text-foreground">{path.path}</span>
-											<span class="text-sm text-muted-foreground">{path.count} views</span>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<p class="text-sm text-muted-foreground">No popular content data yet.</p>
-							{/if}
-						</div>
-					</div>
-
-					<!-- Traffic insights sidebar -->
-					<div class="space-y-6">
-						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
-							<div class="flex items-center gap-2">
-								<Sparkles class="h-5 w-5 text-primary" />
-								<h3 class="text-lg font-bold text-foreground">Traffic Insights</h3>
-							</div>
-							<p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-								{#if referrers && referrers.referrers && referrers.referrers.length > 0}
-									{#each referrers.referrers.slice(0, 3) as ref}
-										{@const source = getReferrerSource(ref.referrer)}
-										{#if source}
-											<div class="mt-2 rounded-lg bg-primary/5 p-3">
-												<p class="font-medium text-foreground">Traffic from {source}!</p>
-												<p class="text-sm text-muted-foreground">
-													{ref.count} visitors. Engage with the community there.
-												</p>
-											</div>
-										{/if}
-									{/each}
-									{#if !referrers.referrers.some((r) => getReferrerSource(r.referrer))}
-										<p class="mt-2 text-sm text-muted-foreground">
-											Waiting for external traffic sources (Hacker News, Reddit, etc.) to show up.
-										</p>
-									{/if}
-								{:else}
-									Traffic data collects daily from GitHub. Check back tomorrow to see referrer
-									sources.
-								{/if}
-							</p>
-						</div>
-					</div>
+				<div class="grid gap-6 xl:grid-cols-2">
+					<ScoreBreakdown repoId={repoId as string} />
+					<ErrorBoundary>
+						<WinCard repoId={repoId as string} />
+					</ErrorBoundary>
 				</div>
 			</div>
 		{:else if activeTab === 'share'}

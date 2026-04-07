@@ -1,5 +1,6 @@
 import { internalMutation, query, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
+import { getAuthUserId } from '@convex-dev/auth/server';
 
 // Map product ID → plan name (set DODO_*_PRODUCT_ID in Convex env vars)
 function productIdToPlan(productId: string): 'indie' | 'builder' | 'free' {
@@ -71,5 +72,19 @@ export const getMyPlan = internalQuery({
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
 			.unique();
 		return profile?.plan ?? 'free';
+	}
+});
+
+// Public query — safe for frontend to call
+export const getUserPlan = query({
+	args: {},
+	handler: async (ctx): Promise<'free' | 'indie' | 'builder'> => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return 'free';
+		const profile = await ctx.db
+			.query('userProfiles')
+			.withIndex('by_userId', (q) => q.eq('userId', userId))
+			.unique();
+		return (profile?.plan as 'free' | 'indie' | 'builder') ?? 'free';
 	}
 });
