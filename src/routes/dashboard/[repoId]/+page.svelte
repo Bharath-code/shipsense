@@ -46,6 +46,7 @@
 	import ConversionFunnel from '$lib/components/dashboard/ConversionFunnel.svelte';
 	import StarForecast from '$lib/components/dashboard/StarForecast.svelte';
 	import BenchmarkBadge from '$lib/components/dashboard/BenchmarkBadge.svelte';
+	import ExternalReachCard from '$lib/components/dashboard/ExternalReachCard.svelte';
 	import PaywallBlur from '$lib/components/ui/PaywallBlur.svelte';
 	import {
 		SunMedium,
@@ -614,7 +615,7 @@
 				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
 					<!-- Left column: Momentum + Funnel (blurred for free users) -->
 					<div class="space-y-6">
-						<PaywallBlur plan={userPlan} feature="Conversion Funnel">
+						<PaywallBlur plan={userPlan} feature="External Reach & Conversion Funnel">
 							<!-- Momentum Vector -->
 							{#if funnel && funnel.momentumVector}
 								{@const mCfg = momentumConfig(funnel.momentumVector)}
@@ -632,6 +633,14 @@
 									</div>
 									<p class="text-sm text-muted-foreground">{funnel.momentumReason}</p>
 								</div>
+							{/if}
+
+							<!-- External Reach Score -->
+							{#if funnel?.externalReach && funnel.externalReach.tier !== 'none'}
+								<ExternalReachCard
+									reach={funnel.externalReach}
+									onViewAll={() => switchTab('growth')}
+								/>
 							{/if}
 
 							<!-- Mini Conversion Funnel -->

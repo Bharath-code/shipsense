@@ -627,6 +627,168 @@ export const computeTrafficIntelligenceInternal = internalQuery({
 	}
 });
 
+// ── External Reach Score Composite ───────────────────────────────────────────
+// Top referrer quality × traffic trend × conversion rate
+
+export type ExternalReachTier = 'strong' | 'moderate' | 'weak' | 'none';
+
+export type ExternalReachScore = {
+	score: number; // 0-100
+	tier: ExternalReachTier;
+	narrative: string;
+	topSource: string | null;
+	topSourceViews: number;
+	topSourceConversion: number;
+	trafficTrend: 'accelerating' | 'steady' | 'declining';
+};
+
+const REFERRER_QUALITY: Record<string, number> = {
+	'Hacker News': 3,
+	'Reddit': 3,
+	'X (Twitter)': 3,
+	'Product Hunt': 3,
+	'Lobsters': 3,
+	'Dev.to': 2.5,
+	'YouTube': 2.5,
+	'LinkedIn': 2,
+	'GitHub': 2,
+	'Google Search': 1.5,
+	'Bing Search': 1,
+	'DuckDuckGo': 1,
+	'Medium': 1,
+	'Instagram': 0.8,
+	'Facebook': 0.8
+};
+
+function referrerQualityScore(source: string | null): number {
+	if (!source) return 1;
+	return REFERRER_QUALITY[source] ?? 1;
+}
+
+function computeExternalReachScore(input: {
+	topSources: TrafficSourceInsight[];
+	trafficVelocity: TrafficVelocityInsight;
+	conversion: TrafficConversionInsight;
+}): ExternalReachScore {
+	const { topSources, trafficVelocity, conversion } = input;
+
+	if (topSources.length === 0 || conversion.views === 0) {
+		return {
+			score: 0,
+			tier: 'none',
+			narrative: 'No traffic data collected yet. Run a sync and check back in 24 hours.',
+			topSource: null,
+			topSourceViews: 0,
+			topSourceConversion: 0,
+			trafficTrend: 'declining'
+		};
+	}
+
+	// 1. Referrer quality score (0-40 points)
+	const socialReferrers = topSources.filter(
+		(s) => isSocialPlatform(s.source) || isDeveloperPlatform(s.source)
+	);
+	const bestSocial = socialReferrers.sort((a, b) => b.views - a.views)[0];
+
+	let qualityScore = 0;
+	if (bestSocial && bestSocial.views >= 5) {
+		const weight = referrerQualityScore(bestSocial.source);
+		const viewsRatio = Math.min(bestSocial.views / 100, 1); // cap at 100 views
+		qualityScore = Math.round(weight * viewsRatio * (40 / 3)); // max 40 points
+	} else if (conversion.views > 0) {
+		// All traffic is direct/unknown — still give a small score
+		qualityScore = Math.round(Math.min(conversion.views / 50, 1) * 10);
+	}
+
+	// 2. Traffic trend (0-30 points)
+	let trendScore = 0;
+	let trend: 'accelerating' | 'steady' | 'declining';
+	if (trafficVelocity.velocity === 'accelerating') {
+		trend = 'accelerating';
+		trendScore = Math.round(
+			Math.min(trafficVelocity.changePercent / 100, 1) * 30
+		);
+	} else if (trafficVelocity.velocity === 'steady') {
+		trend = 'steady';
+		trendScore = conversion.views > 20 ? 18 : 10;
+	} else {
+		trend = 'declining';
+		trendScore = Math.round(
+			Math.max(0, 30 - Math.abs(trafficVelocity.changePercent))
+		);
+	}
+
+	// 3. Conversion rate (0-30 points)
+	let conversionScore = 0;
+	const viewsToStars = conversion.viewsToStars;
+	if (viewsToStars === 0) {
+		conversionScore = 0;
+	} else if (viewsToStars <= 5) {
+		conversionScore = 30; // exceptional
+	} else if (viewsToStars <= 10) {
+		conversionScore = 25;
+	} else if (viewsToStars <= 20) {
+		conversionScore = 20; // healthy
+	} else if (viewsToStars <= 30) {
+		conversionScore = 12;
+	} else {
+		conversionScore = Math.max(2, Math.round(30 - viewsToStars / 5));
+	}
+
+	const totalScore = qualityScore + trendScore + conversionScore;
+
+	let tier: ExternalReachTier;
+	if (totalScore >= 65) tier = 'strong';
+	else if (totalScore >= 35) tier = 'moderate';
+	else if (totalScore > 0) tier = 'weak';
+	else tier = 'none';
+
+	// 4. Narrative generation
+	const topSource = bestSocial?.source ?? topSources[0]?.source ?? null;
+	const topSourceViews = bestSocial?.views ?? topSources[0]?.views ?? 0;
+	const topSourceConversion = bestSocial?.conversionRate ?? topSources[0]?.conversionRate ?? 0;
+
+	let narrative: string;
+
+	if (tier === 'strong') {
+		if (bestSocial && bestSocial.views >= 20) {
+			narrative = `Your external reach is strong — ${bestSocial.source} sent ${bestSocial.views} visitors this week with ${bestSocial.conversionRate}% conversion. Double down there.`;
+		} else if (trafficVelocity.velocity === 'accelerating') {
+			narrative = `Traffic is accelerating ${trafficVelocity.changePercent > 0 ? `(+${trafficVelocity.changePercent}%)` : ''} and converting well. ${topSource ? `${topSource} is your primary channel.` : 'Keep the momentum going.'}`;
+		} else {
+			narrative = `Consistent high-quality reach — ${conversion.views} views with ${conversion.conversionLabel} conversion. Your audience is finding you reliably.`;
+		}
+	} else if (tier === 'moderate') {
+		if (bestSocial && bestSocial.views > 0) {
+			narrative = `Moderate reach — ${bestSocial.source} is sending ${bestSocial.views} visitors. Conversion is ${conversion.conversionLabel} — ${conversion.viewsToStars > 20 ? 'fix your README to improve it' : 'solid for this stage'}.`;
+		} else if (trafficVelocity.velocity === 'declining') {
+			narrative = `Reach is declining — traffic dropped ${Math.abs(trafficVelocity.changePercent)}% vs. prior period. Consider re-engaging on a developer platform.`;
+		} else {
+			narrative = `Steady but modest reach. Post on a developer community (HN, Reddit, Dev.to) to push traffic higher.`;
+		}
+	} else if (tier === 'weak') {
+		if (conversion.viewsToStars > 30) {
+			narrative = `Visitors are arriving but not converting (${conversion.viewsToStars} views per star). Fix your README before chasing more traffic.`;
+		} else if (!bestSocial) {
+			narrative = `Mostly direct traffic. Start posting on developer platforms to amplify your reach.`;
+		} else {
+			narrative = `Weak reach — ${topSource ? `${topSource} sent only ${topSourceViews} visitors` : 'minimal traffic'}. Focus on getting your project in front of one active community.`;
+		}
+	} else {
+		narrative = 'No external reach data yet. Sync your repo to start collecting traffic intelligence.';
+	}
+
+	return {
+		score: Math.min(totalScore, 100),
+		tier,
+		narrative,
+		topSource,
+		topSourceViews,
+		topSourceConversion,
+		trafficTrend: trend
+	};
+}
+
 // ── Conversion Funnel Composite ──────────────────────────────────────────────
 // Views → Stars → Clones → Contributors with conversion rates + Momentum Vector
 
@@ -645,6 +807,7 @@ export type ConversionFunnelReport = {
 	stages: [FunnelStage, FunnelStage, FunnelStage, FunnelStage];
 	momentumVector: MomentumVector;
 	momentumReason: string;
+	externalReach: ExternalReachScore | null;
 	oneThing: string;
 	hasData: boolean;
 };
@@ -862,6 +1025,54 @@ export const getConversionFunnel = query({
 
 		const oneThing = computeFunnelOneThing(stages, vector);
 
-		return { stages, momentumVector: vector, momentumReason: reason, oneThing, hasData };
+		// External Reach Score
+		let externalReach: ExternalReachScore | null = null;
+		if (hasData) {
+			const latestReferrers = await ctx.db
+				.query('repoReferrers')
+				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first();
+
+			const referrerHistory = await ctx.db
+				.query('repoReferrers')
+				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.take(2);
+			const previousReferrers = referrerHistory[1] ?? null;
+
+			const sources = analyzeSources(
+				(latestReferrers?.referrers ?? []).map((r) => ({
+					referrer: r.referrer,
+					count: r.count,
+					uniques: r.uniques
+				})),
+				previousReferrers?.referrers ?? null,
+				starsLast7d
+			);
+
+			const velocity = analyzeVelocity(views, previous?.views ?? null);
+			const conversion = analyzeConversion(
+				views,
+				starsLast7d,
+				previous?.views ?? null,
+				prevStarsLast7d
+			);
+
+			externalReach = computeExternalReachScore({
+				topSources: sources,
+				trafficVelocity: velocity,
+				conversion
+			});
+		}
+
+		return {
+			stages,
+			momentumVector: vector,
+			momentumReason: reason,
+			externalReach,
+			oneThing,
+			hasData
+		};
 	}
 });
