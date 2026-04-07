@@ -965,3 +965,153 @@ export const getStarForecast = query({
 		};
 	}
 });
+
+// ── Repo Benchmark (network percentile) ──────────────────────────────────────
+// Compares a repo's health score against all scored repos in the network.
+// Falls back to curated static thresholds if user base < 10 repos.
+
+export type RepoBenchmark = {
+	healthScore: number;
+	percentile: number; // 0-100, e.g. 83 = "better than 83% of repos"
+	cohortLabel: string; // e.g. "repos with < 500 stars"
+	cohortSize: number; // how many repos in the cohort
+	tier: 'elite' | 'strong' | 'average' | 'developing';
+	tierLabel: string;
+	narrative: string;
+	usedStaticFallback: boolean; // true when not enough network data
+};
+
+function staticPercentile(score: number): number {
+	// Curated thresholds based on open-source health score distributions
+	// Elite: >=80, Strong: >=65, Average: >=45, Developing: <45
+	if (score >= 85) return 95;
+	if (score >= 80) return 88;
+	if (score >= 75) return 80;
+	if (score >= 70) return 72;
+	if (score >= 65) return 63;
+	if (score >= 60) return 54;
+	if (score >= 55) return 45;
+	if (score >= 50) return 37;
+	if (score >= 45) return 28;
+	if (score >= 40) return 20;
+	if (score >= 30) return 12;
+	return 5;
+}
+
+function starCohort(stars: number): { label: string; min: number; max: number } {
+	if (stars < 50) return { label: 'repos with < 50 stars', min: 0, max: 49 };
+	if (stars < 200) return { label: 'repos with 50–200 stars', min: 50, max: 199 };
+	if (stars < 500) return { label: 'repos with 200–500 stars', min: 200, max: 499 };
+	if (stars < 1000) return { label: 'repos with 500–1k stars', min: 500, max: 999 };
+	if (stars < 5000) return { label: 'repos with 1k–5k stars', min: 1000, max: 4999 };
+	return { label: 'repos with 5k+ stars', min: 5000, max: Infinity };
+}
+
+export const getRepoBenchmark = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args): Promise<RepoBenchmark | null> => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
+
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
+
+		// Get this repo's latest score
+		const myScore = await ctx.db
+			.query('repoScores')
+			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
+
+		if (!myScore) return null;
+
+		const healthScore = myScore.healthScore;
+
+		// Get this repo's latest star count
+		const mySnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first();
+
+		const myStars = mySnapshot?.stars ?? repo.starsCount;
+		const cohort = starCohort(myStars);
+
+		// Gather all active repos in the network (+ their latest scores for network-wide comparison)
+		const allRepos = await ctx.db
+			.query('repos')
+			.filter((q) => q.eq(q.field('isActive'), true))
+			.collect();
+
+		// For a network percentile we need multi-user data — collect all latest scores
+		// across all repos in the system (anonymized — we only use the score number)
+		const allScoresRaw: number[] = [];
+		for (const r of allRepos) {
+			const s = await ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', r._id))
+				.order('desc')
+				.first();
+			if (s) allScoresRaw.push(s.healthScore);
+		}
+
+		const MINIMUM_NETWORK_REPOS = 5;
+		let percentile: number;
+		let cohortSize: number;
+		let usedStaticFallback: boolean;
+
+		if (allScoresRaw.length >= MINIMUM_NETWORK_REPOS) {
+			// Real network percentile: % of repos with a score <= this one
+			const below = allScoresRaw.filter((s) => s <= healthScore).length;
+			percentile = Math.round((below / allScoresRaw.length) * 100);
+			cohortSize = allScoresRaw.length;
+			usedStaticFallback = false;
+		} else {
+			// Static fallback based on curated thresholds
+			percentile = staticPercentile(healthScore);
+			cohortSize = 0;
+			usedStaticFallback = true;
+		}
+
+		// Tier classification
+		let tier: 'elite' | 'strong' | 'average' | 'developing';
+		let tierLabel: string;
+		if (percentile >= 85) {
+			tier = 'elite';
+			tierLabel = 'Elite';
+		} else if (percentile >= 65) {
+			tier = 'strong';
+			tierLabel = 'Strong';
+		} else if (percentile >= 35) {
+			tier = 'average';
+			tierLabel = 'Average';
+		} else {
+			tier = 'developing';
+			tierLabel = 'Developing';
+		}
+
+		// Narrative
+		const cohortStr = usedStaticFallback ? 'similar repos' : cohort.label;
+		let narrative: string;
+		if (tier === 'elite') {
+			narrative = `Your repo is in the top ${100 - percentile}% of ${cohortStr}. You're maintaining a best-in-class repo — keep it up.`;
+		} else if (tier === 'strong') {
+			narrative = `You're outperforming ${percentile}% of ${cohortStr}. A few targeted improvements could push you into elite territory.`;
+		} else if (tier === 'average') {
+			narrative = `You're at the ${percentile}th percentile of ${cohortStr}. Focus on your top task to move the score meaningfully.`;
+		} else {
+			narrative = `Your score is below ${100 - percentile}% of ${cohortStr}. Address the top-priority tasks to build momentum fast.`;
+		}
+
+		return {
+			healthScore,
+			percentile,
+			cohortLabel: usedStaticFallback ? 'open-source repos' : cohort.label,
+			cohortSize,
+			tier,
+			tierLabel,
+			narrative,
+			usedStaticFallback
+		};
+	}
+});

@@ -497,6 +497,28 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 - [ ] Finish implementation, verification, and UX copy before moving to the next feature
 - [ ] Update this file after every completed feature
 
-## Score Transparency Fix (April 2026)
-
 - [x] Fix score breakdown not showing after sync - now shows snapshot data even if score not calculated yet
+
+## Phase 32 — Product Strategy Sprint (April 2026)
+
+### Immediate (from impl plan §7)
+
+- [x] Build Conversion Funnel composite (views → stars → clones → contributors) — ConversionFunnel.svelte + trafficIntelligence.ts
+- [x] Add Momentum Vector (Accelerating | Coasting | Stalling) — computed from score trend + star velocity + commit freshness
+- [x] Restructure tabs → Overview | Growth | Health | Tasks | Share
+- [x] Implement blurred/teased paywall on Traffic Intelligence and Conversion Funnel for free users — PaywallBlur.svelte
+
+### Short-term (from impl plan §7)
+
+- [x] Add star forecast (linear regression projection toward next milestone) — getStarForecast query + StarForecast.svelte
+- [x] Wire StarForecast into Growth tab alongside ConversionFunnel
+- [x] Add network ranking percentile badge ("Top 10% of frameworks") — BenchmarkBadge.svelte
+- [x] Integrate BenchmarkBadge into Overview tab (below Daily Brief)
+- [x] Add weekly summary email for lapsed users (7+ days since last daily digest) — orchestrator.ts sendDailyDigests upgrade
+
+### Medium-term (from impl plan §7)
+
+- [x] Refactor pricing page to frame around intelligence layers, not repo count (Free = Health, Indie = Predictive Intelligence, Builder = Operations)
+- [ ] Add modeled impact to task engine (e.g. "This PR will push Health to 85")
+- [ ] Implement team-level portfolio health overview
+- [ ] Add Slack / Discord webhooks for anomalies and weekly summaries

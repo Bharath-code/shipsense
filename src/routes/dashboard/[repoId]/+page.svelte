@@ -44,6 +44,7 @@
 	import TrafficIntelligence from '$lib/components/dashboard/TrafficIntelligence.svelte';
 	import ConversionFunnel from '$lib/components/dashboard/ConversionFunnel.svelte';
 	import StarForecast from '$lib/components/dashboard/StarForecast.svelte';
+	import BenchmarkBadge from '$lib/components/dashboard/BenchmarkBadge.svelte';
 	import PaywallBlur from '$lib/components/ui/PaywallBlur.svelte';
 	import { onMount } from 'svelte';
 
@@ -554,6 +555,10 @@
 		{#if activeTab === 'overview'}
 			<div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" class="space-y-6">
 				<DailyBrief repoId={repoId as string} />
+
+				<ErrorBoundary>
+					<BenchmarkBadge repoId={repoId as string} />
+				</ErrorBoundary>
 
 				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.95fr)]">
 					<div class="rounded-[1.5rem] border border-primary/15 bg-primary/5 p-6">

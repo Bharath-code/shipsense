@@ -467,53 +467,72 @@
 			</div>
 		</section>
 
-		<!-- Pricing Section -->
+		<!-- Pricing Section — Intelligence Tiers -->
 		<section
 			id="pricing"
 			class="container mx-auto max-w-6xl border-b border-foreground/5 px-6 py-32"
 		>
 			<div class="mb-20 text-center">
-				<h2 class="mb-6 text-4xl font-bold tracking-tight md:text-6xl">
-					Start free. Upgrade for more.
+				<div
+					class="animate-float-delayed mb-6 inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5"
+				>
+					<Sparkles size={14} class="text-primary" />
+					<span class="text-xs font-semibold tracking-wide text-foreground/80 lowercase"
+						>Pricing built around intelligence, not repo limits</span
+					>
+				</div>
+				<h2 class="mb-6 text-4xl font-bold tracking-tight md:text-5xl">
+					Choose your layer of clarity.
 				</h2>
 				<p class="mx-auto max-w-2xl text-xl text-foreground/60">
-					Free plan gives you daily clarity on any repo. Paid plans add reporting and more connected
-					repos.
+					Every plan gives you a real health score and daily digest. Higher tiers unlock predictive
+					intelligence that tells you <em>why</em> things are changing and
+					<em>what will happen next</em>.
 				</p>
 			</div>
 
 			<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-				<!-- Free Plan -->
+				<!-- Free — Clarity Layer -->
 				<div
 					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
 				>
-					<div class="mb-8">
-						<span class="text-sm font-bold tracking-widest text-muted-foreground uppercase"
+					<div class="mb-2">
+						<span class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 							>Free</span
 						>
-						<div class="mt-4 flex items-end gap-1">
+						<h3 class="mt-2 text-2xl font-bold tracking-tight">Health Clarity</h3>
+						<p class="mt-1 text-sm text-foreground/50">See what's happening.</p>
+						<div class="mt-6 flex items-end gap-1">
 							<span class="text-4xl font-bold">$0</span>
 							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
-					<div class="mb-10 flex-1 space-y-4">
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">1 Connected Repository</span>
+
+					<div class="my-8 flex-1 space-y-3.5 border-t border-foreground/5 pt-8">
+						<div class="flex items-start gap-3">
+							<Check size={15} class="mt-0.5 shrink-0 text-success" />
+							<span class="text-sm text-foreground/70"
+								>Deterministic health score (commits, stars, PRs, issues, contributors)</span
+							>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">Health Scores and Momentum Tracking</span>
+						<div class="flex items-start gap-3">
+							<Check size={15} class="mt-0.5 shrink-0 text-success" />
+							<span class="text-sm text-foreground/70">Daily brief and change summary</span>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">Daily Digest, Streaks, and Sync Monitoring</span>
+						<div class="flex items-start gap-3">
+							<Check size={15} class="mt-0.5 shrink-0 text-success" />
+							<span class="text-sm text-foreground/70">Shipping streak and task engine</span>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">Public Health Pages and Repo Badges</span>
+						<div class="flex items-start gap-3">
+							<Check size={15} class="mt-0.5 shrink-0 text-success" />
+							<span class="text-sm text-foreground/70">Public health page and repo badge</span>
+						</div>
+						<div class="flex items-start gap-3">
+							<Check size={15} class="mt-0.5 shrink-0 text-success" />
+							<span class="text-sm text-foreground/70">1 connected repository</span>
 						</div>
 					</div>
+
 					<Button
 						href="/auth/login"
 						variant="outline"
@@ -523,79 +542,127 @@
 					</Button>
 				</div>
 
-				<!-- Indie Plan (Popular) -->
+				<!-- Indie — Intelligence Layer (Popular) -->
 				<div
 					class="relative flex flex-col overflow-hidden rounded-[2.5rem] border glass-panel border-primary/30 p-10 ring-4 ring-primary/5"
 				>
 					<div
 						class="absolute top-0 right-0 rounded-bl-2xl bg-primary px-4 py-1.5 text-[10px] font-bold tracking-widest text-primary-foreground uppercase"
 					>
-						Popular
+						Most popular
 					</div>
-					<div class="mb-8">
-						<span class="text-sm font-bold tracking-widest text-primary uppercase">Indie</span>
-						<div class="mt-4 flex items-end gap-1">
+					<div class="mb-2">
+						<span class="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Indie</span>
+						<h3 class="mt-2 text-2xl font-bold tracking-tight">Predictive Intelligence</h3>
+						<p class="mt-1 text-sm text-foreground/50">Understand what's driving change.</p>
+						<div class="mt-6 flex items-end gap-1">
 							<span class="text-4xl font-bold">$12</span>
 							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
-					<div class="mb-10 flex-1 space-y-4">
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="font-medium text-foreground/80">5 Connected Repositories</span>
+
+					<!-- Intelligence preview card -->
+					<div
+						class="my-6 rounded-2xl border border-primary/15 bg-primary/5 p-4"
+					>
+						<p class="text-[10px] font-bold tracking-widest text-primary/70 uppercase">
+							Intelligence unlocked
+						</p>
+						<p class="mt-2 text-sm font-semibold text-foreground">
+							📈 On track for 1,000 stars by June 15 · growing at 3.2 stars/day.
+						</p>
+					</div>
+
+					<div class="flex-1 space-y-3.5 border-t border-foreground/5 pt-6">
+						<div class="flex items-start gap-3">
+							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
+							<span class="text-sm font-medium text-foreground/80"
+								>Star forecast — when will you hit your next milestone?</span
+							>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="font-medium text-foreground/80">AI Insights and Priority Tasks</span>
+						<div class="flex items-start gap-3">
+							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
+							<span class="text-sm font-medium text-foreground/80"
+								>Conversion funnel — views → stars → clones → contributors</span
+							>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="font-medium text-foreground/80">Weekly Email Reports</span>
+						<div class="flex items-start gap-3">
+							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
+							<span class="text-sm font-medium text-foreground/80"
+								>Anomaly alerts — spike and drop detection with context</span
+							>
 						</div>
-						<div class="flex items-center gap-3">
-							<Zap size={16} class="fill-primary/20 text-primary" />
-							<span class="text-foreground/80">A tighter weekly operating rhythm</span>
+						<div class="flex items-start gap-3">
+							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
+							<span class="text-sm font-medium text-foreground/80"
+								>AI traffic intelligence and referrer analysis</span
+							>
+						</div>
+						<div class="flex items-start gap-3">
+							<Check size={15} class="mt-0.5 shrink-0 text-success" />
+							<span class="text-sm text-foreground/70">Weekly email report digest</span>
+						</div>
+						<div class="flex items-start gap-3">
+							<Check size={15} class="mt-0.5 shrink-0 text-success" />
+							<span class="text-sm text-foreground/70">Everything in Free + 5 repositories</span>
 						</div>
 					</div>
+
 					<Button
 						href="/auth/login"
-						class="h-12 w-full rounded-full bg-primary font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
+						class="mt-8 h-12 w-full rounded-full bg-primary font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
 					>
 						Get Started
 					</Button>
 				</div>
 
-				<!-- Builder Plan -->
+				<!-- Builder — Operations Layer -->
 				<div
 					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
 				>
-					<div class="mb-8">
-						<span class="text-sm font-bold tracking-widest text-muted-foreground uppercase"
+					<div class="mb-2">
+						<span class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 							>Builder</span
 						>
-						<div class="mt-4 flex items-end gap-1">
+						<h3 class="mt-2 text-2xl font-bold tracking-tight">Portfolio Operations</h3>
+						<p class="mt-1 text-sm text-foreground/50">Run a portfolio of projects.</p>
+						<div class="mt-6 flex items-end gap-1">
 							<span class="text-4xl font-bold">$49</span>
 							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
-					<div class="mb-10 flex-1 space-y-4">
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">50 Connected Repositories</span>
+
+					<div class="my-8 flex-1 space-y-3.5 border-t border-foreground/5 pt-8">
+						<div class="flex items-start gap-3">
+							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
+							<span class="text-sm text-foreground/70"
+								>Everything in Indie across 50 repositories</span
+							>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">Weekly Reports and Priority Tasks</span>
+						<div class="flex items-start gap-3">
+							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
+							<span class="text-sm text-foreground/70"
+								>Portfolio-level health overview across all repos</span
+							>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">Portfolio-Scale Monitoring Across Repos</span>
+						<div class="flex items-start gap-3">
+							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
+							<span class="text-sm text-foreground/70"
+								>Dependency risk monitoring across all manifests</span
+							>
 						</div>
-						<div class="flex items-center gap-3">
-							<Check size={16} class="text-success" />
-							<span class="text-foreground/70">Best fit for teams and multi-product builders</span>
+						<div class="flex items-start gap-3">
+							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
+							<span class="text-sm text-foreground/70"
+								>Proactive anomaly + score drop email alerts</span
+							>
+						</div>
+						<div class="flex items-start gap-3">
+							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
+							<span class="text-sm text-foreground/70">Best fit for teams and agencies</span>
 						</div>
 					</div>
+
 					<Button
 						href="mailto:hello@shipsense.ai"
 						variant="outline"
@@ -606,7 +673,53 @@
 				</div>
 			</div>
 
-			<div class="mt-16 text-center">
+			<!-- Feature comparison row -->
+			<div class="mt-16 overflow-hidden rounded-[2rem] border border-foreground/5 glass-panel">
+				<div class="grid grid-cols-4 border-b border-foreground/5 px-8 py-4">
+					<p class="text-xs font-bold tracking-widest text-muted-foreground uppercase">Feature</p>
+					<p class="text-center text-xs font-bold tracking-widest text-muted-foreground uppercase">Free</p>
+					<p class="text-center text-xs font-bold tracking-widest text-primary uppercase">Indie</p>
+					<p class="text-center text-xs font-bold tracking-widest text-muted-foreground uppercase">Builder</p>
+				</div>
+				{#each [
+					{ label: 'Health score + trend', free: true, indie: true, builder: true },
+					{ label: 'Daily brief + digest', free: true, indie: true, builder: true },
+					{ label: 'Task engine + streaks', free: true, indie: true, builder: true },
+					{ label: 'Star forecast', free: false, indie: true, builder: true },
+					{ label: 'Conversion funnel', free: false, indie: true, builder: true },
+					{ label: 'Anomaly detection', free: false, indie: true, builder: true },
+					{ label: 'Traffic intelligence', free: false, indie: true, builder: true },
+					{ label: 'Portfolio overview', free: false, indie: false, builder: true },
+					{ label: 'Dependency monitoring', free: false, indie: false, builder: true },
+				] as row}
+					<div class="grid grid-cols-4 border-b border-foreground/5 px-8 py-3.5 last:border-0">
+						<p class="text-sm text-foreground/70">{row.label}</p>
+						<p class="text-center">
+							{#if row.free}
+								<Check size={15} class="mx-auto text-success" />
+							{:else}
+								<span class="text-muted-foreground/30">—</span>
+							{/if}
+						</p>
+						<p class="text-center">
+							{#if row.indie}
+								<Check size={15} class="mx-auto text-primary" />
+							{:else}
+								<span class="text-muted-foreground/30">—</span>
+							{/if}
+						</p>
+						<p class="text-center">
+							{#if row.builder}
+								<Check size={15} class="mx-auto text-warning" />
+							{:else}
+								<span class="text-muted-foreground/30">—</span>
+							{/if}
+						</p>
+					</div>
+				{/each}
+			</div>
+
+			<div class="mt-12 text-center">
 				<div class="inline-flex items-center gap-2 text-sm text-muted-foreground">
 					<HelpCircle size={14} />
 					<span>Need a custom plan for your organization?</span>
@@ -616,6 +729,8 @@
 				</div>
 			</div>
 		</section>
+
+
 
 		<!-- Final CTA -->
 		<section class="container mx-auto max-w-6xl px-6 py-32">
