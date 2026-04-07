@@ -12,6 +12,7 @@ export interface GeneratedTask {
 	priority: number;
 	taskSource: TaskSource;
 	expectedImpact: string;
+	impactScore?: number;
 }
 
 type ActiveAnomaly = Pick<
@@ -19,7 +20,7 @@ type ActiveAnomaly = Pick<
 	'kind' | 'severity' | 'title' | 'recommendedAction' | 'description'
 >;
 
-function anomalyTasks(anomalies: ActiveAnomaly[]): GeneratedTask[] {
+function anomalyTasks(anomalies: ActiveAnomaly[], previousScore?: number): GeneratedTask[] {
 	return anomalies.map((anomaly) => {
 		if (anomaly.kind === 'star_spike') {
 			return {
@@ -27,7 +28,9 @@ function anomalyTasks(anomalies: ActiveAnomaly[]): GeneratedTask[] {
 				taskType: 'anomaly' as const,
 				priority: anomaly.severity === 'high' ? 1 : 2,
 				taskSource: 'anomaly',
-				expectedImpact: 'Helps you turn short-term attention into sustained distribution while momentum is high.'
+				expectedImpact:
+					'Helps you turn short-term attention into sustained distribution while momentum is high.',
+				impactScore: 5
 			};
 		}
 
@@ -37,7 +40,9 @@ function anomalyTasks(anomalies: ActiveAnomaly[]): GeneratedTask[] {
 				taskType: 'anomaly' as const,
 				priority: anomaly.severity === 'high' ? 1 : 2,
 				taskSource: 'anomaly',
-				expectedImpact: 'Improves contributor activation and increases the chance that first-time contributors return.'
+				expectedImpact:
+					'Improves contributor activation and increases the chance that first-time contributors return.',
+				impactScore: 10
 			};
 		}
 
@@ -46,7 +51,9 @@ function anomalyTasks(anomalies: ActiveAnomaly[]): GeneratedTask[] {
 			taskType: 'anomaly' as const,
 			priority: anomaly.severity === 'high' ? 1 : 2,
 			taskSource: 'anomaly',
-			expectedImpact: 'Stops the current slowdown before it turns into a longer-term drop in repo health.'
+			expectedImpact:
+				'Stops the current slowdown before it turns into a longer-term drop in repo health.',
+			impactScore: Math.round(Math.min(previousScore ? previousScore * 0.1 : 8, 15))
 		};
 	});
 }
@@ -74,7 +81,9 @@ export function determineTasks(
 				taskType: 'commit',
 				priority: 1,
 				taskSource: 'hygiene',
-				expectedImpact: 'Keeps your shipping streak alive and signals active maintenance to visitors and contributors.'
+				expectedImpact:
+					'Keeps your shipping streak alive and signals active maintenance to visitors and contributors.',
+				impactScore: 4
 			});
 		} else {
 			tasks.push({
@@ -82,7 +91,8 @@ export function determineTasks(
 				taskType: 'commit',
 				priority: 2,
 				taskSource: 'hygiene',
-				expectedImpact: 'Maintains visible repo activity so momentum does not stall between syncs.'
+				expectedImpact: 'Maintains visible repo activity so momentum does not stall between syncs.',
+				impactScore: 2
 			});
 		}
 	}
@@ -94,7 +104,9 @@ export function determineTasks(
 			taskType: 'issue',
 			priority: 3,
 			taskSource: 'trend',
-			expectedImpact: 'Improves responsiveness and makes the project feel easier to join and trust.'
+			expectedImpact:
+				'Improves responsiveness and makes the project feel easier to join and trust.',
+			impactScore: Math.min(Math.round(snapshot.issuesOpen / 5), 8)
 		});
 	} else if (!isPrivate && snapshot.issuesOpen > 0) {
 		tasks.push({
@@ -102,7 +114,9 @@ export function determineTasks(
 			taskType: 'issue',
 			priority: 5,
 			taskSource: 'trend',
-			expectedImpact: 'Prevents support debt from building up and keeps community questions from going cold.'
+			expectedImpact:
+				'Prevents support debt from building up and keeps community questions from going cold.',
+			impactScore: 1
 		});
 	}
 
@@ -113,7 +127,8 @@ export function determineTasks(
 			taskType: 'pr',
 			priority: 4,
 			taskSource: 'trend',
-			expectedImpact: 'Unlocks contribution flow so outside momentum does not stall in review.'
+			expectedImpact: 'Unlocks contribution flow so outside momentum does not stall in review.',
+			impactScore: Math.min(snapshot.prsOpen * 2, 10)
 		});
 	}
 
@@ -124,7 +139,9 @@ export function determineTasks(
 			taskType: 'general',
 			priority: 6,
 			taskSource: 'trend',
-			expectedImpact: 'Increases the odds that new contributors become repeat contributors instead of one-time visitors.'
+			expectedImpact:
+				'Increases the odds that new contributors become repeat contributors instead of one-time visitors.',
+			impactScore: 5
 		});
 	}
 
@@ -141,7 +158,8 @@ export function determineTasks(
 				taskType: 'anomaly',
 				priority: 1,
 				taskSource: 'anomaly',
-				expectedImpact: 'Helps you identify the largest regression quickly before it compounds.'
+				expectedImpact: 'Helps you identify the largest regression quickly before it compounds.',
+				impactScore: scoreDrop
 			});
 		} else if (scoreDrop >= 10) {
 			tasks.push({
@@ -149,7 +167,8 @@ export function determineTasks(
 				taskType: 'anomaly',
 				priority: 2,
 				taskSource: 'anomaly',
-				expectedImpact: 'Keeps a short-term decline from becoming a longer-term momentum problem.'
+				expectedImpact: 'Keeps a short-term decline from becoming a longer-term momentum problem.',
+				impactScore: scoreDrop
 			});
 		}
 	}
@@ -206,7 +225,8 @@ export const generateTasks = internalAction({
 				taskType: task.taskType,
 				priority: task.priority,
 				taskSource: task.taskSource,
-				expectedImpact: task.expectedImpact
+				expectedImpact: task.expectedImpact,
+				impactScore: task.impactScore
 			});
 		}
 	}
@@ -234,7 +254,8 @@ export const createTask = internalMutation({
 				v.literal('hygiene')
 			)
 		),
-		expectedImpact: v.optional(v.string())
+		expectedImpact: v.optional(v.string()),
+		impactScore: v.optional(v.number())
 	},
 	handler: async (ctx, args) => {
 		// Avoid creating duplicate unresolved tasks of same type

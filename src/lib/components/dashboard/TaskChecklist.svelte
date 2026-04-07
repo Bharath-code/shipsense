@@ -95,6 +95,11 @@
 							<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/70 uppercase">
 								Priority {primaryTask.priority}
 							</span>
+							{#if primaryTask.impactScore}
+								<span class="flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[10px] font-black tracking-widest text-success uppercase shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+									+{primaryTask.impactScore} Health
+								</span>
+							{/if}
 						</div>
 
 						{#if primaryTask.expectedImpact}
@@ -155,6 +160,12 @@
 									<span class="flex items-center gap-1.5 text-[10px] font-bold text-destructive/80">
 										<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive"></span>
 										CRITICAL
+									</span>
+								{/if}
+								
+								{#if task.impactScore}
+									<span class="ml-auto flex items-center gap-1 rounded-full border border-success/20 bg-success/5 px-2 py-0.5 text-[9px] font-black tracking-widest text-success uppercase">
+										+{task.impactScore} Health
 									</span>
 								{/if}
 							</div>

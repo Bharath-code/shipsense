@@ -269,6 +269,7 @@ export default defineSchema({
 			)
 		),
 		expectedImpact: v.optional(v.string()),
+		impactScore: v.optional(v.number()),
 		isCompleted: v.boolean(),
 		createdAt: v.number(),
 		completedAt: v.optional(v.number())

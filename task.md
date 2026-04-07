@@ -519,6 +519,6 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 ### Medium-term (from impl plan §7)
 
 - [x] Refactor pricing page to frame around intelligence layers, not repo count (Free = Health, Indie = Predictive Intelligence, Builder = Operations)
-- [ ] Add modeled impact to task engine (e.g. "This PR will push Health to 85")
+- [x] Add modeled impact to task engine (e.g. "This PR will push Health to 85")
 - [ ] Implement team-level portfolio health overview
 - [ ] Add Slack / Discord webhooks for anomalies and weekly summaries
