@@ -243,14 +243,31 @@ export const sendDailyDigests = internalAction({
 	args: {},
 	handler: async (ctx) => {
 		const profiles = await ctx.runQuery(internal.users.listAllUserProfiles);
+		const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 		for (const profile of profiles) {
 			if (!profile.email || !profile.emailReportsEnabled) continue;
 
-			await ctx.runAction(internal.email.sendDailyDigest, {
-				userId: profile.userId,
-				email: profile.email
-			});
+			// If user hasn't received a daily digest in 7+ days (lapsed user),
+			// send a weekly summary instead to re-acquire them.
+			const lastDigestAt = profile.lastDailyDigestSentAt ?? null;
+			const isLapsed =
+				lastDigestAt === null || Date.now() - lastDigestAt > SEVEN_DAYS_MS;
+
+			if (isLapsed) {
+				console.log(
+					`[Orchestrator] Lapsed user ${profile.userId} — sending weekly re-engagement report`
+				);
+				await ctx.runAction(internal.email.sendWeeklyReport, {
+					userId: profile.userId,
+					email: profile.email
+				});
+			} else {
+				await ctx.runAction(internal.email.sendDailyDigest, {
+					userId: profile.userId,
+					email: profile.email
+				});
+			}
 		}
 	}
 });

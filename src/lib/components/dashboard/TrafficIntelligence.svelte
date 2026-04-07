@@ -54,10 +54,10 @@
 
 {#if isLoading}
 	<div class="space-y-6">
-		<div class="h-8 w-full animate-pulse rounded-xl bg-white/5" />
+		<div class="h-8 w-full animate-pulse rounded-xl bg-white/5"></div>
 		<div class="grid gap-4 sm:grid-cols-3">
 			{#each [1, 2, 3] as _}
-				<div class="h-32 animate-pulse rounded-2xl bg-white/5" />
+				<div class="h-32 animate-pulse rounded-2xl bg-white/5"></div>
 			{/each}
 		</div>
 	</div>
@@ -246,7 +246,7 @@
 								<div
 									class="h-full rounded-full bg-gradient-to-r from-primary/60 to-primary transition-all duration-500"
 									style="width: {topSourceWidth(source, report.topSources)}%"
-								/>
+								></div>
 							</div>
 
 							{#if source.action}

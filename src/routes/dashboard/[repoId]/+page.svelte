@@ -43,6 +43,7 @@
 	import WinCard from '$lib/components/dashboard/WinCard.svelte';
 	import TrafficIntelligence from '$lib/components/dashboard/TrafficIntelligence.svelte';
 	import ConversionFunnel from '$lib/components/dashboard/ConversionFunnel.svelte';
+	import StarForecast from '$lib/components/dashboard/StarForecast.svelte';
 	import PaywallBlur from '$lib/components/ui/PaywallBlur.svelte';
 	import { onMount } from 'svelte';
 
@@ -688,11 +689,17 @@
 
 				<div class="grid gap-6 xl:grid-cols-2">
 					<ErrorBoundary>
-						<MomentumGraph repoId={repoId as string} />
+						<StarForecast repoId={repoId as string} />
 					</ErrorBoundary>
 
 					<ErrorBoundary>
 						<AnomalyAlerts repoId={repoId as string} />
+					</ErrorBoundary>
+				</div>
+
+				<div class="grid gap-6 xl:grid-cols-2">
+					<ErrorBoundary>
+						<MomentumGraph repoId={repoId as string} />
 					</ErrorBoundary>
 				</div>
 

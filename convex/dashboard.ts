@@ -808,3 +808,160 @@ export const getPublicRepoHealthById = query({
 		};
 	}
 });
+
+// ── Star Forecast (linear projection) ────────────────────────────────────────
+// Computes star velocity via linear regression on up to 30 snapshots,
+// then projects toward the next canonical milestone.
+
+export type StarForecast = {
+	currentStars: number;
+	velocityPerDay: number; // stars/day (7-day rolling average)
+	nextMilestone: number;
+	daysUntilMilestone: number | null; // null = impossible / no velocity
+	projectedDate: number | null; // ms timestamp
+	confidence: 'high' | 'medium' | 'low';
+	narrative: string;
+	weeklyVelocity: number; // starsLast7d from latest snapshot
+	trend: 'accelerating' | 'decelerating' | 'stable';
+	hasEnoughData: boolean;
+};
+
+function nextStarMilestone(current: number): number {
+	const milestones = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
+	return milestones.find((m) => m > current) ?? current * 2;
+}
+
+function formatForecastDate(ms: number): string {
+	const date = new Date(ms);
+	return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+export const getStarForecast = query({
+	args: { repoId: v.id('repos') },
+	handler: async (ctx, args): Promise<StarForecast | null> => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) return null;
+
+		const repo = await ctx.db.get(args.repoId);
+		if (!repo || repo.userId !== userId) return null;
+
+		// Get up to 30 snapshots (chronological for regression)
+		const snapshots = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.take(30);
+
+		const chronological = snapshots.reverse();
+		const latest = chronological[chronological.length - 1];
+		const currentStars = latest?.stars ?? repo.starsCount;
+		const weeklyVelocity = latest?.starsLast7d ?? 0;
+
+		if (chronological.length < 2) {
+			const milestone = nextStarMilestone(currentStars);
+			return {
+				currentStars,
+				velocityPerDay: 0,
+				nextMilestone: milestone,
+				daysUntilMilestone: null,
+				projectedDate: null,
+				confidence: 'low',
+				narrative: `Sync daily to start building a trend line toward ${milestone.toLocaleString()} stars.`,
+				weeklyVelocity,
+				trend: 'stable',
+				hasEnoughData: false
+			};
+		}
+
+		// Linear regression: y = stars, x = days from first snapshot
+		const t0 = chronological[0].capturedAt;
+		const points = chronological
+			.filter((s) => typeof s.stars === 'number')
+			.map((s) => ({
+				x: (s.capturedAt - t0) / (1000 * 60 * 60 * 24), // days
+				y: s.stars
+			}));
+
+		const n = points.length;
+		const sumX = points.reduce((a, p) => a + p.x, 0);
+		const sumY = points.reduce((a, p) => a + p.y, 0);
+		const sumXY = points.reduce((a, p) => a + p.x * p.y, 0);
+		const sumX2 = points.reduce((a, p) => a + p.x * p.x, 0);
+		const denom = n * sumX2 - sumX * sumX;
+
+		// velocity = slope of the regression line
+		const velocityPerDay = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : 0;
+
+		// Trend: compare first-half vs second-half velocity
+		const mid = Math.floor(points.length / 2);
+		const firstHalf = points.slice(0, mid);
+		const secondHalf = points.slice(mid);
+		const firstVel =
+			firstHalf.length > 1
+				? (firstHalf[firstHalf.length - 1].y - firstHalf[0].y) /
+					Math.max(firstHalf[firstHalf.length - 1].x - firstHalf[0].x, 1)
+				: 0;
+		const secondVel =
+			secondHalf.length > 1
+				? (secondHalf[secondHalf.length - 1].y - secondHalf[0].y) /
+					Math.max(secondHalf[secondHalf.length - 1].x - secondHalf[0].x, 1)
+				: 0;
+
+		let trend: 'accelerating' | 'decelerating' | 'stable' = 'stable';
+		if (secondVel > firstVel * 1.3) trend = 'accelerating';
+		else if (secondVel < firstVel * 0.7) trend = 'decelerating';
+
+		const nextMilestone = nextStarMilestone(currentStars);
+		const starsNeeded = nextMilestone - currentStars;
+
+		let daysUntilMilestone: number | null = null;
+		let projectedDate: number | null = null;
+
+		if (velocityPerDay > 0) {
+			daysUntilMilestone = Math.ceil(starsNeeded / velocityPerDay);
+			projectedDate = Date.now() + daysUntilMilestone * 24 * 60 * 60 * 1000;
+		}
+
+		// Confidence: more data + consistent velocity = higher confidence
+		const dataSpanDays =
+			(chronological[chronological.length - 1].capturedAt - chronological[0].capturedAt) /
+			(1000 * 60 * 60 * 24);
+		let confidence: 'high' | 'medium' | 'low' = 'low';
+		if (n >= 10 && dataSpanDays >= 7) confidence = 'high';
+		else if (n >= 5 && dataSpanDays >= 3) confidence = 'medium';
+
+		// Narrative
+		let narrative: string;
+		if (velocityPerDay <= 0) {
+			narrative = `No star growth detected in the last ${Math.round(dataSpanDays)} days. Publish a post on HN or Reddit to restart momentum.`;
+		} else if (projectedDate && daysUntilMilestone !== null) {
+			const dateStr = formatForecastDate(projectedDate);
+			const rate =
+				velocityPerDay >= 1
+					? `${velocityPerDay.toFixed(1)} stars/day`
+					: `${(velocityPerDay * 7).toFixed(1)} stars/week`;
+			if (trend === 'accelerating') {
+				narrative = `🚀 Growing at ${rate} and accelerating. At this rate you'll hit ${nextMilestone.toLocaleString()} stars by ${dateStr}.`;
+			} else if (trend === 'decelerating') {
+				narrative = `📉 Growing at ${rate} but slowing. ${nextMilestone.toLocaleString()} stars by ${dateStr} — post in a dev community to re-ignite growth.`;
+			} else {
+				narrative = `📈 Steady growth at ${rate}. On track to hit ${nextMilestone.toLocaleString()} stars by ${dateStr}.`;
+			}
+		} else {
+			narrative = `Tracking star velocity. Keep syncing daily for a projection toward ${nextMilestone.toLocaleString()} stars.`;
+		}
+
+		return {
+			currentStars,
+			velocityPerDay: Math.round(velocityPerDay * 100) / 100,
+			nextMilestone,
+			daysUntilMilestone,
+			projectedDate,
+			confidence,
+			narrative,
+			weeklyVelocity,
+			trend,
+			hasEnoughData: n >= 3
+		};
+	}
+});
