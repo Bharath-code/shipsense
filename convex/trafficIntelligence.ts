@@ -789,6 +789,223 @@ function computeExternalReachScore(input: {
 	};
 }
 
+// ── Risk Stack Composite ─────────────────────────────────────────────────────
+// Vulnerabilities + Outdated majors + Anomalies + README gaps → single risk priority
+
+export type RiskTier = 'critical' | 'high' | 'moderate' | 'low' | 'clean';
+
+export type RiskItem = {
+	type: 'vulnerability' | 'anomaly' | 'outdated_dep' | 'readme_gap';
+	severity: 'critical' | 'high' | 'medium' | 'low';
+	title: string;
+	description: string;
+	action: string;
+	name?: string; // dep name or anomaly kind
+};
+
+export type RiskStack = {
+	score: number; // 0 (clean) - 100 (critical)
+	tier: RiskTier;
+	topRisk: RiskItem | null;
+	items: RiskItem[];
+	narrative: string;
+};
+
+const VULN_SEVERITY_SCORE: Record<string, number> = {
+	critical: 40,
+	high: 30,
+	moderate: 20,
+	low: 10,
+	none: 0,
+	unknown: 5
+};
+
+const ANOMALY_SEVERITY_SCORE: Record<string, number> = {
+	high: 25,
+	medium: 15,
+	low: 5
+};
+
+const OUTDATED_TYPE_SCORE: Record<string, number> = {
+	major: 12,
+	minor: 5,
+	patch: 2,
+	unknown: 3,
+	none: 0
+};
+
+function computeRiskStack(input: {
+	dependencies: Array<{
+		name: string;
+		hasVulnerability: boolean;
+		vulnerabilitySeverity: string;
+		vulnerabilitySummary?: string;
+		isDeprecated: boolean;
+		deprecationMessage?: string;
+		outdatedType: string;
+		latestVersion?: string;
+		currentVersion: string;
+	}>;
+	anomalies: Array<{
+		kind: string;
+		severity: string;
+		title: string;
+		description: string;
+		recommendedAction: string;
+	}>;
+	readmeScore: number | null;
+	readmeSuggestions?: string[];
+}): RiskStack {
+	const items: RiskItem[] = [];
+	let totalScore = 0;
+
+	// 1. Critical vulnerabilities (highest priority)
+	const vulns = input.dependencies.filter((d) => d.hasVulnerability);
+	for (const vuln of vulns) {
+		const sevScore = VULN_SEVERITY_SCORE[vuln.vulnerabilitySeverity] ?? 0;
+		totalScore += sevScore;
+
+		const severityLabel =
+			vuln.vulnerabilitySeverity === 'critical' ? 'critical' : 'high';
+		items.push({
+			type: 'vulnerability',
+			severity: severityLabel,
+			title: `🔴 Vulnerability in ${vuln.name}`,
+			description: vuln.vulnerabilitySummary ?? `${vuln.name} has a ${vuln.vulnerabilitySeverity} severity vulnerability.`,
+			action: vuln.latestVersion
+				? `Upgrade ${vuln.name} from ${vuln.currentVersion} to ${vuln.latestVersion}.`
+				: `Review ${vuln.name} for a secure alternative or patch.`,
+			name: vuln.name
+		});
+	}
+
+	// Deprecated deps
+	const deprecated = input.dependencies.filter((d) => d.isDeprecated);
+	for (const dep of deprecated) {
+		totalScore += 10;
+		items.push({
+			type: 'vulnerability',
+			severity: 'high',
+			title: `Deprecated dependency: ${dep.name}`,
+			description: dep.deprecationMessage ?? `${dep.name} is no longer maintained.`,
+			action: dep.latestVersion
+				? `Migrate away from ${dep.name} (${dep.currentVersion}) — consider ${dep.latestVersion} or an alternative.`
+				: `Find a maintained replacement for ${dep.name}.`,
+			name: dep.name
+		});
+	}
+
+	// 2. Active anomalies (momentum drop, etc.)
+	for (const anomaly of input.anomalies) {
+		const sevScore = ANOMALY_SEVERITY_SCORE[anomaly.severity] ?? 0;
+		totalScore += sevScore;
+
+		let severity: 'critical' | 'high' | 'medium' | 'low' = 'medium';
+		if (anomaly.kind === 'momentum_drop') {
+			severity = anomaly.severity === 'high' ? 'high' : 'medium';
+		}
+
+		items.push({
+			type: 'anomaly',
+			severity,
+			title: anomaly.title,
+			description: anomaly.description,
+			action: anomaly.recommendedAction,
+			name: anomaly.kind
+		});
+	}
+
+	// 3. Major outdated dependencies
+	const majorOutdated = input.dependencies.filter((d) => d.outdatedType === 'major' && !d.hasVulnerability && !d.isDeprecated);
+	for (const dep of majorOutdated) {
+		const outScore = OUTDATED_TYPE_SCORE[dep.outdatedType] ?? 5;
+		totalScore += outScore;
+		items.push({
+			type: 'outdated_dep',
+			severity: 'medium',
+			title: `Major update available: ${dep.name}`,
+			description: `${dep.name} is on ${dep.currentVersion}, latest is ${dep.latestVersion ?? 'unknown'}.`,
+			action: dep.latestVersion
+				? `Schedule an update for ${dep.name} to ${dep.latestVersion} this week.`
+				: `Check ${dep.name} for migration notes before updating.`,
+			name: dep.name
+		});
+	}
+
+	// Minor/patch outdated (lower priority)
+	const minorOutdated = input.dependencies.filter(
+		(d) => (d.outdatedType === 'minor' || d.outdatedType === 'patch') && !d.hasVulnerability && !d.isDeprecated
+	);
+	if (minorOutdated.length >= 3) {
+		const batchScore = Math.min(minorOutdated.length * 3, 15);
+		totalScore += batchScore;
+		items.push({
+			type: 'outdated_dep',
+			severity: 'low',
+			title: `${minorOutdated.length} dependencies have minor updates`,
+			description: minorOutdated.map((d) => `${d.name} (${d.currentVersion})`).join(', '),
+			action: 'Batch update these dependencies together to keep things current.',
+			name: 'batch'
+		});
+	}
+
+	// 4. README gaps
+	if (input.readmeScore !== null && input.readmeScore < 60) {
+		const gapScore = Math.round((60 - input.readmeScore) * 0.3);
+		totalScore += gapScore;
+
+		const missingItems = input.readmeSuggestions ?? [];
+		items.push({
+			type: 'readme_gap',
+			severity: input.readmeScore < 40 ? 'medium' : 'low',
+			title: `README needs improvement (score: ${input.readmeScore}/100)`,
+			description: missingItems.length > 0
+				? `Missing: ${missingItems.slice(0, 3).join(', ')}.`
+				: 'Your README could be stronger with better structure and content.',
+			action: missingItems.length > 0
+				? `Add ${missingItems.slice(0, 2).join(' and ')} to boost your README score.`
+				: 'Review and improve your README to increase visitor conversion.',
+			name: 'readme'
+		});
+	}
+
+	// Determine tier
+	let tier: RiskTier;
+	if (totalScore >= 60) tier = 'critical';
+	else if (totalScore >= 35) tier = 'high';
+	else if (totalScore >= 15) tier = 'moderate';
+	else if (totalScore > 0) tier = 'low';
+	else tier = 'clean';
+
+	// Sort items by severity
+	const severityRank: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+	items.sort((a, b) => (severityRank[b.severity] ?? 0) - (severityRank[a.severity] ?? 0));
+
+	const topRisk = items[0] ?? null;
+
+	// Narrative
+	let narrative: string;
+	if (tier === 'clean') {
+		narrative = 'No significant risks detected. Your repo is in good shape.';
+	} else if (tier === 'low') {
+		narrative = `Minor items to address — ${items.length} low-priority suggestion${items.length > 1 ? 's' : ''}. Nice to have improvements.`;
+	} else if (tier === 'moderate') {
+		narrative = `A few things to schedule — ${items.length} item${items.length > 1 ? 's' : ''} to handle this week. Nothing urgent.`;
+	} else if (tier === 'high') {
+		narrative = `Act today — ${topRisk ? topRisk.title.toLowerCase() : 'a significant risk needs attention'}. ${items.length - 1} additional item${items.length > 2 ? 's' : ''} to follow up on.`;
+	} else {
+		narrative = `🔴 Critical risk — ${topRisk ? topRisk.action : 'Fix immediately'}. ${items.length - 1} more item${items.length > 2 ? 's' : ''} to review after.`;
+	}
+
+	return {
+		score: Math.min(totalScore, 100),
+		tier,
+		topRisk,
+		items,
+		narrative
+	};
+}
+
 // ── Conversion Funnel Composite ──────────────────────────────────────────────
 // Views → Stars → Clones → Contributors with conversion rates + Momentum Vector
 
@@ -808,6 +1025,7 @@ export type ConversionFunnelReport = {
 	momentumVector: MomentumVector;
 	momentumReason: string;
 	externalReach: ExternalReachScore | null;
+	riskStack: RiskStack | null;
 	oneThing: string;
 	hasData: boolean;
 };
@@ -1066,11 +1284,56 @@ export const getConversionFunnel = query({
 			});
 		}
 
+		// Risk Stack (always computed, even without traffic data)
+		const [dependencies, anomalies, scoreForReadme] = await Promise.all([
+			ctx.db
+				.query('repoDependencies')
+				.withIndex('by_repoId', (q) => q.eq('repoId', args.repoId))
+				.collect(),
+			ctx.db
+				.query('repoAnomalies')
+				.withIndex('by_repoId_isActive', (q) => q.eq('repoId', args.repoId).eq('isActive', true))
+				.collect(),
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.first()
+		]);
+
+		// Get README score from latest snapshot
+		const readmeScore = latest?.readmeScore ?? null;
+		const readmeSuggestions = latest?.readmeSuggestions ?? [];
+
+		const riskStack = computeRiskStack({
+			dependencies: dependencies.map((d) => ({
+				name: d.name,
+				hasVulnerability: d.hasVulnerability,
+				vulnerabilitySeverity: d.vulnerabilitySeverity,
+				vulnerabilitySummary: d.vulnerabilitySummary,
+				isDeprecated: d.isDeprecated,
+				deprecationMessage: d.deprecationMessage,
+				outdatedType: d.outdatedType,
+				latestVersion: d.latestVersion,
+				currentVersion: d.currentVersion
+			})),
+			anomalies: anomalies.map((a) => ({
+				kind: a.kind,
+				severity: a.severity,
+				title: a.title,
+				description: a.description,
+				recommendedAction: a.recommendedAction
+			})),
+			readmeScore,
+			readmeSuggestions
+		});
+
 		return {
 			stages,
 			momentumVector: vector,
 			momentumReason: reason,
 			externalReach,
+			riskStack,
 			oneThing,
 			hasData
 		};
