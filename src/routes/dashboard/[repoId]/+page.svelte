@@ -19,16 +19,17 @@
 		Activity,
 		Clock,
 		RefreshCw,
-		AlertTriangle,
-		ListTodo,
-		Share2,
-		FileText,
-		Package,
-		BadgeCheck,
 		ExternalLink,
 		ChevronRight,
 		CheckCircle2,
-		Sparkles
+		Eye,
+		Star as StarIcon,
+		GitFork as GitForkIcon,
+		Users,
+		ArrowRight,
+		TrendingUp,
+		TrendingDown,
+		Minus
 	} from 'lucide-svelte';
 	import InsightCard from '$lib/components/dashboard/InsightCard.svelte';
 	import MomentumGraph from '$lib/components/dashboard/MomentumGraph.svelte';
@@ -46,10 +47,22 @@
 	import StarForecast from '$lib/components/dashboard/StarForecast.svelte';
 	import BenchmarkBadge from '$lib/components/dashboard/BenchmarkBadge.svelte';
 	import PaywallBlur from '$lib/components/ui/PaywallBlur.svelte';
+	import {
+		SunMedium,
+		Zap,
+		TrendingUp as TrendUpIcon,
+		ListTodo,
+		AlertTriangle,
+		Sparkles,
+		Share2,
+		FileText,
+		Package,
+		BadgeCheck
+	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	const repoTabs = [
-		{ value: 'overview', label: 'Overview' },
+		{ value: 'overview', label: 'Brief' },
 		{ value: 'growth', label: 'Growth' },
 		{ value: 'health', label: 'Health' },
 		{ value: 'tasks', label: 'Tasks' },
@@ -138,6 +151,41 @@
 		if (taskType === 'commit') return 'Commit';
 		if (taskType === 'anomaly') return 'Signal';
 		return 'General';
+	}
+
+	function momentumConfig(v: string) {
+		if (v === 'accelerating')
+			return { label: 'Accelerating', icon: TrendingUp, cls: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' };
+		if (v === 'stalling')
+			return { label: 'Stalling', icon: TrendingDown, cls: 'text-red-400 bg-red-400/10 border-red-400/20' };
+		return { label: 'Coasting', icon: Minus, cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' };
+	}
+
+	function funnelStageIcon(label: string) {
+		if (label === 'Views') return Eye;
+		if (label === 'Stars') return StarIcon;
+		if (label === 'Clones') return GitForkIcon;
+		return Users;
+	}
+
+	function funnelValueColor(sentiment: string) {
+		if (sentiment === 'excellent') return 'text-emerald-400';
+		if (sentiment === 'good') return 'text-primary';
+		if (sentiment === 'weak') return 'text-amber-400';
+		return 'text-muted-foreground';
+	}
+
+	function formatRate(r: number | null): string {
+		if (r === null) return '—';
+		if (r >= 10) return `${r.toFixed(0)}%`;
+		return `${r.toFixed(1)}%`;
+	}
+
+	function sentimentBadge(sentiment: string) {
+		if (sentiment === 'excellent') return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
+		if (sentiment === 'good') return 'text-primary bg-primary/10 border-primary/20';
+		if (sentiment === 'weak') return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
+		return 'text-muted-foreground bg-white/5 border-white/10';
 	}
 
 	let repoId = $derived($page.params.repoId as string);
@@ -554,73 +602,155 @@
 
 		{#if activeTab === 'overview'}
 			<div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" class="space-y-6">
+				<!-- Daily Brief: what changed, what matters, AI read -->
 				<DailyBrief repoId={repoId as string} />
 
+				<!-- Benchmark: how you compare -->
 				<ErrorBoundary>
 					<BenchmarkBadge repoId={repoId as string} />
 				</ErrorBoundary>
 
-				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.95fr)]">
-					<div class="rounded-[1.5rem] border border-primary/15 bg-primary/5 p-6">
-						<div class="mb-4 flex items-center gap-3">
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary"
-							>
-								<ListTodo class="h-5 w-5" />
-							</div>
-							<div>
-								<h2 class="text-lg font-bold text-foreground">What should I do next</h2>
-								<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-									Top task
-								</p>
-							</div>
-						</div>
-
-						{#if primaryTask}
-							<p class="text-base font-semibold text-foreground">{primaryTask.taskText}</p>
-							<div class="mt-3 flex flex-wrap items-center gap-2">
-								<span
-									class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
-								>
-									{sourceLabel(primaryTask.taskSource)}
-								</span>
-								<span
-									class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
-								>
-									Priority {primaryTask.priority}
-								</span>
-							</div>
-							{#if primaryTask.expectedImpact}
-								<p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-									Expected impact: {primaryTask.expectedImpact}
-								</p>
+				<!-- Momentum + Mini Funnel + Top Task + Top Risk in one glance grid -->
+				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+					<!-- Left column: Momentum + Funnel (blurred for free users) -->
+					<div class="space-y-6">
+						<PaywallBlur plan={userPlan} feature="Conversion Funnel">
+							<!-- Momentum Vector -->
+							{#if funnel && funnel.momentumVector}
+								{@const mCfg = momentumConfig(funnel.momentumVector)}
+								{@const MIco = mCfg.icon}
+								<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+									<div class="mb-3 flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<Activity class="h-4 w-4 text-muted-foreground" />
+											<h3 class="text-sm font-bold text-foreground">Momentum</h3>
+										</div>
+										<div class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold {mCfg.cls}">
+											<MIco class="h-3.5 w-3.5" />
+											{mCfg.label}
+										</div>
+									</div>
+									<p class="text-sm text-muted-foreground">{funnel.momentumReason}</p>
+								</div>
 							{/if}
-							<div class="mt-4 flex flex-wrap gap-3">
-								<Button
-									size="sm"
-									class="rounded-full"
-									onclick={() => completeTask(primaryTask._id)}
-								>
-									<CheckCircle2 class="mr-2 h-4 w-4" />
-									Mark complete
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									class="rounded-full"
-									onclick={() => switchTab('tasks')}
-								>
-									Open tasks
-								</Button>
+
+							<!-- Mini Conversion Funnel -->
+							<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+								<div class="mb-4 flex items-center justify-between">
+									<div class="flex items-center gap-2">
+										<TrendUpIcon class="h-4 w-4 text-muted-foreground" />
+										<h3 class="text-sm font-bold text-foreground">Conversion Funnel</h3>
+									</div>
+									<button
+										type="button"
+										class="rounded-lg px-2 py-1 text-xs font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+										onclick={() => switchTab('growth')}
+									>
+										Full view <ChevronRight class="ml-0.5 inline h-3 w-3" />
+									</button>
+								</div>
+
+								{#if funnel && funnel.stages && funnel.stages.length > 0}
+									<!-- Funnel stages row -->
+									<div class="flex items-stretch gap-2 overflow-x-auto pb-2">
+										{#each funnel.stages as stage, i}
+											{@const StageIcon = funnelStageIcon(stage.label)}
+											<div class="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
+												<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 {funnelValueColor(stage.sentiment)}">
+													<StageIcon class="h-4 w-4" />
+												</div>
+												<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{stage.label}</p>
+												<p class="text-lg font-black {funnelValueColor(stage.sentiment)}">{stage.value.toLocaleString()}</p>
+												{#if stage.conversionRate !== null}
+													<span class="rounded-full border px-2 py-0.5 text-[10px] font-bold {sentimentBadge(stage.sentiment)}">
+														{formatRate(stage.conversionRate)}
+													</span>
+												{/if}
+											</div>
+											{#if i < funnel.stages.length - 1}
+												<div class="flex items-center text-white/15">
+													<ArrowRight class="h-4 w-4" />
+												</div>
+											{/if}
+										{/each}
+									</div>
+
+									<!-- One Thing -->
+									{#if funnel.oneThing}
+										<div class="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
+											<div class="mb-1 flex items-center gap-1.5">
+												<Sparkles class="h-3 w-3 text-primary" />
+												<p class="text-[10px] font-bold tracking-widest text-primary uppercase">One Thing</p>
+											</div>
+											<p class="text-xs leading-relaxed text-foreground">{funnel.oneThing}</p>
+										</div>
+									{/if}
+								{:else}
+									<p class="text-xs text-muted-foreground">
+										Traffic data hasn't been collected yet. Run a sync and check back in 24 hours.
+									</p>
+								{/if}
 							</div>
-						{:else}
-							<p class="text-sm leading-relaxed text-muted-foreground">
-								Nothing urgent is open right now. Keep syncing to surface the next best move.
-							</p>
-						{/if}
+						</PaywallBlur>
 					</div>
 
+					<!-- Right column: Top Task + Top Risk -->
 					<div class="space-y-6">
+						<!-- Top Task -->
+						<div class="rounded-[1.5rem] border border-primary/15 bg-primary/5 p-5">
+							<div class="mb-3 flex items-center gap-3">
+								<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+									<ListTodo class="h-4 w-4" />
+								</div>
+								<div>
+									<h3 class="text-sm font-bold text-foreground">What should I do next</h3>
+									<p class="text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
+										Top task
+									</p>
+								</div>
+							</div>
+
+							{#if primaryTask}
+								<p class="text-sm font-semibold text-foreground">{primaryTask.taskText}</p>
+								<div class="mt-2 flex flex-wrap items-center gap-1.5">
+									<span class="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-foreground/70 uppercase">
+										{sourceLabel(primaryTask.taskSource)}
+									</span>
+									<span class="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-foreground/70 uppercase">
+										P{primaryTask.priority}
+									</span>
+								</div>
+								{#if primaryTask.expectedImpact}
+									<p class="mt-2 text-xs leading-relaxed text-muted-foreground">
+										{primaryTask.expectedImpact}
+									</p>
+								{/if}
+								<div class="mt-3 flex flex-wrap gap-2">
+									<Button
+										size="sm"
+										class="h-8 rounded-full text-xs"
+										onclick={() => completeTask(primaryTask._id)}
+									>
+										<CheckCircle2 class="mr-1.5 h-3 w-3" />
+										Mark done
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										class="h-8 rounded-full text-xs"
+										onclick={() => switchTab('tasks')}
+									>
+										All tasks
+									</Button>
+								</div>
+							{:else}
+								<p class="text-xs text-muted-foreground">
+									Nothing urgent right now. Keep syncing to surface the next best move.
+								</p>
+							{/if}
+						</div>
+
+						<!-- Top Risk / Anomaly -->
 						<div class="rounded-[1.5rem] border border-warning/15 bg-warning/5 p-5">
 							<div class="mb-3 flex items-center gap-2">
 								<AlertTriangle class="h-4 w-4 text-warning" />
@@ -629,52 +759,41 @@
 
 							{#if dailyBrief?.topAnomaly}
 								<p class="text-sm font-semibold text-foreground">{dailyBrief.topAnomaly.title}</p>
-								<p class="mt-1 text-sm text-muted-foreground">
+								<p class="mt-1 text-xs text-muted-foreground">
 									{dailyBrief.topAnomaly.description}
 								</p>
-								<p class="mt-2 text-sm font-medium text-foreground">
+								<p class="mt-2 text-xs font-medium text-foreground">
 									Next: {dailyBrief.topAnomaly.recommendedAction}
 								</p>
 								<button
 									type="button"
-									class="mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 text-xs font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+									class="mt-2 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
 									onclick={() => switchTab('growth')}
 								>
-									View in Growth
-									<ChevronRight class="h-3 w-3" />
+									Full signal view <ChevronRight class="h-3 w-3" />
 								</button>
 							{:else}
-								<p class="text-sm text-muted-foreground">No active anomaly. Signals look steady.</p>
+								<p class="text-xs text-muted-foreground">No active anomaly. Signals look steady.</p>
 							{/if}
 						</div>
 
-						<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
-							<div class="mb-3 flex items-center gap-2">
-								<Sparkles class="h-4 w-4 text-muted-foreground" />
-								<h3 class="text-sm font-bold text-foreground">Quick links</h3>
-							</div>
-
-							<div class="space-y-2">
+						<!-- Win (if available) -->
+						{#if dailyBrief?.topWin}
+							<div class="rounded-[1.5rem] border border-success/15 bg-success/5 p-5">
+								<div class="mb-2 flex items-center gap-2">
+									<Sparkles class="h-4 w-4 text-success" />
+									<h3 class="text-sm font-bold text-foreground">Win</h3>
+								</div>
+								<p class="text-sm text-foreground">{dailyBrief.topWin}</p>
 								<button
 									type="button"
-									class="flex min-h-[44px] w-full items-center justify-between rounded-xl bg-white/5 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
-									onclick={() => switchTab('growth')}
+									class="mt-2 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-success hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-success/50 focus-visible:outline-none"
+									onclick={() => switchTab('share')}
 								>
-									<span>Growth & traffic</span>
-									<ChevronRight class="h-3 w-3" />
+									Share this <ChevronRight class="h-3 w-3" />
 								</button>
-								{#if dailyBrief?.topWin}
-									<button
-										type="button"
-										class="flex min-h-[44px] w-full items-center justify-between rounded-xl bg-success/10 px-3 py-2.5 text-sm text-success transition-colors hover:bg-success/15 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
-										onclick={() => switchTab('share')}
-									>
-										<span>Share win</span>
-										<ChevronRight class="h-3 w-3" />
-									</button>
-								{/if}
 							</div>
-						</div>
+						{/if}
 					</div>
 				</div>
 			</div>
