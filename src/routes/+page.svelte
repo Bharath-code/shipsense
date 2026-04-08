@@ -323,7 +323,7 @@
 			</div>
 			<p class="mt-5 text-center text-sm">
 				Or{' '}
-				<a href="https://shipsense.app/p/example" class="text-primary underline decoration-primary/30 transition-colors hover:decoration-primary">
+				<a href="/p/example" class="text-primary underline decoration-primary/30 transition-colors hover:decoration-primary">
 					see a live demo with a pre-seeded repo
 				</a>
 				{' '}— no sign-up needed.

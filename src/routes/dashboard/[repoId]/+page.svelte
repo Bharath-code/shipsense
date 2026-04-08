@@ -1025,20 +1025,22 @@
 					</p>
 				</div>
 
-				<div class="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+				<!-- Top row: Score Breakdown + WinCard (balanced, equal-height cards) -->
+				<div class="grid gap-6 xl:grid-cols-2">
+					<ScoreBreakdown repoId={repoId as string} />
+					<ErrorBoundary>
+						<WinCard repoId={repoId as string} />
+					</ErrorBoundary>
+				</div>
+
+				<!-- Bottom row: ReadmeScore + DependencyList (balanced, equal-height cards) -->
+				<div class="grid gap-6 xl:grid-cols-2">
 					<ErrorBoundary>
 						<ReadmeScore repoId={repoId as string} />
 					</ErrorBoundary>
 
 					<ErrorBoundary>
 						<DependencyList repoId={repoId as string} />
-					</ErrorBoundary>
-				</div>
-
-				<div class="grid gap-6 xl:grid-cols-2">
-					<ScoreBreakdown repoId={repoId as string} />
-					<ErrorBoundary>
-						<WinCard repoId={repoId as string} />
 					</ErrorBoundary>
 				</div>
 			</div>

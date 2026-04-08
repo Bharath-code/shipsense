@@ -65,15 +65,23 @@
 <div
 	class="relative flex min-h-screen flex-col bg-background text-foreground transition-colors duration-300"
 >
-	<!-- Ambient Background Glows - Pure CSS -->
-	<div class="pointer-events-none fixed inset-0 z-0"></div>
+	<!-- Ambient Background Glows -->
+	<div class="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+		<div
+			class="absolute top-[-20%] left-[-10%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/5 blur-[100px]"
+		></div>
+		<div
+			class="absolute right-[-15%] bottom-[-20%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/5 blur-[100px]"
+			style="animation-delay: 3s;"
+		></div>
+	</div>
 
 	<!-- Floating Glass Header -->
 	<div
 		class="fixed top-4 right-4 left-4 z-50 lg:top-6 lg:left-1/2 lg:w-full lg:max-w-5xl lg:-translate-x-1/2 lg:px-4"
 	>
 		<header
-			class="flex h-14 items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 shadow-2xl backdrop-blur-2xl lg:h-16 lg:rounded-full lg:px-8"
+			class="flex h-14 items-center justify-between rounded-2xl border border-border bg-background/80 px-4 shadow-2xl backdrop-blur-xl lg:h-16 lg:rounded-full lg:px-8"
 		>
 			<a
 				href="/"
@@ -90,9 +98,9 @@
 			<nav class="flex items-center space-x-0.5 text-xs font-medium lg:space-x-1 lg:text-sm">
 				<a
 					href="/dashboard"
-					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page
+					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-muted {$page
 						.url.pathname === '/dashboard'
-						? 'bg-white/10 text-foreground'
+						? 'bg-muted text-foreground'
 						: 'text-muted-foreground hover:text-foreground'}"
 				>
 					<span class="hidden lg:inline">Overview</span>
@@ -100,10 +108,10 @@
 				</a>
 				<a
 					href="/dashboard/connect"
-					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page.url.pathname.includes(
+					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-muted {$page.url.pathname.includes(
 						'/connect'
 					)
-						? 'bg-white/10 text-foreground'
+						? 'bg-muted text-foreground'
 						: 'text-muted-foreground hover:text-foreground'}"
 				>
 					<span class="hidden lg:inline">Connect</span>
@@ -111,10 +119,10 @@
 				</a>
 				<a
 					href="/dashboard/settings"
-					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 lg:px-4 lg:py-2 {$page.url.pathname.includes(
+					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-muted {$page.url.pathname.includes(
 						'/settings'
 					)
-						? 'bg-white/10 text-foreground'
+						? 'bg-muted text-foreground'
 						: 'text-muted-foreground hover:text-foreground'}"
 				>
 					<span class="hidden lg:inline">Settings</span>
@@ -128,7 +136,7 @@
 					variant="ghost"
 					size="icon"
 					title="Keyboard shortcuts (? or Ctrl+K)"
-					class="h-8 w-8 rounded-lg bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground lg:h-9 lg:w-9 lg:rounded-full"
+					class="h-8 w-8 rounded-lg hover:bg-muted lg:h-9 lg:w-9 lg:rounded-full"
 					onclick={() =>
 						import('$lib/components/dashboard/KeyboardShortcutsModal.svelte').then((m) => {
 							import('$lib/stores/keyboard').then((s) => s.showKeyboardShortcutsModal.set(true));
@@ -137,13 +145,13 @@
 					<Keyboard class="h-4 w-4" />
 				</Button>
 				<ThemeToggle />
-				<div class="hidden h-4 w-px bg-white/10 lg:block"></div>
+				<div class="hidden h-4 w-px bg-border lg:block"></div>
 				<Button
 					variant="ghost"
 					size="icon"
 					onclick={handleSignOut}
 					title="Log out"
-					class="h-8 w-8 rounded-lg bg-white/5 hover:bg-red-500/10 hover:text-red-400 lg:h-9 lg:w-9 lg:rounded-full"
+					class="h-8 w-8 rounded-lg hover:bg-red-500/10 hover:text-red-400 lg:h-9 lg:w-9 lg:rounded-full"
 				>
 					<LogOutIcon class="h-4 w-4" />
 				</Button>

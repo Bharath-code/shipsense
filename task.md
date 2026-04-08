@@ -560,6 +560,13 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 - [x] Change "Most popular" badge on Indie plan to "Recommended" (product is in beta, "most popular" is unverifiable)
 - [ ] Add email capture on landing page — "Get a free health report for any repo" input without requiring GitHub OAuth
 - [x] Add `.env.example` to repo root documenting required env vars
+- [x] Fix design inconsistencies across landing and dashboard
+  - [x] Replace hardcoded `https://shipsense.app` with relative `/p/example` path
+  - [x] Dashboard header: `bg-white/5` → `bg-background/80` (CSS variable, works in light/dark theme)
+  - [x] Dashboard nav items: `bg-white/5` / `bg-white/10` → `bg-muted` (theme-aware)
+  - [x] Dashboard icon buttons: `bg-white/5` → `hover:bg-muted` (consistent hover state)
+  - [x] Dashboard divider: `bg-white/10` → `bg-border` (theme-aware)
+  - [x] Dashboard ambient glow: empty div → matching 100px blur animated glows (same as landing)
 - [x] Add founding member pricing — 50 spots at $4.50/mo (50% off Indie, forever) with urgency banner + progress bar
   - [x] Add `foundingMembers` table to Convex schema
   - [x] Create `getFoundingMemberCount` public query for landing page

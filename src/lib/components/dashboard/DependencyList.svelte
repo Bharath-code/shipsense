@@ -4,7 +4,6 @@
 	import {
 		Package,
 		AlertTriangle,
-		ChevronRight,
 		ShieldAlert,
 		ArrowUpCircle,
 		ArchiveX
@@ -15,12 +14,6 @@
 	const dependencyQuery = useQuery(api.dashboard.getRepoDependencies, () => ({ repoId }));
 	let data = $derived(dependencyQuery.data);
 	let isLoading = $derived(dependencyQuery.isLoading);
-	let showAll = $state(false);
-	let showDependencyList = $state(false);
-
-	const visibleDependencies = $derived(
-		showAll ? (data?.dependencies ?? []) : (data?.dependencies ?? []).slice(0, 6)
-	);
 
 	function severityColor(severity: string): string {
 		if (severity === 'critical' || severity === 'high') return 'text-destructive';
@@ -73,104 +66,75 @@
 				No supported dependency manifests found yet.
 			</div>
 		{:else}
+			<!-- Summary stats -->
 			<div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-				<div class="flex min-h-[76px] flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
+				<div class="flex flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
 					<p class="text-[11px] font-medium tracking-wide text-muted-foreground">Outdated</p>
 					<p class="text-lg font-bold leading-none text-foreground">{data.summary.outdated}</p>
 				</div>
-				<div class="flex min-h-[76px] flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
+				<div class="flex flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
 					<p class="text-[11px] font-medium tracking-wide text-muted-foreground">Major</p>
 					<p class="text-lg font-bold leading-none text-warning">{data.summary.majorOutdated}</p>
 				</div>
-				<div class="flex min-h-[76px] flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
+				<div class="flex flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
 					<p class="text-[11px] font-medium tracking-wide text-muted-foreground">Deprecated</p>
 					<p class="text-lg font-bold leading-none text-orange-500">{data.summary.deprecated}</p>
 				</div>
-				<div class="flex min-h-[76px] flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
+				<div class="flex flex-col justify-between rounded-lg bg-muted/40 px-3 py-3">
 					<p class="text-[11px] font-medium tracking-wide text-muted-foreground">Vulnerable</p>
 					<p class="text-lg font-bold leading-none text-destructive">{data.summary.vulnerable}</p>
 				</div>
 			</div>
 
-			<button
-				type="button"
-				class="flex w-full items-center justify-between rounded-lg bg-muted/50 p-3 text-left text-sm transition-colors hover:bg-muted"
-				onclick={() => (showDependencyList = !showDependencyList)}
-			>
-				<div>
-					<p class="font-medium text-foreground">Dependency details</p>
-					<p class="mt-0.5 text-xs text-muted-foreground">
-						Review outdated, deprecated, and vulnerable packages
-					</p>
-				</div>
-				<ChevronRight
-					class="h-4 w-4 shrink-0 text-muted-foreground transition-transform {showDependencyList
-						? 'rotate-90'
-						: ''}"
-				/>
-			</button>
-
-			{#if showDependencyList}
-				<div class="mt-3 space-y-2">
-					{#each visibleDependencies as dependency}
-						<div class="rounded-lg border border-border/50 bg-background/40 p-3">
-							<div class="flex items-start justify-between gap-3">
-								<div class="min-w-0 flex-1">
-									<div class="flex flex-wrap items-center gap-2">
-										<p class="truncate text-sm font-medium text-foreground">{dependency.name}</p>
-										<span class="rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase text-muted-foreground">
-											{dependency.ecosystem}
-										</span>
-									</div>
-									<p class="mt-1 break-all text-xs text-muted-foreground">{dependency.manifestPath}</p>
-									<div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
-										<span class="text-muted-foreground">{dependency.currentVersion}</span>
-										{#if dependency.latestVersion}
-											<span class="text-muted-foreground/70">→</span>
-											<span class="font-medium text-foreground">{dependency.latestVersion}</span>
-										{/if}
-									</div>
+			<!-- Dependency list, scrollable if many -->
+			<div class="max-h-72 space-y-2 overflow-y-auto pr-1">
+				{#each data.dependencies as dependency}
+					<div class="rounded-lg border border-border/50 bg-background/40 p-3">
+						<div class="flex items-start justify-between gap-3">
+							<div class="min-w-0 flex-1">
+								<div class="flex items-center gap-2">
+									<p class="text-sm font-medium text-foreground">{dependency.name}</p>
+									<span class="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase text-muted-foreground">
+										{dependency.ecosystem}
+									</span>
 								</div>
-
-								<div class="shrink-0 pt-0.5">
-									{#if dependency.hasVulnerability}
-										<ShieldAlert class="h-4 w-4 {severityColor(dependency.vulnerabilitySeverity)}" />
-									{:else if dependency.isDeprecated}
-										<ArchiveX class="h-4 w-4 text-orange-500" />
-									{:else if dependency.isOutdated}
-										<ArrowUpCircle class="h-4 w-4 text-warning" />
-									{:else}
-										<ChevronRight class="h-4 w-4 text-muted-foreground" />
+								<div class="mt-1 flex items-center gap-2 text-xs">
+									<span class="text-muted-foreground">{dependency.currentVersion}</span>
+									{#if dependency.latestVersion}
+										<span class="text-muted-foreground/70">→</span>
+										<span class="font-medium text-foreground">{dependency.latestVersion}</span>
 									{/if}
 								</div>
 							</div>
 
-							<p class="mt-2 text-xs font-medium {severityColor(dependency.vulnerabilitySeverity)}">
-								{statusLabel(dependency)}
-							</p>
-							{#if dependency.vulnerabilitySummary}
-								<p class="mt-1 text-xs leading-relaxed text-muted-foreground">
-									{dependency.vulnerabilitySummary}
-								</p>
-							{:else if dependency.deprecationMessage}
-								<p class="mt-1 text-xs leading-relaxed text-muted-foreground">
-									{dependency.deprecationMessage}
-								</p>
-							{/if}
+							<div class="shrink-0 pt-0.5">
+								{#if dependency.hasVulnerability}
+									<ShieldAlert class="h-4 w-4 {severityColor(dependency.vulnerabilitySeverity)}" />
+								{:else if dependency.isDeprecated}
+									<ArchiveX class="h-4 w-4 text-orange-500" />
+								{:else if dependency.isOutdated}
+									<ArrowUpCircle class="h-4 w-4 text-warning" />
+								{:else}
+									<span class="text-xs text-success">✓</span>
+								{/if}
+							</div>
 						</div>
-					{/each}
-				</div>
 
-				{#if data.dependencies.length > 6}
-					<button
-						type="button"
-						class="mt-3 w-full rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
-						onclick={() => (showAll = !showAll)}
-					>
-						{showAll ? 'Show fewer dependencies' : `Show all ${data.dependencies.length} dependencies`}
-					</button>
-				{/if}
-			{/if}
+						<p class="mt-1.5 text-xs font-medium {severityColor(dependency.vulnerabilitySeverity)}">
+							{statusLabel(dependency)}
+						</p>
+						{#if dependency.vulnerabilitySummary}
+							<p class="mt-1 text-xs leading-relaxed text-muted-foreground">
+								{dependency.vulnerabilitySummary}
+							</p>
+						{:else if dependency.deprecationMessage}
+							<p class="mt-1 text-xs leading-relaxed text-muted-foreground">
+								{dependency.deprecationMessage}
+							</p>
+						{/if}
+					</div>
+				{/each}
+			</div>
 		{/if}
 	</div>
 </div>
