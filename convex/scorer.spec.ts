@@ -173,19 +173,64 @@ describe('computeRepoScore', () => {
 });
 
 describe('determineTrend', () => {
-	it('returns stable when there is no previous score', () => {
-		expect(determineTrend(42)).toBe('stable');
+	it('returns stable with no history', () => {
+		expect(determineTrend([])).toBe('stable');
 	});
 
-	it('returns up when the score increases', () => {
-		expect(determineTrend(60, 55)).toBe('up');
+	it('returns stable with a single score', () => {
+		expect(determineTrend([42])).toBe('stable');
 	});
 
-	it('returns down when the score decreases', () => {
-		expect(determineTrend(40, 55)).toBe('down');
+	it('falls back to ±3 threshold with 2-3 scores', () => {
+		expect(determineTrend([60, 63])).toBe('up');
+		expect(determineTrend([60, 62])).toBe('stable');
+		expect(determineTrend([60, 57])).toBe('down');
+		expect(determineTrend([60, 58])).toBe('stable');
 	});
 
-	it('returns stable when the score stays the same', () => {
-		expect(determineTrend(55, 55)).toBe('stable');
+	it('detects upward momentum with ≥ 4 scores', () => {
+		// Recent 3 avg 67, prior 3 avg 60 → delta 7 → up
+		expect(determineTrend([58, 60, 62, 65, 67, 69])).toBe('up');
+	});
+
+	it('detects downward momentum with ≥ 4 scores', () => {
+		// Recent 3 avg 53, prior 3 avg 60 → delta -7 → down
+		expect(determineTrend([62, 60, 58, 55, 53, 51])).toBe('down');
+	});
+
+	it('returns stable when averages are close (< 2)', () => {
+		// Recent avg 61, prior avg 60 → delta 1 → stable
+		expect(determineTrend([59, 60, 61, 60, 61, 62])).toBe('stable');
+	});
+
+	it('ignores noisy oscillation without direction', () => {
+		// Bouncing: 50↔52, recent avg 51, prior avg 51 → stable
+		expect(determineTrend([50, 52, 50, 52, 50, 52])).toBe('stable');
+	});
+
+	it('catches a late recovery that 2-point comparison would miss', () => {
+		// Score drops 60→50→48, then recovers 50→55→58→60
+		// Last 2 points: 60-58 = +2 → stable (missed!)
+		// Momentum: recent(55,58,60)=57.7, prior(60,50,48)=52.7 → +5 → up
+		expect(determineTrend([60, 50, 48, 50, 55, 58, 60])).toBe('up');
+	});
+
+	it('detects late decline even if last tick is a small recovery', () => {
+		// Score climbs 40→50→55, then drops 50→45→42→44
+		// Last 2: 44-42 = +2 → stable (missed!)
+		// Momentum: recent(45,42,44)=43.7, prior(40,50,55)=48.3 → -4.7 → down
+		expect(determineTrend([40, 50, 55, 50, 45, 42, 44])).toBe('down');
+	});
+
+	it('uses n=2 when only 4 scores available', () => {
+		// 4 scores → n = min(3, floor(4/2)) = 2
+		// Recent(55,60)=57.5, prior(45,50)=47.5 → delta 10 → up
+		expect(determineTrend([45, 50, 55, 60])).toBe('up');
+	});
+
+	it('uses n=2 when 5 scores available', () => {
+		// 5 scores → n = min(3, floor(5/2)) = 2
+		// Recent(58,60)=59, prior(45,48)=46.5 → delta 12.5 → up
+		expect(determineTrend([45, 48, 52, 58, 60])).toBe('up');
 	});
 });

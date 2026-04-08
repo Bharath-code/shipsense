@@ -126,11 +126,44 @@ export function computeRepoScore(snapshot: {
 	};
 }
 
-export function determineTrend(currentScore: number, previousScore?: number) {
-	if (previousScore === undefined) return 'stable' as const;
-	if (currentScore > previousScore) return 'up' as const;
-	if (currentScore < previousScore) return 'down' as const;
-	return 'stable' as const;
+/**
+ * Determine trend by comparing recent momentum (last 3 scores) vs prior momentum.
+ *
+ * Instead of comparing just 2 adjacent scores (fragile, noise-sensitive),
+ * this computes the average of the last N scores and compares it to the
+ * average of the N scores before that. This smooths out daily variance
+ * and captures genuine direction changes.
+ *
+ * With < 4 scores: falls back to ±3 threshold on the single delta.
+ * With ≥ 4 scores: compares rolling averages with a ±2 threshold.
+ */
+export function determineTrend(
+	scores: number[]
+): 'up' | 'stable' | 'down' {
+	if (scores.length === 0) return 'stable';
+	if (scores.length === 1) return 'stable';
+
+	// Not enough history for momentum buckets — use single-point threshold
+	if (scores.length < 4) {
+		const delta = scores[scores.length - 1] - scores[scores.length - 2];
+		if (delta >= 3) return 'up';
+		if (delta <= -3) return 'down';
+		return 'stable';
+	}
+
+	// Momentum buckets: average of last 3 vs average of 3 before that
+	const n = Math.min(3, Math.floor(scores.length / 2));
+	const recent = scores.slice(-n);
+	const prior = scores.slice(-n * 2, -n);
+
+	const recentAvg = recent.reduce((a, b) => a + b, 0) / n;
+	const priorAvg = prior.reduce((a, b) => a + b, 0) / n;
+
+	const delta = recentAvg - priorAvg;
+
+	if (delta >= 2) return 'up';
+	if (delta <= -2) return 'down';
+	return 'stable';
 }
 
 export const calculateScore = internalMutation({
@@ -139,15 +172,18 @@ export const calculateScore = internalMutation({
 		const snapshot = await ctx.db.get(snapshotId);
 		if (!snapshot) return;
 
-		const previousScoreDoc = await ctx.db
+		// Fetch the last 6 scores for momentum-based trend
+		const scoreHistory = await ctx.db
 			.query('repoScores')
 			.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repoId))
 			.order('desc')
-			.first();
+			.take(6);
 
 		const scores = computeRepoScore(snapshot);
-		const previousScore = previousScoreDoc?.healthScore;
-		const trend = determineTrend(scores.healthScore, previousScore);
+
+		// Build trend from history (oldest → newest)
+		const previousScores = scoreHistory.map((s) => s.healthScore).reverse();
+		const trend = determineTrend(previousScores);
 
 		await ctx.db.insert('repoScores', {
 			repoId,
@@ -160,7 +196,7 @@ export const calculateScore = internalMutation({
 			contributorScore: scores.scores.contributors.earned,
 			scoreExplanation: scores.formula,
 			trend,
-			previousScore
+			previousScore: scoreHistory[0]?.healthScore ?? null
 		});
 	}
 });
