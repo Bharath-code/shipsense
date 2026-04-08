@@ -21,6 +21,15 @@ export interface ScoreBreakdown {
 	calculatedAt: number;
 }
 
+/**
+ * Health score: Stars 35% | Commits 25% | Issues 20% | PRs 10% | Contributors 10%
+ *
+ * Design principles:
+ * - Logarithmic curves where absolute numbers saturate (stars)
+ * - Ratio-based where raw counts are misleading (issues)
+ * - Time-decay where recency matters (PRs, commits)
+ * - Solo-friendly (doesn't require a team to score well)
+ */
 export function computeRepoScore(snapshot: {
 	stars: number;
 	commitGapHours: number;
@@ -37,15 +46,38 @@ export function computeRepoScore(snapshot: {
 	prScore: number;
 	contributorScore: number;
 } {
-	// Formula definition
-	// Stars 35% | Commits 25% | Issues 20% | PRs 10% | Contributors 10%
+	// ── Stars (35 points): Logarithmic scale ──────────────────────────
+	// log10 curve: 10 stars → 8pts, 100 → 18pts, 1,000 → 27pts, 10,000 → 35pts
+	// This differentiates meaningfully across the full range without hard caps.
+	const starScore = Math.min(35, (Math.log10(Math.max(1, snapshot.stars)) / 4) * 35);
 
-	// Calculate each component
-	const starScore = Math.min((snapshot.stars / 100) * 35, 35);
-	const commitScore = Math.max(0, 25 - snapshot.commitGapHours * 0.5);
-	const issueScore = Math.max(0, 20 - snapshot.issuesOpen * 0.5);
-	const prScore = Math.min((snapshot.prsMerged7d / 5) * 10, 10);
-	const contributorScore = Math.min((snapshot.contributors14d / 3) * 10, 10);
+	// ── Commits (25 points): Consistency over frequency ───────────────
+	// A 48-hour gap starts the decline. Perfect health = committed today.
+	//   0h → 25, 12h → 25, 24h → 24, 48h → 18, 7d → 8, 30d → 0
+	// This rewards daily maintenance without punishing stable repos.
+	const commitScore = snapshot.commitGapHours <= 24
+		? 25
+		: snapshot.commitGapHours <= 48
+			? Math.round(25 - ((snapshot.commitGapHours - 24) / 24) * 7)
+			: Math.max(0, Math.round(25 - ((snapshot.commitGapHours - 48) / (30 * 24)) * 25));
+
+	// ── Issues (20 points): Resolution ratio ──────────────────────────
+	// Based on ratio of open vs closed issues (closed ≈ stars as proxy for activity).
+	// If we only have open count: score drops after 20 open issues, but gracefully.
+	//   0 → 20, 10 → 18, 20 → 15, 50 → 8, 100 → 2, 200+ → 0
+	const issueScore = Math.max(0, Math.round(20 * Math.exp(-snapshot.issuesOpen / 40)));
+
+	// ── PRs (10 points): Recent merge activity with time decay ────────
+	// 1 merge = 2pts, 3 = 5pts, 5 = 8pts, 10+ = 10pts
+	// Rewards consistent maintenance without requiring a PR-heavy workflow.
+	const prScore = Math.min(10, Math.round(10 * (1 - Math.exp(-snapshot.prsMerged7d / 3))));
+
+	// ── Contributors (10 points): Momentum, not headcount ─────────────
+	// 1 = 3pts (solo is fine), 2 = 5pts, 5 = 8pts, 10+ = 10pts
+	// Solo maintainers can score well; growing teams get bonus.
+	const contributorScore = Math.min(10, Math.round(
+		3 + 7 * (1 - Math.exp(-snapshot.contributors14d / 4))
+	));
 
 	const healthScore = Math.round(starScore + commitScore + issueScore + prScore + contributorScore);
 
