@@ -18,7 +18,7 @@
 </script>
 
 <svelte:head>
-	<title>ShipSense | AI Repo Growth Intelligence</title>
+	<title>ShipSense — Daily Repo Health Intelligence</title>
 </svelte:head>
 
 <ModeWatcher />

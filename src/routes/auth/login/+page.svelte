@@ -35,7 +35,8 @@
 </script>
 
 <svelte:head>
-	<title>Login | ShipSense</title>
+	<title>Sign In — ShipSense</title>
+	<meta name="description" content="Sign in to ShipSense with GitHub to track repo health, daily briefs, and growth intelligence." />
 	<style>
 		@keyframes auth-drift {
 			0%,
@@ -43,26 +44,12 @@
 				transform: translate3d(0, 0, 0) scale(1);
 			}
 			50% {
-				transform: translate3d(0, -18px, 0) scale(1.03);
-			}
-		}
-
-		@keyframes auth-pulse {
-			0%,
-			100% {
-				opacity: 0.35;
-			}
-			50% {
-				opacity: 0.7;
+				transform: translate3d(0, -12px, 0) scale(1.01);
 			}
 		}
 
 		.auth-drift {
-			animation: auth-drift 14s ease-in-out infinite;
-		}
-
-		.auth-pulse {
-			animation: auth-pulse 5s ease-in-out infinite;
+			animation: auth-drift 12s ease-in-out infinite;
 		}
 	</style>
 </svelte:head>
@@ -70,13 +57,11 @@
 <div class="relative min-h-screen overflow-hidden bg-background text-foreground">
 	<div class="pointer-events-none absolute inset-0">
 		<div
-			class="auth-drift absolute top-[-10%] left-[-8%] h-72 w-72 rounded-full bg-primary/20 blur-[90px]"
+			class="auth-drift absolute top-[-10%] left-[-8%] h-72 w-72 rounded-full bg-primary/15 blur-[90px]"
 		></div>
 		<div
-			class="auth-drift absolute right-[-12%] bottom-[-12%] h-96 w-96 rounded-full bg-success/20 blur-[120px]"
-		></div>
-		<div
-			class="auth-pulse absolute top-[20%] right-[18%] h-48 w-48 rounded-full bg-primary/10 blur-[100px]"
+			class="auth-drift absolute right-[-12%] bottom-[-12%] h-96 w-96 rounded-full bg-primary/15 blur-[120px]"
+			style="animation-delay: 4s;"
 		></div>
 		<div
 			class="absolute inset-0 opacity-[0.03]"
@@ -89,7 +74,7 @@
 	>
 		<div class="grid w-full items-stretch gap-8 lg:grid-cols-[1.15fr_0.85fr]">
 			<section
-				class="hidden min-h-[620px] overflow-hidden rounded-[2rem] border border-border bg-card p-8 shadow-lg backdrop-blur-xl lg:flex lg:flex-col lg:justify-between"
+				class="hidden min-h-[560px] overflow-hidden rounded-[2rem] border border-border bg-card p-8 lg:flex lg:flex-col lg:justify-between"
 			>
 				<div class="space-y-8">
 					<div
@@ -103,21 +88,20 @@
 						<div>
 							<p class="text-sm font-bold tracking-tight text-foreground">ShipSense</p>
 							<p class="text-[10px] tracking-[0.22em] text-muted-foreground uppercase">
-								Founder telemetry
+								Daily repo intelligence
 							</p>
 						</div>
 					</div>
 
 					<div class="max-w-xl space-y-5">
 						<p class="text-[11px] font-semibold tracking-[0.28em] text-primary uppercase">
-							Open-source intelligence
+							For maintainers and builders
 						</p>
-						<h1 class="text-5xl leading-[1.02] font-black tracking-tight text-foreground">
-							Run your repo like a product, not a guessing game.
+						<h1 class="text-4xl leading-[1.05] font-black tracking-tight text-foreground">
+							Daily health briefs for your GitHub repos.
 						</h1>
 						<p class="max-w-lg text-base leading-7 text-muted-foreground">
-							ShipSense turns GitHub activity into daily clarity, health signals, and focused next
-							actions for founder-led repositories.
+							Connect your repos and get one page every morning that tells you what changed, what matters, and what to do next.
 						</p>
 					</div>
 				</div>
@@ -159,15 +143,11 @@
 							S
 						</div>
 						<div class="mt-6 text-center">
-							<p class="text-[11px] font-semibold tracking-[0.25em] text-primary uppercase">
-								Secure GitHub sign-in
-							</p>
-							<CardTitle class="mt-3 text-3xl font-black tracking-tight text-foreground">
-								Enter your control room
+							<CardTitle class="text-2xl font-bold tracking-tight text-foreground">
+								Sign in to ShipSense
 							</CardTitle>
-							<CardDescription class="mt-3 text-sm leading-6 text-muted-foreground">
-								Connect GitHub to track repo health, review momentum shifts, and get the next best
-								action without tab hopping.
+							<CardDescription class="mt-2 text-sm leading-6 text-muted-foreground">
+								Connect your GitHub account to track repo health, see daily briefs, and get your next best action.
 							</CardDescription>
 						</div>
 					</div>
@@ -231,26 +211,17 @@
 							</p>
 							<div class="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
 								<p>Profile and email</p>
-								<p>Repository metadata for connected repositories</p>
-								<p>Private repository access only if you choose to connect private repos</p>
+								<p>Repository metadata for connected repos</p>
 							</div>
 						</div>
 
 						<div
-							class="grid gap-3 rounded-[1.5rem] border border-border bg-muted p-4 text-sm text-muted-foreground sm:grid-cols-2"
+							class="rounded-[1.5rem] border border-border bg-muted p-4 text-sm text-muted-foreground"
 						>
-							<div>
-								<p class="text-[10px] tracking-[0.18em] text-foreground uppercase">What you get</p>
-								<p class="mt-2 leading-6">
-									Repo health, streaks, AI insights, and focused next actions.
-								</p>
-							</div>
-							<div>
-								<p class="text-[10px] tracking-[0.18em] text-foreground uppercase">Why sign in</p>
-								<p class="mt-2 leading-6">
-									We use GitHub data to sync your connected repos and personalize the dashboard.
-								</p>
-							</div>
+							<p class="text-xs font-semibold text-foreground">Why sign in?</p>
+							<p class="mt-1 leading-6">
+								We use your GitHub data to analyze repo health, generate daily briefs, and surface the next best action — so you spend less time investigating and more time shipping.
+							</p>
 						</div>
 					</CardContent>
 				</Card>

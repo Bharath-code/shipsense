@@ -8,7 +8,6 @@
 		LineChart,
 		Cpu,
 		FileText,
-		Package,
 		Fingerprint,
 		Check,
 		Zap,
@@ -20,7 +19,12 @@
 </script>
 
 <svelte:head>
-	<title>ShipSense | Daily Repo Clarity</title>
+	<title>ShipSense — Daily Repo Health Intelligence</title>
+	<meta name="description" content="ShipSense turns GitHub activity into a daily health brief. Connect your repos, see what changed, and know exactly what to do next." />
+	<meta property="og:title" content="ShipSense — Daily Repo Health Intelligence" />
+	<meta property="og:description" content="ShipSense turns GitHub activity into a daily health brief. Connect your repos, see what changed, and know exactly what to do next." />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary_large_image" />
 	<style>
 		@keyframes float {
 			0%,
@@ -28,60 +32,31 @@
 				transform: translateY(0) scale(1);
 			}
 			50% {
-				transform: translateY(-20px) scale(1.05);
-			}
-		}
-		@keyframes float-delayed {
-			0%,
-			100% {
-				transform: translateY(0) scale(1);
-			}
-			50% {
-				transform: translateY(20px) scale(0.95);
+				transform: translateY(-12px) scale(1.02);
 			}
 		}
 		.animate-float {
-			animation: float 12s ease-in-out infinite;
-		}
-		.animate-float-delayed {
-			animation: float-delayed 15s ease-in-out infinite;
+			animation: float 10s ease-in-out infinite;
 		}
 
 		@keyframes pulse-soft {
 			0%,
 			100% {
-				opacity: 0.5;
-				transform: scale(1);
+				opacity: 0.4;
 			}
 			50% {
-				opacity: 0.8;
-				transform: scale(1.02);
+				opacity: 0.6;
 			}
 		}
 		.animate-pulse-soft {
-			animation: pulse-soft 4s ease-in-out infinite;
-		}
-
-		/* Glassmorphic utilities */
-		.glass-panel {
-			background: linear-gradient(145deg, hsl(var(--card) / 0.6), hsl(var(--card) / 0.2));
-			backdrop-filter: blur(40px);
-			-webkit-backdrop-filter: blur(40px);
-			border: 1px solid hsl(var(--border) / 0.5);
-			box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-		}
-
-		.glass-card {
-			background: hsl(var(--card) / 0.4);
-			backdrop-filter: blur(20px);
-			border: 1px solid hsl(var(--border) / 0.3);
+			animation: pulse-soft 6s ease-in-out infinite;
 		}
 
 		.glass-nav {
 			background: linear-gradient(
 				180deg,
-				hsl(var(--background) / 0.8),
-				hsl(var(--background) / 0.3)
+				hsl(var(--background) / 0.85),
+				hsl(var(--background) / 0.5)
 			);
 			backdrop-filter: blur(20px);
 			-webkit-backdrop-filter: blur(20px);
@@ -91,18 +66,16 @@
 </svelte:head>
 
 <div
-	class="relative min-h-screen overflow-x-hidden bg-background font-mono text-foreground transition-colors duration-500 selection:bg-primary/20 selection:text-primary"
+	class="relative min-h-screen overflow-x-hidden bg-background text-foreground transition-colors duration-500 selection:bg-primary/20 selection:text-primary font-sans"
 >
-	<!-- Ambient Background Glows -->
+	<!-- Ambient Background -->
 	<div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
 		<div
-			class="absolute top-[-10%] left-[-10%] h-[50%] w-[50%] animate-float rounded-full bg-primary/20 blur-[120px]"
+			class="absolute top-[-20%] left-[-10%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/10 blur-[140px]"
 		></div>
 		<div
-			class="animate-float-delayed absolute right-[-10%] bottom-[-20%] h-[60%] w-[60%] rounded-full bg-success/20 blur-[150px]"
-		></div>
-		<div
-			class="absolute top-[30%] left-[60%] h-[30%] w-[30%] animate-float rounded-full bg-warning/10 blur-[100px]"
+			class="absolute right-[-15%] bottom-[-20%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/10 blur-[140px]"
+			style="animation-delay: 3s;"
 		></div>
 	</div>
 
@@ -111,7 +84,7 @@
 		<header
 			class="glass-nav flex w-full max-w-4xl items-center justify-between rounded-full px-4 py-2 shadow-xl transition-all duration-500 sm:px-6 sm:py-3"
 		>
-			<div class="flex items-center gap-2 text-lg font-bold tracking-tight">
+			<div class="flex items-center gap-2 text-lg font-bold tracking-tight font-mono">
 				<div
 					class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground shadow-lg"
 				>
@@ -119,7 +92,7 @@
 				</div>
 				<span class="hidden sm:inline-block">ShipSense</span>
 			</div>
-			<nav class="hidden items-center gap-8 text-sm font-medium tracking-wide md:flex">
+			<nav class="hidden items-center gap-8 text-sm font-medium tracking-wide md:flex font-mono">
 				<a
 					href="#vision"
 					class="text-foreground/70 transition-colors duration-300 hover:text-foreground">Vision</a
@@ -152,521 +125,397 @@
 			class="container mx-auto flex max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-24"
 		>
 			<div
-				class="animate-float-delayed mb-8 inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5"
+				class="mb-8 inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 px-4 py-1.5"
 			>
 				<Sparkles size={14} class="text-primary" />
 				<span class="text-xs font-semibold tracking-wide text-foreground/80 lowercase"
-					>Beta for maintainers, indie builders, and open-source teams</span
+				>Beta for maintainers, indie builders, and open-source teams</span
 				>
 			</div>
 
 			<h1
 				class="mb-6 max-w-5xl text-4xl leading-[1.05] font-bold tracking-tight md:text-6xl lg:text-6xl"
 			>
-				Know what changed in your repos <br class="hidden md:block" />
-				<span
-					class="border-transparent bg-gradient-to-r from-primary via-foreground to-primary bg-clip-text text-transparent"
-					>and what to do next.</span
-				>
+				Daily health briefs for your
+				<br class="hidden md:block" />
+				<span class="text-primary">GitHub repositories.</span>
 			</h1>
 
 			<p
-				class="mb-12 max-w-3xl text-lg leading-relaxed font-normal tracking-normal text-foreground/60 md:text-2xl"
+				class="mb-12 max-w-2xl text-lg leading-relaxed font-normal tracking-normal text-muted-foreground md:text-xl"
 			>
-				ShipSense turns GitHub activity into a calm operating system for your projects. Connect your
-				repos, get a daily brief, and know exactly what to do next.
+				Connect your repos. Get one daily page that tells you what changed, what matters, and what to do next. No tab-hopping.
 			</p>
 
 			<div
-				class="mx-auto flex w-full max-w-md flex-col items-center gap-6 sm:w-auto sm:max-w-none sm:flex-row"
+				class="mx-auto flex w-full max-w-md flex-col items-center gap-4 sm:w-auto sm:max-w-none sm:flex-row sm:gap-3"
 			>
 				<Button
 					href="/auth/login"
-					class="h-14 w-full rounded-full bg-primary px-8 text-lg font-semibold text-primary-foreground transition-all duration-500 hover:scale-105 hover:bg-primary/90 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] sm:w-auto"
+					class="h-14 w-full rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition-all duration-300 hover:bg-primary/90 sm:w-auto"
 				>
 					Check My Repo Health
-					<ArrowRight class="ml-2 h-5 w-5" />
+					<ArrowRight class="ml-2 h-4 w-4" />
 				</Button>
-				<Button
-					href="https://github.com/shipsense"
-					target="_blank"
-					variant="ghost"
-					class="h-14 w-full rounded-full border border-transparent px-8 text-lg font-semibold transition-all duration-300 hover:border-border/50 hover:bg-foreground/5 sm:w-auto"
+				<a
+					href="#capabilities"
+					class="h-14 w-full rounded-full border border-foreground/15 bg-transparent px-8 text-center text-base font-semibold text-foreground/70 transition-all duration-300 hover:bg-foreground/5 hover:text-foreground sm:w-auto flex items-center justify-center"
 				>
-					View on GitHub
-				</Button>
+					See how it works
+					<ArrowRight class="ml-2 h-4 w-4" />
+				</a>
 			</div>
 
-			<!-- Hero Dashboard Preview (Enhanced Glass Panel) -->
+			<!-- Hero Dashboard Preview -->
 			<div
-				class="group relative mt-16 flex h-[350px] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] glass-panel p-6 transition-all duration-700 hover:shadow-[0_40px_100px_rgba(0,0,0,0.15)]"
+				class="group relative mt-16 w-full max-w-5xl overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl transition-shadow duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)]"
 			>
-				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-success/5"
-				></div>
-
-				<!-- Header Mock -->
-				<div class="mb-8 flex items-center justify-between">
-					<div class="flex items-center gap-3">
-						<div class="flex gap-1.5">
-							<div class="h-2.5 w-2.5 rounded-full bg-destructive/60"></div>
-							<div class="h-2.5 w-2.5 rounded-full bg-warning/60"></div>
-							<div class="h-2.5 w-2.5 rounded-full bg-success/60"></div>
-						</div>
-						<div class="h-6 w-32 rounded-full bg-foreground/10"></div>
-					</div>
-					<div class="flex gap-2">
-						<div class="h-8 w-8 rounded-full border border-foreground/10 bg-foreground/5"></div>
-						<div class="h-8 w-24 rounded-full border border-primary/20 bg-primary/20"></div>
-					</div>
-				</div>
-
-				<!-- Dashboard Content Mock -->
-				<div class="grid flex-1 grid-cols-12 gap-6">
-					<!-- Left: Growth & Insight -->
-					<div class="col-span-8 flex flex-col gap-6">
-						<!-- Health Score Large -->
-						<div
-							class="relative flex flex-1 flex-col justify-between overflow-hidden rounded-3xl border glass-card border-primary/20 p-6"
-						>
-							<div class="flex items-start justify-between">
-								<span class="text-xs font-bold tracking-widest text-primary/60 uppercase"
-									>Deterministic Health</span
-								>
-								<div class="flex items-center gap-1 text-sm font-bold text-success">
-									<ArrowRight class="h-3 w-3 -rotate-45" />
-									<span>+12.4%</span>
-								</div>
+				<!-- Mini mock of the actual Brief tab -->
+				<div class="p-6 sm:p-8">
+					<!-- Mock Brief header -->
+					<div class="mb-6 flex items-center justify-between">
+						<div class="flex items-center gap-3">
+							<div class="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+								<Fingerprint size={16} />
 							</div>
-							<div class="flex items-end gap-4">
-								<span class="text-6xl font-bold tracking-tighter">84</span>
-								<div class="flex flex-col pb-1">
-									<span class="text-xs font-bold text-muted-foreground">OPTIMAL</span>
-									<div class="mt-1 flex gap-0.5">
-										<div class="h-1 w-4 rounded-full bg-success"></div>
-										<div class="h-1 w-4 rounded-full bg-success"></div>
-										<div class="h-1 w-4 rounded-full bg-success"></div>
-										<div class="h-1 w-4 rounded-full bg-success/20"></div>
-									</div>
-								</div>
+							<div>
+								<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase font-mono">Today's Brief</p>
+								<p class="text-sm font-bold text-foreground font-mono">my-awesome-repo</p>
 							</div>
 						</div>
-						<!-- Insight Row -->
-						<div
-							class="flex h-32 items-center gap-4 rounded-3xl border glass-card border-foreground/5 p-4"
-						>
-							<div
-								class="flex h-12 w-12 items-center justify-center rounded-2xl bg-success/10 text-success"
-							>
-								<Sparkles size={20} />
+						<div class="flex items-center gap-2">
+							<div class="flex items-center gap-1.5 rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-xs font-bold text-success font-mono">
+								<Zap size={12} />
+								Accelerating
 							</div>
-							<div class="flex-1">
-								<div class="mb-2 h-4 w-3/4 rounded bg-foreground/10"></div>
-								<div class="h-3 w-1/2 rounded bg-foreground/5"></div>
+							<div class="rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-xs font-bold text-warning font-mono">
+								🔥 14d
 							</div>
 						</div>
 					</div>
-					<!-- Right: Streak & Tasks -->
-					<div class="col-span-4 flex flex-col gap-6">
-						<div
-							class="flex h-48 flex-col justify-between rounded-3xl border glass-card border-warning/20 p-6"
-						>
-							<span class="text-xs font-bold tracking-widest text-warning/60 uppercase"
-								>Ship Streak</span
-							>
-							<div class="py-2 text-center">
-								<span class="text-5xl font-bold">14</span>
-								<span class="block text-sm font-bold text-muted-foreground">DAYS</span>
-							</div>
-							<div class="flex items-center justify-between px-2">
-								{#each Array(7) as _, i}
-									<div
-										class="h-6 w-1.5 rounded-full {i < 5 ? 'bg-warning' : 'bg-warning/20'}"
-									></div>
-								{/each}
-							</div>
+					<!-- Mock stats + narrative -->
+					<div class="mb-4 flex flex-wrap gap-2 font-mono">
+						<span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Score 72/100</span>
+						<span class="rounded-full bg-success/10 px-3 py-1 text-xs font-semibold text-success">+18 stars this week</span>
+						<span class="rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">4 contributors active</span>
+					</div>
+					<p class="mb-6 text-sm text-foreground/70">
+						Your repo gained +18 stars this week — best week yet. Reddit drove 67% of the traffic.
+					</p>
+					<!-- Mock One Thing card -->
+					<div class="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+						<div class="mb-2 flex items-center gap-2">
+							<Zap size={14} class="text-primary" />
+							<p class="text-[10px] font-bold tracking-widest text-primary uppercase">One thing to do</p>
 						</div>
-						<div class="flex-1 rounded-3xl border glass-card border-foreground/5 p-4">
-							<div class="flex flex-col gap-3">
-								<div class="h-3 w-full rounded bg-foreground/10"></div>
-								<div class="h-3 w-full rounded bg-foreground/10"></div>
-								<div class="h-3 w-2/3 rounded bg-foreground/10"></div>
-							</div>
+						<p class="text-sm font-semibold text-foreground">Reply to issue #42 — high-intent user who also cloned the repo.</p>
+						<div class="mt-2 flex items-center gap-2">
+							<div class="h-6 w-20 rounded-full bg-primary text-center text-[10px] font-bold leading-6 text-primary-foreground">Mark done</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- Capabilities Framework -->
+		<!-- Capabilities Section -->
 		<section id="capabilities" class="relative container mx-auto max-w-6xl px-6 py-24">
 			<div class="mb-16 text-center">
 				<h2 class="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
 					Stay on top of your repos without the noise.
 				</h2>
-				<p class="mx-auto max-w-2xl text-lg tracking-normal text-foreground/60">
+				<p class="mx-auto max-w-2xl text-lg tracking-normal text-muted-foreground">
 					One dashboard. Daily clarity on what changed, what matters, and what to do next.
 				</p>
 			</div>
 
-			<div class="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
-				<!-- Card 1 -->
+			<div class="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+				<!-- Card 1: Health Score -->
 				<div
-					class="group rounded-3xl glass-panel p-8 transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
+					class="group rounded-3xl border border-border bg-card p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
 				>
 					<div
-						class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-sm transition-transform duration-500 group-hover:scale-110"
+						class="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105"
 					>
-						<BarChart3 size={24} strokeWidth={1.5} />
+						<BarChart3 size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Health Score</h3>
-					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>See repo health at a glance.</strong> One score combines stars, commits, PRs, issues,
-						and contributors into a number you can trust.
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Health Score</h3>
+					<p class="text-sm leading-relaxed text-muted-foreground">
+						One number that combines stars, commits, PRs, issues, and contributors into a score you can trust. See trends across multiple repos at a glance.
 					</p>
 				</div>
 
-				<!-- Card 2 -->
+				<!-- Card 2: Daily Brief -->
 				<div
-					class="group rounded-3xl glass-panel p-8 transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
+					class="group rounded-3xl border border-border bg-card p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
 				>
 					<div
-						class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-success/20 bg-gradient-to-br from-success/20 to-success/5 text-success shadow-sm transition-transform duration-500 group-hover:scale-110"
+						class="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-success/10 text-success transition-transform duration-300 group-hover:scale-105"
 					>
-						<Cpu size={24} strokeWidth={1.5} />
+						<Cpu size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Daily Digest and AI Read</h3>
-					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Start every session with clarity.</strong> Get a daily brief, change summary, top
-						risk, top win, and an AI summary that tells you what deserves attention first.
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Daily Brief</h3>
+					<p class="text-sm leading-relaxed text-muted-foreground">
+						Open one page every morning. See what changed overnight, your top action item, and whether momentum is accelerating or stalling.
 					</p>
 				</div>
 
-				<!-- Card 3 -->
+				<!-- Card 3: Tasks & Streaks -->
 				<div
-					class="group rounded-3xl glass-panel p-8 transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
+					class="group rounded-3xl border border-border bg-card p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
 				>
 					<div
-						class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-warning/20 bg-gradient-to-br from-warning/20 to-warning/5 text-warning shadow-sm transition-transform duration-500 group-hover:scale-110"
+						class="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-warning/10 text-warning transition-transform duration-300 group-hover:scale-105"
 					>
-						<LineChart size={24} strokeWidth={1.5} />
+						<LineChart size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Priority Tasks and Streaks</h3>
-					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Keep momentum visible.</strong> Turn repo signals into actionable tasks, then track
-						commit streaks so consistency becomes part of your workflow instead of an accident.
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Tasks & Streaks</h3>
+					<p class="text-sm leading-relaxed text-muted-foreground">
+						Signals become tasks. Mark them done and watch your shipping streak grow. Consistency becomes visible.
 					</p>
 				</div>
 
-				<!-- Card 4 -->
+				<!-- Card 4: Risk Stack -->
 				<div
-					class="group rounded-3xl glass-panel p-8 transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
+					class="group rounded-3xl border border-border bg-card p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
 				>
 					<div
-						class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-warning/20 bg-gradient-to-br from-warning/20 to-warning/5 text-warning shadow-sm transition-transform duration-500 group-hover:scale-110"
+						class="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-destructive/10 text-destructive transition-transform duration-300 group-hover:scale-105"
 					>
-						<Package size={24} strokeWidth={1.5} />
+						<Shield size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Dependency Risk Monitoring</h3>
-					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Spot maintenance risk before it piles up.</strong> Review outdated, deprecated, and
-						vulnerable dependencies without digging through every manifest by hand.
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Risk Stack</h3>
+					<p class="text-sm leading-relaxed text-muted-foreground">
+						Vulnerabilities, outdated dependencies, anomalies, and README gaps combined into a single priority list. Fix what matters first.
 					</p>
 				</div>
 
-				<!-- Card 5 -->
+				<!-- Card 5: Growth Intelligence -->
 				<div
-					class="group rounded-3xl glass-panel p-8 transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
+					class="group rounded-3xl border border-border bg-card p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
 				>
 					<div
-						class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-sm transition-transform duration-500 group-hover:scale-110"
+						class="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105"
 					>
-						<FileText size={24} strokeWidth={1.5} />
+						<FileText size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-3 text-2xl font-semibold tracking-tight">README and Repo Quality Checks</h3>
-					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Tighten the parts contributors actually feel.</strong> Score your README, review documentation
-						gaps, and keep repo hygiene visible alongside shipping velocity.
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Growth Intelligence</h3>
+					<p class="text-sm leading-relaxed text-muted-foreground">
+						Conversion funnel from views to contributors. Star velocity forecasts. External reach scores showing where your traffic actually comes from.
 					</p>
 				</div>
 
-				<!-- Card 6 -->
+				<!-- Card 6: Share & Alerts -->
 				<div
-					class="group rounded-3xl glass-panel p-8 transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
+					class="group rounded-3xl border border-border bg-card p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
 				>
 					<div
-						class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-success/20 bg-gradient-to-br from-success/20 to-success/5 text-success shadow-sm transition-transform duration-500 group-hover:scale-110"
+						class="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-success/10 text-success transition-transform duration-300 group-hover:scale-105"
 					>
-						<Share2 size={24} strokeWidth={1.5} />
+						<Share2 size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-3 text-2xl font-semibold tracking-tight">Alerts, Reports, and Sharing</h3>
-					<p class="leading-relaxed tracking-normal text-foreground/60">
-						<strong>Stay informed and show progress publicly.</strong> Get anomaly alerts, in-app notifications,
-						weekly reports, public health pages, badges, and growth cards you can share.
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Share & Alerts</h3>
+					<p class="text-sm leading-relaxed text-muted-foreground">
+						Public health pages and repo badges to share momentum. Anomaly alerts when something spikes or drops. Weekly email digests.
 					</p>
 				</div>
 			</div>
 		</section>
 
-		<!-- Vision Section: Scalability with Sanity -->
+		<!-- Vision Section -->
 		<section
 			id="vision"
-			class="container mx-auto max-w-6xl border-y border-foreground/5 px-6 py-32"
+			class="container mx-auto max-w-6xl px-6 py-24"
 		>
-			<div class="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
-				<div class="relative">
-					<div
-						class="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl"
-					></div>
-					<h2 class="mb-8 text-4xl leading-tight font-bold tracking-tighter md:text-6xl">
-						Operate your repos with <span class="text-primary italic">clarity</span>.
-					</h2>
-					<p class="mb-8 text-xl leading-relaxed text-foreground/70">
-						ShipSense brings scattered GitHub signals back into one calm place.
-					</p>
-					<div class="space-y-6">
-						<div class="flex gap-4">
-							<div
-								class="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-foreground/5"
-							>
-								<Check size={14} class="text-primary" />
-							</div>
-							<p class="text-foreground/80">One daily brief instead of checking five tabs.</p>
-						</div>
-						<div class="flex gap-4">
-							<div
-								class="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-foreground/5"
-							>
-								<Check size={14} class="text-primary" />
-							</div>
-							<p class="text-foreground/80">See what needs attention before it becomes a fire.</p>
-						</div>
-						<div class="flex gap-4">
-							<div
-								class="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-foreground/5"
-							>
-								<Check size={14} class="text-primary" />
-							</div>
-							<p class="text-foreground/80">Share progress with public health badges.</p>
-						</div>
-					</div>
+			<div class="mx-auto max-w-3xl text-center">
+				<h2 class="mb-6 text-3xl font-bold tracking-tight md:text-5xl">
+					GitHub has everything. Context has nowhere to live.
+				</h2>
+				<p class="mb-10 text-lg leading-relaxed text-muted-foreground">
+					You check PRs. Then issues. Then Insights. Then traffic. Then dependencies. Five tabs to understand one repo.
+					ShipSense pulls it all into one page so you can decide in 20 seconds instead of 20 minutes.
+				</p>
+			</div>
+			<div class="mx-auto grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
+				<div class="rounded-2xl border border-border bg-card p-6 text-center">
+					<p class="text-3xl font-black text-primary">1</p>
+					<p class="mt-2 text-sm font-medium text-foreground">page to open</p>
 				</div>
-				<div
-					class="group flex aspect-square flex-col items-center justify-center rounded-[3rem] glass-panel p-12 text-center transition-all duration-700"
-				>
-					<div
-						class="mb-8 flex h-24 w-24 items-center justify-center rounded-3xl bg-primary/10 text-primary transition-transform duration-500 group-hover:scale-110"
-					>
-						<Shield size={48} strokeWidth={1} />
-					</div>
-					<h3 class="mb-4 text-3xl font-bold italic">A calmer maintainer workflow</h3>
-					<p class="max-w-sm text-foreground/50">
-						Less time piecing together signals. More time shipping.
-					</p>
+				<div class="rounded-2xl border border-border bg-card p-6 text-center">
+					<p class="text-3xl font-black text-success">20s</p>
+					<p class="mt-2 text-sm font-medium text-foreground">to get the full picture</p>
+				</div>
+				<div class="rounded-2xl border border-border bg-card p-6 text-center">
+					<p class="text-3xl font-black text-warning">1</p>
+					<p class="mt-2 text-sm font-medium text-foreground">action to take next</p>
 				</div>
 			</div>
 		</section>
 
-		<!-- Pricing Section — Intelligence Tiers -->
+		<!-- Pricing Section -->
 		<section
 			id="pricing"
-			class="container mx-auto max-w-6xl border-b border-foreground/5 px-6 py-32"
+			class="container mx-auto max-w-6xl px-6 py-24"
 		>
-			<div class="mb-20 text-center">
-				<div
-					class="animate-float-delayed mb-6 inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5"
-				>
-					<Sparkles size={14} class="text-primary" />
-					<span class="text-xs font-semibold tracking-wide text-foreground/80 lowercase"
-						>Pricing built around intelligence, not repo limits</span
-					>
-				</div>
-				<h2 class="mb-6 text-4xl font-bold tracking-tight md:text-5xl">
-					Choose your layer of clarity.
+			<div class="mb-16 text-center">
+				<h2 class="mb-6 text-3xl font-bold tracking-tight md:text-5xl">
+					Start free. Scale when you need intelligence.
 				</h2>
-				<p class="mx-auto max-w-2xl text-xl text-foreground/60">
-					Every plan gives you a real health score and daily digest. Higher tiers unlock predictive
-					intelligence that tells you <em>why</em> things are changing and
-					<em>what will happen next</em>.
+				<p class="mx-auto max-w-2xl text-lg text-muted-foreground">
+					Every plan includes a real health score and daily brief. Higher tiers unlock predictive signals, traffic intelligence, and portfolio management.
 				</p>
 			</div>
 
-			<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-				<!-- Free — Clarity Layer -->
+			<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+				<!-- Free -->
 				<div
-					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
+					class="flex flex-col rounded-[2rem] border border-border bg-card p-8 shadow-sm transition-colors hover:border-foreground/10"
 				>
 					<div class="mb-2">
 						<span class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 							>Free</span
 						>
-						<h3 class="mt-2 text-2xl font-bold tracking-tight">Health Clarity</h3>
-						<p class="mt-1 text-sm text-foreground/50">See what's happening.</p>
-						<div class="mt-6 flex items-end gap-1">
+						<h3 class="mt-1 text-xl font-bold tracking-tight">Health Clarity</h3>
+						<div class="mt-4 flex items-end gap-1">
 							<span class="text-4xl font-bold">$0</span>
 							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
 
-					<div class="my-8 flex-1 space-y-3.5 border-t border-foreground/5 pt-8">
+					<div class="my-6 flex-1 space-y-3 border-t border-border pt-6">
 						<div class="flex items-start gap-3">
 							<Check size={15} class="mt-0.5 shrink-0 text-success" />
-							<span class="text-sm text-foreground/70"
-								>Deterministic health score (commits, stars, PRs, issues, contributors)</span
-							>
+							<span class="text-sm text-muted-foreground">Health score + trend</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Check size={15} class="mt-0.5 shrink-0 text-success" />
-							<span class="text-sm text-foreground/70">Daily brief and change summary</span>
+							<span class="text-sm text-muted-foreground">Daily brief + change summary</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Check size={15} class="mt-0.5 shrink-0 text-success" />
-							<span class="text-sm text-foreground/70">Shipping streak and task engine</span>
+							<span class="text-sm text-muted-foreground">Shipping streak + task engine</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Check size={15} class="mt-0.5 shrink-0 text-success" />
-							<span class="text-sm text-foreground/70">Public health page and repo badge</span>
+							<span class="text-sm text-muted-foreground">Public health page + repo badge</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Check size={15} class="mt-0.5 shrink-0 text-success" />
-							<span class="text-sm text-foreground/70">1 connected repository</span>
+							<span class="text-sm text-muted-foreground">1 repository</span>
 						</div>
 					</div>
 
 					<Button
 						href="/auth/login"
 						variant="outline"
-						class="h-12 w-full rounded-full border-foreground/20 font-semibold hover:bg-foreground/5"
+						class="h-12 w-full rounded-full font-semibold"
 					>
 						Start Free
 					</Button>
 				</div>
 
-				<!-- Indie — Intelligence Layer (Popular) -->
+				<!-- Indie (Popular) -->
 				<div
-					class="relative flex flex-col overflow-hidden rounded-[2.5rem] border glass-panel border-primary/30 p-10 ring-4 ring-primary/5"
+					class="relative flex flex-col overflow-hidden rounded-[2rem] border border-primary/30 bg-card p-8 shadow-lg ring-1 ring-primary/10"
 				>
 					<div
-						class="absolute top-0 right-0 rounded-bl-2xl bg-primary px-4 py-1.5 text-[10px] font-bold tracking-widest text-primary-foreground uppercase"
+						class="absolute top-0 right-0 rounded-bl-2xl bg-primary px-3 py-1 text-[10px] font-bold tracking-widest text-primary-foreground uppercase"
 					>
 						Most popular
 					</div>
 					<div class="mb-2">
 						<span class="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Indie</span>
-						<h3 class="mt-2 text-2xl font-bold tracking-tight">Predictive Intelligence</h3>
-						<p class="mt-1 text-sm text-foreground/50">Understand what's driving change.</p>
-						<div class="mt-6 flex items-end gap-1">
-							<span class="text-4xl font-bold">$12</span>
+						<h3 class="mt-1 text-xl font-bold tracking-tight">Growth Intelligence</h3>
+						<div class="mt-4 flex items-end gap-1">
+							<span class="text-4xl font-bold">$9</span>
 							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
 
-					<!-- Intelligence preview card -->
+					<!-- Intelligence preview -->
 					<div
-						class="my-6 rounded-2xl border border-primary/15 bg-primary/5 p-4"
+						class="my-5 rounded-xl border border-primary/15 bg-primary/5 p-3"
 					>
 						<p class="text-[10px] font-bold tracking-widest text-primary/70 uppercase">
 							Intelligence unlocked
 						</p>
-						<p class="mt-2 text-sm font-semibold text-foreground">
-							📈 On track for 1,000 stars by June 15 · growing at 3.2 stars/day.
+						<p class="mt-1.5 text-xs font-medium text-foreground">
+							📈 On track for 1,000 stars by June · growing 3.2 stars/day
 						</p>
 					</div>
 
-					<div class="flex-1 space-y-3.5 border-t border-foreground/5 pt-6">
+					<div class="flex-1 space-y-3 border-t border-border pt-5">
 						<div class="flex items-start gap-3">
-							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
-							<span class="text-sm font-medium text-foreground/80"
-								>Star forecast — when will you hit your next milestone?</span
-							>
+							<Zap size={15} class="mt-0.5 shrink-0 text-primary" />
+							<span class="text-sm text-muted-foreground">Star forecast + conversion funnel</span>
 						</div>
 						<div class="flex items-start gap-3">
-							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
-							<span class="text-sm font-medium text-foreground/80"
-								>Conversion funnel — views → stars → clones → contributors</span
-							>
+							<Zap size={15} class="mt-0.5 shrink-0 text-primary" />
+							<span class="text-sm text-muted-foreground">Anomaly detection + traffic intelligence</span>
 						</div>
 						<div class="flex items-start gap-3">
-							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
-							<span class="text-sm font-medium text-foreground/80"
-								>Anomaly alerts — spike and drop detection with context</span
-							>
-						</div>
-						<div class="flex items-start gap-3">
-							<Zap size={15} class="mt-0.5 shrink-0 fill-primary/20 text-primary" />
-							<span class="text-sm font-medium text-foreground/80"
-								>AI traffic intelligence and referrer analysis</span
-							>
+							<Zap size={15} class="mt-0.5 shrink-0 text-primary" />
+							<span class="text-sm text-muted-foreground">Risk stack + external reach score</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Check size={15} class="mt-0.5 shrink-0 text-success" />
-							<span class="text-sm text-foreground/70">Weekly email report digest</span>
+							<span class="text-sm text-muted-foreground">Weekly email digest</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Check size={15} class="mt-0.5 shrink-0 text-success" />
-							<span class="text-sm text-foreground/70">Everything in Free + 5 repositories</span>
+							<span class="text-sm text-muted-foreground">5 repositories</span>
 						</div>
 					</div>
 
 					<Button
 						href="/auth/login"
-						class="mt-8 h-12 w-full rounded-full bg-primary font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
+						class="mt-6 h-12 w-full rounded-full bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
 					>
 						Get Started
 					</Button>
 				</div>
 
-				<!-- Builder — Operations Layer -->
+				<!-- Builder -->
 				<div
-					class="flex flex-col rounded-[2.5rem] border glass-panel border-foreground/5 p-10 transition-colors hover:border-foreground/10"
+					class="flex flex-col rounded-[2rem] border border-border bg-card p-8 shadow-sm transition-colors hover:border-foreground/10"
 				>
 					<div class="mb-2">
 						<span class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 							>Builder</span
 						>
-						<h3 class="mt-2 text-2xl font-bold tracking-tight">Portfolio Operations</h3>
-						<p class="mt-1 text-sm text-foreground/50">Run a portfolio of projects.</p>
-						<div class="mt-6 flex items-end gap-1">
+						<h3 class="mt-1 text-xl font-bold tracking-tight">Portfolio Ops</h3>
+						<div class="mt-4 flex items-end gap-1">
 							<span class="text-4xl font-bold">$49</span>
 							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
 						</div>
 					</div>
 
-					<div class="my-8 flex-1 space-y-3.5 border-t border-foreground/5 pt-8">
+					<div class="my-6 flex-1 space-y-3 border-t border-border pt-6">
 						<div class="flex items-start gap-3">
 							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
-							<span class="text-sm text-foreground/70"
-								>Everything in Indie across 50 repositories</span
-							>
+							<span class="text-sm text-muted-foreground">Everything in Indie — 50 repos</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
-							<span class="text-sm text-foreground/70"
-								>Portfolio-level health overview across all repos</span
-							>
+							<span class="text-sm text-muted-foreground">Portfolio-level health overview</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
-							<span class="text-sm text-foreground/70"
-								>Dependency risk monitoring across all manifests</span
-							>
+							<span class="text-sm text-muted-foreground">Dependency monitoring across all manifests</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
-							<span class="text-sm text-foreground/70"
-								>Proactive anomaly + score drop email alerts</span
-							>
+							<span class="text-sm text-muted-foreground">Proactive anomaly + score drop alerts</span>
 						</div>
 						<div class="flex items-start gap-3">
 							<Rocket size={15} class="mt-0.5 shrink-0 text-warning" />
-							<span class="text-sm text-foreground/70">Best fit for teams and agencies</span>
+							<span class="text-sm text-muted-foreground">Best for teams and agencies</span>
 						</div>
 					</div>
 
 					<Button
 						href="mailto:hello@shipsense.ai"
 						variant="outline"
-						class="h-12 w-full rounded-full border-foreground/20 font-semibold hover:bg-foreground/5"
+						class="h-12 w-full rounded-full font-semibold"
 					>
 						Contact Sales
 					</Button>
@@ -674,8 +523,8 @@
 			</div>
 
 			<!-- Feature comparison row -->
-			<div class="mt-16 overflow-hidden rounded-[2rem] border border-foreground/5 glass-panel">
-				<div class="grid grid-cols-4 border-b border-foreground/5 px-8 py-4">
+			<div class="mt-12 overflow-hidden rounded-[2rem] border border-border bg-card">
+				<div class="grid grid-cols-4 border-b border-border px-8 py-4">
 					<p class="text-xs font-bold tracking-widest text-muted-foreground uppercase">Feature</p>
 					<p class="text-center text-xs font-bold tracking-widest text-muted-foreground uppercase">Free</p>
 					<p class="text-center text-xs font-bold tracking-widest text-primary uppercase">Indie</p>
@@ -685,15 +534,17 @@
 					{ label: 'Health score + trend', free: true, indie: true, builder: true },
 					{ label: 'Daily brief + digest', free: true, indie: true, builder: true },
 					{ label: 'Task engine + streaks', free: true, indie: true, builder: true },
+					{ label: 'Risk stack', free: true, indie: true, builder: true },
 					{ label: 'Star forecast', free: false, indie: true, builder: true },
 					{ label: 'Conversion funnel', free: false, indie: true, builder: true },
 					{ label: 'Anomaly detection', free: false, indie: true, builder: true },
 					{ label: 'Traffic intelligence', free: false, indie: true, builder: true },
+					{ label: 'External reach score', free: false, indie: true, builder: true },
 					{ label: 'Portfolio overview', free: false, indie: false, builder: true },
 					{ label: 'Dependency monitoring', free: false, indie: false, builder: true },
 				] as row}
-					<div class="grid grid-cols-4 border-b border-foreground/5 px-8 py-3.5 last:border-0">
-						<p class="text-sm text-foreground/70">{row.label}</p>
+					<div class="grid grid-cols-4 border-b border-border px-8 py-3.5 last:border-0">
+						<p class="text-sm text-muted-foreground">{row.label}</p>
 						<p class="text-center">
 							{#if row.free}
 								<Check size={15} class="mx-auto text-success" />
@@ -733,28 +584,26 @@
 
 
 		<!-- Final CTA -->
-		<section class="container mx-auto max-w-6xl px-6 py-32">
+		<section class="container mx-auto max-w-6xl px-6 py-24">
 			<div
-				class="relative flex flex-col items-center overflow-hidden rounded-[4rem] bg-foreground p-16 text-center text-background shadow-2xl md:p-24"
+				class="relative flex flex-col items-center overflow-hidden rounded-[3rem] bg-foreground p-12 text-center text-background shadow-2xl md:p-20"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-primary/10"
+					class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-primary/15 via-transparent to-primary/10"
 				></div>
 				<div class="relative z-10">
-					<Rocket size={48} class="mx-auto mb-8 animate-float text-primary" />
-					<h2 class="mb-8 max-w-3xl text-4xl leading-tight font-bold tracking-tighter md:text-7xl">
-						Ready for a clearer view of your repos?
+					<h2 class="mb-4 max-w-3xl text-3xl leading-tight font-bold tracking-tight md:text-5xl">
+						One dashboard. Daily clarity.
 					</h2>
-					<p class="mx-auto mb-12 max-w-xl text-xl text-background/60">
-						One dashboard. Daily clarity. ShipSense helps you see what matters and know what to do
-						next.
+					<p class="mx-auto mb-10 max-w-xl text-lg text-background/60">
+						Stop checking five tabs to understand one repo. Connect GitHub, get your first brief in 30 seconds.
 					</p>
 					<Button
 						href="/auth/login"
-						class="h-16 rounded-full bg-primary px-12 text-xl font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-105 hover:bg-primary/90"
+						class="h-14 rounded-full bg-primary px-10 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-300 hover:bg-primary/90"
 					>
 						Get Started Free
-						<ArrowRight class="ml-2 h-6 w-6" />
+						<ArrowRight class="ml-2 h-4 w-4" />
 					</Button>
 				</div>
 			</div>
@@ -762,14 +611,19 @@
 
 		<!-- Footer -->
 		<footer
-			class="relative z-10 container mx-auto mt-12 max-w-6xl border-t border-foreground/10 px-6 py-12 text-center text-foreground/40"
+			class="relative z-10 container mx-auto mt-12 max-w-6xl border-t border-border px-6 py-12 text-center text-muted-foreground"
 		>
 			<div class="mb-4 flex items-center justify-center gap-2">
-				<Fingerprint size={20} class="opacity-50" />
+				<Fingerprint size={20} class="opacity-40" />
+				<span class="text-sm font-medium">ShipSense</span>
 			</div>
-			<p class="text-sm font-medium tracking-wide">
-				ShipSense © {new Date().getFullYear()}. Crafted for open source maintainers.
+			<p class="text-sm">
+				ShipSense © {new Date().getFullYear()}. Built for maintainers and open-source teams.
 			</p>
+			<nav class="mt-4 flex justify-center gap-6 text-sm" aria-label="Legal links">
+				<a href="/legal/privacy" class="text-muted-foreground underline decoration-transparent transition-colors hover:decoration-current">Privacy</a>
+				<a href="/legal/terms" class="text-muted-foreground underline decoration-transparent transition-colors hover:decoration-current">Terms</a>
+			</nav>
 		</footer>
 	</main>
 </div>
