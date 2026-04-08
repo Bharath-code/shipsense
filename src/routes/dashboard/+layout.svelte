@@ -2,6 +2,8 @@
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { LogOut as LogOutIcon, Keyboard } from 'lucide-svelte';
 	import ThemeToggle from '$lib/components/dashboard/ThemeToggle.svelte';
@@ -11,25 +13,60 @@
 	import { TooltipProvider } from '$lib/components/ui/tooltip';
 
 	const auth = useAuth();
-	let wasAuthenticated = $state(false);
 
-	$effect(() => {
-		if (auth.isAuthenticated) {
-			wasAuthenticated = true;
+	// The auth library reports isLoading: false when server state has no token,
+	// THEN restores from localStorage asynchronously. This creates a race where
+	// isLoading=false, isAuthenticated=false → redirect before restoration completes.
+	//
+	// FIX: Check localStorage directly for the stored JWT. The key is
+	// `{normalizedConvexUrl}:__convexAuthJWT` where normalizedConvexUrl is
+	// the convex URL with non-alphanumeric chars stripped.
+	// If ANY such key exists, the user IS authenticated — just wait.
+	// If no such key exists, the user genuinely needs to log in.
+	// This is synchronous and race-condition-free.
+
+	const JWT_STORAGE_KEY_SUFFIX = '__convexAuthJWT';
+
+	let hasCheckedAuth = $state(false);
+
+	function hasStoredJwtToken(): boolean {
+		if (!browser) return false;
+		try {
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+				if (key && key.endsWith(JWT_STORAGE_KEY_SUFFIX)) {
+					return !!localStorage.getItem(key);
+				}
+			}
+		} catch {
+			// localStorage may be unavailable
 		}
-	});
+		return false;
+	}
 
-	$effect(() => {
+	onMount(() => {
 		const url = $page.url;
 		const inOAuthCallback = url.searchParams.has('code') || url.searchParams.has('state');
-
-		if (!auth.isLoading && !auth.isAuthenticated && !inOAuthCallback && !wasAuthenticated) {
-			goto('/auth/login');
+		if (inOAuthCallback) {
+			hasCheckedAuth = true;
+			return;
 		}
+
+		// Check localStorage synchronously for a stored JWT
+		const hasToken = hasStoredJwtToken();
+
+		if (hasToken || auth.isAuthenticated) {
+			// Token exists — user is authenticated, just waiting for restoration
+			hasCheckedAuth = true;
+			return;
+		}
+
+		// No token in localStorage AND not authenticated → redirect
+		hasCheckedAuth = true;
+		void goto('/auth/login');
 	});
 
 	async function handleSignOut() {
-		wasAuthenticated = false;
 		await auth.signOut();
 		window.location.href = '/auth/login';
 	}

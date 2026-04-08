@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import ThemeToggle from '$lib/components/dashboard/ThemeToggle.svelte';
 	import {
@@ -27,6 +28,9 @@
 	function closeMobileMenu() {
 		mobileMenuOpen = false;
 	}
+
+	// Check if user is already authenticated (from localStorage JWT)
+	const auth = useAuth();
 
 	// FAQ accordion state
 	const faqData = [
@@ -245,12 +249,21 @@
 						<Menu size={20} aria-hidden="true" />
 					{/if}
 				</button>
-				<Button
-					href="/auth/login"
-					class="hidden rounded-full bg-foreground px-6 font-medium text-background shadow-md transition-all duration-300 hover:scale-105 hover:bg-foreground/90 active:scale-95 sm:inline-flex"
-				>
-					Sign In
-				</Button>
+			{#if auth.isAuthenticated}
+					<a
+						href="/dashboard"
+						class="hidden rounded-full bg-foreground px-6 font-medium text-background shadow-md transition-all duration-300 hover:scale-105 hover:bg-foreground/90 active:scale-95 sm:inline-flex"
+					>
+						Dashboard
+					</a>
+				{:else}
+					<Button
+						href="/auth/login"
+						class="hidden rounded-full bg-foreground px-6 font-medium text-background shadow-md transition-all duration-300 hover:scale-105 hover:bg-foreground/90 active:scale-95 sm:inline-flex"
+					>
+						Sign In
+					</Button>
+				{/if}
 			</div>
 		</header>
 	</div>
@@ -263,13 +276,23 @@
 				<a href="#capabilities" onclick={closeMobileMenu} class="text-foreground/80 transition-colors hover:text-foreground">Capabilities</a>
 				<a href="#pricing" onclick={closeMobileMenu} class="text-foreground/80 transition-colors hover:text-foreground">Pricing</a>
 				<a href="#faq" onclick={closeMobileMenu} class="text-foreground/80 transition-colors hover:text-foreground">FAQ</a>
-				<Button
-					href="/auth/login"
-					onclick={closeMobileMenu}
-					class="mt-4 rounded-full bg-foreground px-8 font-medium text-background shadow-md"
-				>
-					Sign In
-				</Button>
+				{#if auth.isAuthenticated}
+					<a
+						href="/dashboard"
+						onclick={closeMobileMenu}
+						class="mt-4 rounded-full bg-foreground px-8 font-medium text-background shadow-md"
+					>
+						Dashboard
+					</a>
+				{:else}
+					<Button
+						href="/auth/login"
+						onclick={closeMobileMenu}
+						class="mt-4 rounded-full bg-foreground px-8 font-medium text-background shadow-md"
+					>
+						Sign In
+					</Button>
+				{/if}
 			</nav>
 		</div>
 	{/if}

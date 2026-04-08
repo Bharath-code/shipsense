@@ -567,6 +567,9 @@ Moved to Phase 22 for proper implementation with unified insights layer.
   - [x] Dashboard icon buttons: `bg-white/5` → `hover:bg-muted` (consistent hover state)
   - [x] Dashboard divider: `bg-white/10` → `bg-border` (theme-aware)
   - [x] Dashboard ambient glow: empty div → matching 100px blur animated glows (same as landing)
+- [x] Fix auth redirect on page reload — `wasAuthenticated` was volatile `$state(false)` resetting on reload, guard fired before token restoration
+  - [x] Remove `wasAuthenticated` flag entirely
+  - [x] Single `$effect`: wait for `auth.isLoading` → if not authenticated → redirect
 - [x] Add founding member pricing — 50 spots at $4.50/mo (50% off Indie, forever) with urgency banner + progress bar
   - [x] Add `foundingMembers` table to Convex schema
   - [x] Create `getFoundingMemberCount` public query for landing page
