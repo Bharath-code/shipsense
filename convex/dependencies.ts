@@ -65,11 +65,11 @@ type PackageLockFile = {
 	>;
 };
 
-function normalizeVersionSpec(spec: string): string {
+export function normalizeVersionSpec(spec: string): string {
 	return spec.trim().replace(/^[~^<>=\s]+/, '').replace(/,.+$/, '');
 }
 
-function parseSemver(version: string): [number, number, number] | null {
+export function parseSemver(version: string): [number, number, number] | null {
 	const match = version.match(/(\d+)\.(\d+)\.(\d+)/);
 	if (!match) return null;
 	return [Number(match[1]), Number(match[2]), Number(match[3])];

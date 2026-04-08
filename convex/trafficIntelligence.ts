@@ -81,7 +81,7 @@ const REFERRER_SOURCES: Record<string, string> = {
 	facebook: 'Facebook'
 };
 
-function classifyReferrer(referrer: string): string | null {
+export function classifyReferrer(referrer: string): string | null {
 	const lower = referrer.toLowerCase();
 	for (const [key, label] of Object.entries(REFERRER_SOURCES)) {
 		if (lower.includes(key)) return label;
@@ -89,11 +89,11 @@ function classifyReferrer(referrer: string): string | null {
 	return null; // direct / unknown
 }
 
-function isSearchEngine(source: string | null): boolean {
+export function isSearchEngine(source: string | null): boolean {
 	return source === 'Google Search' || source === 'Bing Search' || source === 'DuckDuckGo';
 }
 
-function isSocialPlatform(source: string | null): boolean {
+export function isSocialPlatform(source: string | null): boolean {
 	return [
 		'Hacker News',
 		'Reddit',
@@ -104,18 +104,18 @@ function isSocialPlatform(source: string | null): boolean {
 	].includes(source ?? '');
 }
 
-function isDeveloperPlatform(source: string | null): boolean {
+export function isDeveloperPlatform(source: string | null): boolean {
 	return ['GitHub', 'Lobsters'].includes(source ?? '');
 }
 
-function formatRatio(numerator: number, denominator: number): string {
+export function formatRatio(numerator: number, denominator: number): string {
 	if (denominator === 0) return '0.00';
 	return (numerator / denominator).toFixed(2);
 }
 
 // ── Conversion Analysis ──────────────────────────────────────────────────────
 
-function analyzeConversion(
+export function analyzeConversion(
 	views: number,
 	starsLast7d: number,
 	prevViews: number | null,
@@ -197,7 +197,7 @@ function analyzeConversion(
 
 // ── Clone Interest Analysis ──────────────────────────────────────────────────
 
-function analyzeCloning(
+export function analyzeCloning(
 	clones: number,
 	uniqueCloners: number,
 	stars: number
@@ -255,7 +255,7 @@ function analyzeCloning(
 
 // ── Traffic Velocity Analysis ────────────────────────────────────────────────
 
-function analyzeVelocity(
+export function analyzeVelocity(
 	currentViews: number,
 	previousViews: number | null
 ): TrafficVelocityInsight {
@@ -314,7 +314,7 @@ function analyzeVelocity(
 
 // ── Source Analysis ──────────────────────────────────────────────────────────
 
-function analyzeSources(
+export function analyzeSources(
 	currentReferrers: Array<{ referrer: string; count: number; uniques: number }>,
 	previousReferrers: Array<{ referrer: string; count: number }> | null,
 	starsLast7d: number
@@ -380,7 +380,7 @@ function analyzeSources(
 
 // ── Top Source Action ────────────────────────────────────────────────────────
 
-function computeTopSourceAction(
+export function computeTopSourceAction(
 	sources: TrafficSourceInsight[],
 	conversion: TrafficConversionInsight
 ): string | null {
@@ -413,7 +413,7 @@ function computeTopSourceAction(
 
 // ── Compute "One Thing" ──────────────────────────────────────────────────────
 
-function computeOneThing(report: {
+export function computeOneThing(report: {
 	conversion: TrafficConversionInsight;
 	cloning: CloneInterestInsight;
 	velocity: TrafficVelocityInsight;
@@ -665,7 +665,7 @@ function referrerQualityScore(source: string | null): number {
 	return REFERRER_QUALITY[source] ?? 1;
 }
 
-function computeExternalReachScore(input: {
+export function computeExternalReachScore(input: {
 	topSources: TrafficSourceInsight[];
 	trafficVelocity: TrafficVelocityInsight;
 	conversion: TrafficConversionInsight;
