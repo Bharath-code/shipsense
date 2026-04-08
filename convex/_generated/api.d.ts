@@ -29,6 +29,7 @@ import type * as plan from "../plan.js";
 import type * as readmeAnalyzer from "../readmeAnalyzer.js";
 import type * as repos from "../repos.js";
 import type * as scorer from "../scorer.js";
+import type * as settings from "../settings.js";
 import type * as sharePrompts from "../sharePrompts.js";
 import type * as streakTracker from "../streakTracker.js";
 import type * as taskGenerator from "../taskGenerator.js";
@@ -63,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   readmeAnalyzer: typeof readmeAnalyzer;
   repos: typeof repos;
   scorer: typeof scorer;
+  settings: typeof settings;
   sharePrompts: typeof sharePrompts;
   streakTracker: typeof streakTracker;
   taskGenerator: typeof taskGenerator;

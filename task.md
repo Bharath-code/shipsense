@@ -568,6 +568,13 @@ Moved to Phase 22 for proper implementation with unified insights layer.
   - [x] Wire auto-claim into billing `activateSubscription` for Indie plan
   - [x] Update landing page `+page.server.ts` to fetch real count from Convex
   - [x] Write 10 test cases (capacity logic, duplicate prevention, pricing math, progress display)
+- [x] Add plan management to settings page — current plan card, usage meter, inline plan picker, Dodo checkout redirect
+  - [x] Create `getMyProfile` query (plan + repo count + billing info)
+  - [x] Create `getCheckoutUrl` mutation (generates Dodo checkout link)
+  - [x] Build current plan card with usage meter (repos used / limit)
+  - [x] Build inline 3-column plan picker (expandable "Change Plan" section)
+  - [x] Wire "Manage billing" link to Dodo customer portal
+  - [x] Fix free plan maxRepos from 10 → 1 (matching actual enforcement)
 
 ### Code Quality / DevEx
 

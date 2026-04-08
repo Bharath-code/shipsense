@@ -10,6 +10,15 @@ function productIdToPlan(productId: string): 'indie' | 'builder' | 'free' {
 	return 'free';
 }
 
+/**
+ * Check if the user is an admin — always gets full access during development.
+ * Set ADMIN_USER_IDS env var to a comma-separated list of user IDs.
+ */
+async function isAdmin(ctx: any, userId: string): Promise<boolean> {
+	const adminIds = process.env.ADMIN_USER_IDS?.split(',').map(id => id.trim()).filter(Boolean) ?? [];
+	return adminIds.includes(userId);
+}
+
 export const activateSubscription = internalMutation({
 	args: {
 		customerId: v.string(),
@@ -90,10 +99,11 @@ export const getUserPlan = query({
 	handler: async (ctx): Promise<'free' | 'indie' | 'builder'> => {
 		const userId = await getAuthUserId(ctx);
 		if (!userId) return 'free';
+		if (await isAdmin(ctx, userId)) return 'builder';
 		const profile = await ctx.db
 			.query('userProfiles')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
-			.unique();
+			.first();
 		return (profile?.plan as 'free' | 'indie' | 'builder') ?? 'free';
 	}
 });
