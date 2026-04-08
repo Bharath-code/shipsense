@@ -1,6 +1,7 @@
 import { internalMutation, query, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { internal } from './_generated/api';
 
 // Map product ID → plan name (set DODO_*_PRODUCT_ID in Convex env vars)
 function productIdToPlan(productId: string): 'indie' | 'builder' | 'free' {
@@ -28,6 +29,14 @@ export const activateSubscription = internalMutation({
 			plan,
 			dodoSubscriptionId: subscriptionId
 		});
+
+		// Auto-claim founding member spot for Indie subscribers
+		if (plan === 'indie') {
+			await ctx.runMutation(internal.foundingMembers.claimFoundingMemberSpot, {
+				userId: profile.userId,
+				subscriptionId
+			});
+		}
 	}
 });
 

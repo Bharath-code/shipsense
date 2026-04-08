@@ -17,6 +17,7 @@ import type * as dailyDigests from "../dailyDigests.js";
 import type * as dashboard from "../dashboard.js";
 import type * as dependencies from "../dependencies.js";
 import type * as email from "../email.js";
+import type * as foundingMembers from "../foundingMembers.js";
 import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as insightGenerator from "../insightGenerator.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   dashboard: typeof dashboard;
   dependencies: typeof dependencies;
   email: typeof email;
+  foundingMembers: typeof foundingMembers;
   github: typeof github;
   http: typeof http;
   insightGenerator: typeof insightGenerator;

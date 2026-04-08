@@ -560,18 +560,26 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 - [x] Change "Most popular" badge on Indie plan to "Recommended" (product is in beta, "most popular" is unverifiable)
 - [ ] Add email capture on landing page — "Get a free health report for any repo" input without requiring GitHub OAuth
 - [x] Add `.env.example` to repo root documenting required env vars
+- [x] Add founding member pricing — 50 spots at $4.50/mo (50% off Indie, forever) with urgency banner + progress bar
+  - [x] Add `foundingMembers` table to Convex schema
+  - [x] Create `getFoundingMemberCount` public query for landing page
+  - [x] Create `claimFoundingMemberSpot` internal mutation (auto-claimed via DodoPayments webhook)
+  - [x] Create `claimMyFoundingMemberSpot` public mutation (manual user claim)
+  - [x] Wire auto-claim into billing `activateSubscription` for Indie plan
+  - [x] Update landing page `+page.server.ts` to fetch real count from Convex
+  - [x] Write 10 test cases (capacity logic, duplicate prevention, pricing math, progress display)
 
 ### Code Quality / DevEx
 
-- [ ] Replace hardcoded `https://shipsense.app` in `src/routes/p/[slug]/+page.svelte` with dynamic `$app/stores` origin
-- [ ] Replace NotificationCenter's custom dropdown with existing `DropdownMenu` component
-- [ ] Clean up `OnboardingTour` — remove unused `createEventDispatcher` (Svelte 4 pattern), keep only runes
-- [ ] Add FAQ section to landing page (4-5 questions: "What is ShipSense?", "What data do you access?", "Is it free?", "Do I need to install anything?", "Can I use it for private repos?")
+- [x] Replace hardcoded `https://shipsense.app` in `src/routes/p/[slug]/+page.svelte` with relative paths (`/` and `/auth/login`)
+- [x] Replace NotificationCenter's custom dropdown with focus trap + outside click detection
+- [x] Clean up `OnboardingTour` — remove unused `createEventDispatcher` (Svelte 4 pattern), keep only runes
+- [x] Add FAQ section to landing page as accordion (5 questions: "What is ShipSense?", "What data do you access?", "Is it free?", "Do I need to install anything?", "Can I use it for private repos?")
 
 ### Performance
 
-- [ ] Add `content-visibility: auto` to below-the-fold landing page sections (capabilities, vision, pricing, CTA)
-- [ ] Reduce ambient glow blur from `blur-[140px]` to `blur-[100px]` or use prerendered PNG for mobile perf
+- [x] Add `content-visibility: auto` to below-the-fold landing page sections (capabilities, vision, pricing, CTA)
+- [x] Reduce ambient glow blur from `blur-[140px]` to `blur-[100px]` for mobile perf
 
 ### Strategic (deferred to post-launch)
 

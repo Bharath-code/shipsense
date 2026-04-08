@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { PageData } from './$types';
 	import { Button } from '$lib/components/ui/button';
 	import ThemeToggle from '$lib/components/dashboard/ThemeToggle.svelte';
 	import {
@@ -51,6 +52,10 @@
 		}
 	];
 	let openFaq = $state(-1);
+	let { data }: { data: PageData } = $props();
+
+	const foundingMemberSpots = 50;
+	const foundingMemberClaimed = $derived(data?.foundingMemberCount ?? 0);
 
 	// Pricing toggle
 	let annual = $state(false);
@@ -58,6 +63,9 @@
 	const annualTotalIndie = 84; // $7/mo × 12
 	const monthlyBuilder = 49;
 	const annualTotalBuilder = 468; // $39/mo × 12
+
+	// Founding member pricing
+	const foundingMemberPrice = 4.50; // 50% off Indie, forever
 
 	// Floating CTA
 	let showFloatingCta = $state(false);
@@ -176,14 +184,15 @@
 
 <div
 	class="relative min-h-screen overflow-x-hidden bg-background text-foreground transition-colors duration-500 selection:bg-primary/20 selection:text-primary font-sans"
+	style="scroll-behavior: smooth;"
 >
 	<!-- Ambient Background -->
 	<div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
 		<div
-			class="absolute top-[-20%] left-[-10%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/10 blur-[140px]"
+			class="absolute top-[-20%] left-[-10%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/10 blur-[100px]"
 		></div>
 		<div
-			class="absolute right-[-15%] bottom-[-20%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/10 blur-[140px]"
+			class="absolute right-[-15%] bottom-[-20%] h-[50%] w-[50%] animate-pulse-soft rounded-full bg-primary/10 blur-[100px]"
 			style="animation-delay: 3s;"
 		></div>
 	</div>
@@ -372,7 +381,7 @@
 		</section>
 
 		<!-- Capabilities Section -->
-		<section id="capabilities" class="relative container mx-auto max-w-6xl px-6 py-24">
+		<section id="capabilities" class="relative container mx-auto max-w-6xl px-6 py-24" style="content-visibility: auto;">
 			<div class="mb-16 text-center">
 				<h2 class="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
 					Stay on top of your repos without the noise.
@@ -479,6 +488,7 @@
 		<section
 			id="vision"
 			class="container mx-auto max-w-6xl px-6 py-24"
+			style="content-visibility: auto;"
 		>
 			<div class="mx-auto max-w-3xl text-center">
 				<h2 class="mb-6 text-3xl font-bold tracking-tight md:text-5xl">
@@ -509,6 +519,7 @@
 		<section
 			id="pricing"
 			class="container mx-auto max-w-6xl px-6 py-24"
+			style="content-visibility: auto;"
 		>
 			<div class="mb-16 text-center">
 				<h2 class="mb-6 text-3xl font-bold tracking-tight md:text-5xl">
@@ -537,6 +548,25 @@
 						Annual
 						<span class="ml-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">Save 20%</span>
 					</span>
+				</div>
+			</div>
+
+			<!-- Founding Member Banner -->
+			<div class="mx-auto mb-10 max-w-2xl overflow-hidden rounded-2xl border border-warning/30 bg-warning/5 p-5 text-center">
+				<div class="flex items-center justify-center gap-2 mb-2">
+					<span class="text-lg">⚡</span>
+					<span class="text-sm font-bold tracking-widest text-warning uppercase">Founding Member — 50% Off Forever</span>
+				</div>
+				<p class="text-sm text-muted-foreground mb-3">
+					Be one of the first {foundingMemberSpots} users and lock in <span class="font-semibold text-foreground">Indie for ${foundingMemberPrice}/mo — forever.</span> Price goes up to ${monthlyIndie}/mo after spots fill.
+				</p>
+				<div class="flex items-center justify-center gap-3">
+					<div class="flex gap-1">
+						{#each Array(foundingMemberSpots) as _, i}
+							<div class="h-1.5 w-3 rounded-full {i < foundingMemberClaimed ? 'bg-warning' : 'bg-muted'}"></div>
+						{/each}
+					</div>
+					<span class="text-xs font-semibold text-warning">{foundingMemberClaimed}/{foundingMemberSpots} claimed</span>
 				</div>
 			</div>
 
@@ -607,6 +637,12 @@
 								<span class="mb-1 text-xs text-muted-foreground">≈ $7/mo</span>
 							{/if}
 						</div>
+						<!-- Founding member price -->
+						<div class="mt-2 rounded-lg border border-warning/20 bg-warning/5 px-3 py-1.5 text-center">
+							<span class="text-xs text-muted-foreground">Founding member:</span>
+							<span class="ml-1 text-sm font-bold text-warning">${foundingMemberPrice}/mo</span>
+							<span class="ml-1 text-[10px] text-muted-foreground">· 50% off forever</span>
+						</div>
 					</div>
 
 					<!-- Intelligence preview -->
@@ -648,7 +684,7 @@
 						href="/auth/login"
 						class="mt-6 h-12 w-full rounded-full bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
 					>
-						Get Started
+						Get Started · ${foundingMemberPrice}/mo
 					</Button>
 				</div>
 
@@ -763,7 +799,7 @@
 		</section>
 
 		<!-- FAQ -->
-		<section id="faq" class="container mx-auto max-w-3xl px-6 py-24" aria-label="Frequently asked questions">
+		<section id="faq" class="container mx-auto max-w-3xl px-6 py-24" aria-label="Frequently asked questions" style="content-visibility: auto;">
 			<div class="mb-12 text-center">
 				<h2 class="text-3xl font-bold tracking-tight md:text-4xl">Questions? Answers.</h2>
 				<p class="mt-3 text-lg text-muted-foreground">Everything you need to know before getting started.</p>
@@ -845,7 +881,7 @@
 		</script>
 
 		<!-- Final CTA -->
-		<section class="container mx-auto max-w-6xl px-6 py-24">
+		<section class="container mx-auto max-w-6xl px-6 py-24" style="content-visibility: auto;">
 			<div
 				class="relative flex flex-col items-center overflow-hidden rounded-[3rem] bg-foreground p-12 text-center text-background shadow-2xl md:p-20"
 			>

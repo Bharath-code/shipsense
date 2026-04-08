@@ -310,5 +310,13 @@ export default defineSchema({
 		createdAt: v.number()
 	})
 		.index('by_userId_read', ['userId', 'read'])
-		.index('by_userId_createdAt', ['userId', 'createdAt'])
+		.index('by_userId_createdAt', ['userId', 'createdAt']),
+
+	// Founding member claims (first 50 Indie subscribers get 50% off forever)
+	foundingMembers: defineTable({
+		userId: v.id('users'),
+		claimedAt: v.number(),
+		subscriptionId: v.optional(v.string())
+	})
+		.index('by_userId', ['userId'])
 });

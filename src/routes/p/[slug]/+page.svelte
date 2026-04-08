@@ -104,7 +104,7 @@
 		<div class="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
 			<h1 class="text-2xl font-bold text-foreground">Repository Not Found</h1>
 			<p class="text-muted-foreground">This repository is not being tracked by ShipSense.</p>
-			<a href="https://shipsense.app" class="text-primary hover:underline"
+			<a href="/" class="text-primary hover:underline"
 				>Start tracking your repo →</a
 			>
 		</div>
@@ -113,7 +113,7 @@
 			<!-- Header -->
 			<div class="mb-8 text-center">
 				<a
-					href="https://shipsense.app"
+					href="/"
 					class="mb-6 inline-flex items-center gap-2 font-mono font-bold tracking-tighter text-foreground hover:opacity-80"
 				>
 					<div
@@ -249,12 +249,12 @@
 			<!-- Footer CTA -->
 			<div class="text-center">
 				<p class="mb-4 text-sm text-muted-foreground">
-					Powered by <a href="https://shipsense.app" class="text-primary hover:underline"
+					Powered by <a href="/" class="text-primary hover:underline"
 						>ShipSense</a
 					>
 				</p>
 				<a
-					href="https://shipsense.app"
+					href="/auth/login"
 					class="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
 				>
 					Track your repository
