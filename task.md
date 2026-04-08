@@ -554,12 +554,12 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 ### UX / Conversion
 
 - [ ] Add social proof section to landing page — "Trusted by X maintainers", repo count, or early adopter testimonials
-- [ ] Add annual/monthly pricing toggle with discount (e.g. "Save 20% with annual")
-- [ ] Add floating "Get Started Free" CTA that appears after scrolling past hero
-- [ ] Add "See a live demo" link to a pre-seeded public health page (let users experience product before auth)
-- [ ] Change "Most popular" badge on Indie plan to "Recommended" (product is in beta, "most popular" is unverifiable)
+- [x] Add annual/monthly pricing toggle with discount (e.g. "Save 20% with annual")
+- [x] Add floating "Get Started Free" CTA that appears after scrolling past hero
+- [x] Add "See a live demo" link to a pre-seeded public health page (let users experience product before auth)
+- [x] Change "Most popular" badge on Indie plan to "Recommended" (product is in beta, "most popular" is unverifiable)
 - [ ] Add email capture on landing page — "Get a free health report for any repo" input without requiring GitHub OAuth
-- [ ] Add `.env.example` to repo root documenting required env vars
+- [x] Add `.env.example` to repo root documenting required env vars
 
 ### Code Quality / DevEx
 

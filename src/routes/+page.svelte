@@ -51,6 +51,29 @@
 		}
 	];
 	let openFaq = $state(-1);
+
+	// Pricing toggle
+	let annual = $state(false);
+	const monthlyIndie = 9;
+	const annualTotalIndie = 84; // $7/mo × 12
+	const monthlyBuilder = 49;
+	const annualTotalBuilder = 468; // $39/mo × 12
+
+	// Floating CTA
+	let showFloatingCta = $state(false);
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const heroBottom = document.querySelector('#hero-area')?.getBoundingClientRect()?.bottom ?? 400;
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				showFloatingCta = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+			},
+			{ threshold: 0 }
+		);
+		const hero = document.querySelector('#hero-area');
+		if (hero) observer.observe(hero);
+		return () => observer.disconnect();
+	});
 </script>
 
 <svelte:head>
@@ -245,6 +268,7 @@
 	<main class="relative z-10 pt-24 pb-24">
 		<!-- Hero Area -->
 		<section
+			id="hero-area"
 			class="container mx-auto flex max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-24"
 		>
 			<div
@@ -288,6 +312,13 @@
 					<ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
 				</a>
 			</div>
+			<p class="mt-5 text-center text-sm">
+				Or{' '}
+				<a href="https://shipsense.app/p/example" class="text-primary underline decoration-primary/30 transition-colors hover:decoration-primary">
+					see a live demo with a pre-seeded repo
+				</a>
+				{' '}— no sign-up needed.
+			</p>
 
 			<!-- Hero Dashboard Preview -->
 			<div
@@ -486,6 +517,27 @@
 				<p class="mx-auto max-w-2xl text-lg text-muted-foreground">
 					Every plan includes a real health score and daily brief. Higher tiers unlock predictive signals, traffic intelligence, and portfolio management.
 				</p>
+
+				<!-- Billing toggle -->
+				<div class="mt-6 flex items-center justify-center gap-3">
+					<span class="text-sm font-medium {!annual ? 'text-foreground' : 'text-muted-foreground'}">Monthly</span>
+					<button
+						type="button"
+						onclick={() => (annual = !annual)}
+						class="relative h-7 w-12 rounded-full bg-muted transition-colors hover:bg-muted/80 {annual ? 'bg-primary/20' : ''}"
+						role="switch"
+						aria-checked={annual}
+						aria-label="Toggle annual billing"
+					>
+						<div
+							class="absolute top-0.5 h-6 w-6 rounded-full bg-foreground shadow-md transition-transform duration-200 {annual ? 'translate-x-5' : 'translate-x-0.5'}"
+						></div>
+					</button>
+					<span class="text-sm font-medium {annual ? 'text-foreground' : 'text-muted-foreground'}">
+						Annual
+						<span class="ml-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">Save 20%</span>
+					</span>
+				</div>
 			</div>
 
 			<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -536,21 +588,24 @@
 					</Button>
 				</div>
 
-				<!-- Indie (Popular) -->
+				<!-- Indie -->
 				<div
 					class="relative flex flex-col overflow-hidden rounded-[2rem] border border-primary/30 bg-card p-8 shadow-lg ring-1 ring-primary/10"
 				>
 					<div
 						class="absolute top-0 right-0 rounded-bl-2xl bg-primary px-3 py-1 text-[10px] font-bold tracking-widest text-primary-foreground uppercase"
 					>
-						Most popular
+						Recommended
 					</div>
 					<div class="mb-2">
 						<span class="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Indie</span>
 						<h3 class="mt-1 text-xl font-bold tracking-tight">Growth Intelligence</h3>
-						<div class="mt-4 flex items-end gap-1">
-							<span class="text-4xl font-bold">$9</span>
-							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
+						<div class="mt-4 flex items-end gap-1.5">
+							<span class="text-4xl font-bold">${annual ? annualTotalIndie : monthlyIndie}</span>
+							<span class="mb-1 text-sm text-muted-foreground">/{annual ? 'yr' : 'mo'}</span>
+							{#if annual}
+								<span class="mb-1 text-xs text-muted-foreground">≈ $7/mo</span>
+							{/if}
 						</div>
 					</div>
 
@@ -606,9 +661,12 @@
 							>Builder</span
 						>
 						<h3 class="mt-1 text-xl font-bold tracking-tight">Portfolio Ops</h3>
-						<div class="mt-4 flex items-end gap-1">
-							<span class="text-4xl font-bold">$49</span>
-							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
+						<div class="mt-4 flex items-end gap-1.5">
+							<span class="text-4xl font-bold">${annual ? annualTotalBuilder : monthlyBuilder}</span>
+							<span class="mb-1 text-sm text-muted-foreground">/{annual ? 'yr' : 'mo'}</span>
+							{#if annual}
+								<span class="mb-1 text-xs text-muted-foreground">≈ $39/mo</span>
+							{/if}
 						</div>
 					</div>
 
@@ -828,5 +886,18 @@
 				<a href="/legal/terms" class="text-muted-foreground underline decoration-transparent transition-colors hover:decoration-current">Terms</a>
 			</nav>
 		</footer>
+
+		<!-- Floating CTA -->
+		{#if showFloatingCta}
+			<div class="fixed bottom-6 right-6 z-50 animate-float">
+				<Button
+					href="/auth/login"
+					class="h-12 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-xl shadow-primary/25 transition-all duration-300 hover:scale-105 hover:bg-primary/90 active:scale-95"
+				>
+					<Zap size={16} class="mr-1.5" aria-hidden="true" />
+					Get Started Free
+				</Button>
+			</div>
+		{/if}
 	</main>
 </div>
