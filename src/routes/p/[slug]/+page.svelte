@@ -50,8 +50,10 @@
 		return 'text-muted-foreground';
 	}
 
-	const publicUrl = $derived(`https://shipsense.app/p/${slug}`);
-	const badgeUrl = $derived(`https://shipsense.app/api/badge/${slug}.svg`);
+	const pageUrl = $derived($page.url.origin);
+	const publicUrl = $derived(`${pageUrl}/p/${slug}`);
+	const badgeUrl = $derived(`${pageUrl}/api/badge/${slug}.svg`);
+	const socialCardUrl = $derived(`${pageUrl}/api/og?title=${encodeURIComponent(data?.repo?.fullName || 'ShipSense')}&score=${data?.healthScore ?? ''}`);
 </script>
 
 <svelte:head>
@@ -64,6 +66,8 @@
 		name="description"
 		content={data?.repo?.description || 'Repository health dashboard powered by ShipSense'}
 	/>
+	<meta name="author" content="ShipSense" />
+	<meta name="theme-color" content="#0a0a0a" />
 	<meta
 		property="og:title"
 		content={data?.repo
@@ -76,7 +80,8 @@
 	/>
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content={publicUrl} />
-	<meta property="og:image" content={badgeUrl} />
+	<meta property="og:site_name" content="ShipSense" />
+	<meta property="og:image" content={socialCardUrl} />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta
 		name="twitter:title"
@@ -84,6 +89,8 @@
 			? `${data.repo.fullName} Health Score: ${data.healthScore || 'N/A'}/100`
 			: 'Repository Health | ShipSense'}
 	/>
+	<meta name="twitter:image" content={socialCardUrl} />
+	<link rel="canonical" href={publicUrl} />
 </svelte:head>
 
 <div class="min-h-screen bg-background">

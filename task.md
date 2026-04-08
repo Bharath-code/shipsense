@@ -522,3 +522,65 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 - [x] Add modeled impact to task engine (e.g. "This PR will push Health to 85")
 - [ ] Implement team-level portfolio health overview
 - [ ] Add Slack / Discord webhooks for anomalies and weekly summaries
+
+---
+
+## Phase 33 — Pre-Launch Polish Sprint
+
+> Goal: make the product shippable for paid plans. All items are quick-to-medium wins that improve discoverability, trust, and conversion.
+
+### SEO / Discovery
+
+- [x] Add `<link rel="canonical">` to all pages (landing, login, dashboard, public health, legal)
+- [x] Generate OG social preview image (1200×630) — create `/api/og/+server.ts` endpoint that renders a branded card with headline + mock dashboard
+- [x] Add `og:image`, `twitter:image`, and `og:site_name` meta tags to landing + login pages
+- [x] Add `<meta name="author">` and `<meta name="theme-color">` to layout
+- [x] Add JSON-LD `SoftwareApplication` schema to landing page (name, description, offers, aggregateRating placeholder)
+- [x] Add JSON-LD `FAQPage` schema to landing page (4-5 FAQs about what ShipSense does)
+- [x] Create `/sitemap.xml` route listing: landing, login, legal pages, and all public health pages (`/p/[slug]`)
+- [x] Add `Sitemap:` directive to `static/robots.txt`
+- [x] Fix public health page `og:image` — replace tiny badge URL with proper 1200×630 social card endpoint
+
+### Accessibility
+
+- [x] Fix `prefers-reduced-motion` for landing page — inline `@keyframes float` and `@keyframes pulse-soft` are not covered by global reduced-motion rule
+- [x] Add focus trapping to `OnboardingTour` modal (Tab/Shift+Tab should stay inside)
+- [x] Add focus trapping to `NotificationCenter` dropdown
+- [x] Add mobile hamburger menu to landing page nav (links are `hidden md:flex` — invisible on mobile)
+- [x] Add `aria-hidden="true"` to decorative SVG icons (hero CTA arrow, login page mock stats, nav fingerprint icon)
+- [x] Add "Back to home" link on login page (above the fold)
+- [x] Add `role="alert"` to ErrorBoundary error state for screen reader announcement
+
+### UX / Conversion
+
+- [ ] Add social proof section to landing page — "Trusted by X maintainers", repo count, or early adopter testimonials
+- [ ] Add annual/monthly pricing toggle with discount (e.g. "Save 20% with annual")
+- [ ] Add floating "Get Started Free" CTA that appears after scrolling past hero
+- [ ] Add "See a live demo" link to a pre-seeded public health page (let users experience product before auth)
+- [ ] Change "Most popular" badge on Indie plan to "Recommended" (product is in beta, "most popular" is unverifiable)
+- [ ] Add email capture on landing page — "Get a free health report for any repo" input without requiring GitHub OAuth
+- [ ] Add `.env.example` to repo root documenting required env vars
+
+### Code Quality / DevEx
+
+- [ ] Replace hardcoded `https://shipsense.app` in `src/routes/p/[slug]/+page.svelte` with dynamic `$app/stores` origin
+- [ ] Replace NotificationCenter's custom dropdown with existing `DropdownMenu` component
+- [ ] Clean up `OnboardingTour` — remove unused `createEventDispatcher` (Svelte 4 pattern), keep only runes
+- [ ] Add FAQ section to landing page (4-5 questions: "What is ShipSense?", "What data do you access?", "Is it free?", "Do I need to install anything?", "Can I use it for private repos?")
+
+### Performance
+
+- [ ] Add `content-visibility: auto` to below-the-fold landing page sections (capabilities, vision, pricing, CTA)
+- [ ] Reduce ambient glow blur from `blur-[140px]` to `blur-[100px]` or use prerendered PNG for mobile perf
+
+### Strategic (deferred to post-launch)
+
+- [ ] **Phase 20** — Real-time Convex subscriptions (live sync indicator, push notifications)
+- [ ] **Phase 26** — Goals & Progress tracking
+- [ ] **Phase 27** — Benchmarking cohorts + watchlists
+- [ ] **Phase 29** — Notification preferences (quiet mode, per-event toggles, snooze)
+- [ ] **Phase 30** — Slack / Discord integrations
+- [ ] **Phase 32** — Team-level portfolio health overview
+- [ ] Deploy to Vercel (Phase 9 — unchecked)
+- [ ] Add privacy-friendly analytics (Plausible / Umami)
+- [ ] Add changelog / "What's New" page

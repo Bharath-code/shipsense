@@ -108,6 +108,13 @@
 		}
 	});
 
+	// When tour closes, mark as dismissed
+	$effect(() => {
+		if (!showTour) {
+			tourDismissed = true;
+		}
+	});
+
 	function startTour() {
 		showTour = true;
 	}
@@ -419,5 +426,5 @@
 	{/if}
 
 	<!-- Onboarding Tour -->
-	<OnboardingTour bind:open={showTour} on:close={() => (tourDismissed = true)} />
+	<OnboardingTour bind:open={showTour} />
 </div>

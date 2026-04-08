@@ -25,6 +25,7 @@
 	let notifications = $derived(notificationsQuery.data || []);
 	let unreadCount = $derived(unreadCountQuery.data ?? 0);
 	let isOpen = $state(false);
+	let dropdownRef = $state<HTMLDivElement | null>(null);
 
 	const typeIcons: Record<string, any> = {
 		score_drop: TrendingDown,
@@ -87,9 +88,45 @@
 	function toggleDropdown() {
 		isOpen = !isOpen;
 	}
+
+	// Close on outside click
+	function handleClickOutside(e: MouseEvent) {
+		if (dropdownRef && !dropdownRef.contains(e.target as Node)) {
+			isOpen = false;
+		}
+	}
+
+	// Focus trap for dropdown
+	function handleDropdownKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			isOpen = false;
+			return;
+		}
+		if (e.key !== 'Tab' || !dropdownRef) return;
+
+		const focusable = dropdownRef.querySelectorAll<HTMLElement>(
+			'button, [href], [tabindex]:not([tabindex="-1"])'
+		);
+		if (focusable.length === 0) return;
+
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+
+		if (e.shiftKey) {
+			if (document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			}
+		} else {
+			if (document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		}
+	}
 </script>
 
-<div class="relative">
+<div bind:this={dropdownRef} class="relative" onkeydown={handleDropdownKeydown}>
 	<button
 		type="button"
 		onclick={toggleDropdown}
@@ -97,7 +134,7 @@
 		aria-label="Notifications"
 		aria-expanded={isOpen}
 	>
-		<Bell class="h-5 w-5" />
+		<Bell class="h-5 w-5" aria-hidden="true" />
 		{#if unreadCount > 0}
 			<span
 				class="absolute -top-0.5 -right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white"

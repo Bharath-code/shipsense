@@ -11,7 +11,6 @@
 	import { TooltipProvider } from '$lib/components/ui/tooltip';
 
 	const auth = useAuth();
-	// ... rest of logic remains same ...
 	let wasAuthenticated = $state(false);
 
 	$effect(() => {
@@ -51,6 +50,15 @@
 
 	let { children } = $props();
 </script>
+
+<svelte:head>
+	<title>Dashboard — ShipSense</title>
+	<meta name="description" content="ShipSense dashboard — daily repo health briefs, anomaly alerts, and growth intelligence." />
+	<meta name="author" content="ShipSense" />
+	<meta name="theme-color" content="#0a0a0a" />
+	<meta property="og:site_name" content="ShipSense" />
+	<link rel="canonical" href="https://shipsense.app/dashboard" />
+</svelte:head>
 
 <svelte:window onkeydown={handleKeydown} />
 

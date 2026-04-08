@@ -1115,3 +1115,24 @@ export const getRepoBenchmark = query({
 		};
 	}
 });
+
+/**
+ * Returns all active public repo slugs for sitemap generation.
+ * Used by /sitemap.xml to list public health pages.
+ */
+export const listPublicSlugs = query({
+	handler: async (ctx) => {
+		const repos = await ctx.db
+			.query('repos')
+			.filter((q) => q.eq(q.field('isActive'), true))
+			.collect();
+
+		const slugs: string[] = [];
+		for (const repo of repos) {
+			if (repo.slug) {
+				slugs.push(repo.slug);
+			}
+		}
+		return slugs;
+	},
+});

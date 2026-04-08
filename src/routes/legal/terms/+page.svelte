@@ -7,6 +7,11 @@
 <svelte:head>
 	<title>Terms of Service — ShipSense</title>
 	<meta name="description" content="Terms of service for ShipSense — the rules for using our repository health intelligence platform." />
+	<meta name="author" content="ShipSense" />
+	<meta name="theme-color" content="#0a0a0a" />
+	<meta property="og:site_name" content="ShipSense" />
+	<meta property="og:image" content="https://shipsense.app/api/og" />
+	<link rel="canonical" href="https://shipsense.app/legal/terms" />
 </svelte:head>
 
 <div class="relative min-h-screen bg-background font-sans text-foreground">

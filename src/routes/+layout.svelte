@@ -19,6 +19,9 @@
 
 <svelte:head>
 	<title>ShipSense — Daily Repo Health Intelligence</title>
+	<meta name="author" content="ShipSense" />
+	<meta name="theme-color" content="#0a0a0a" />
+	<link rel="canonical" href="https://shipsense.app/" />
 </svelte:head>
 
 <ModeWatcher />

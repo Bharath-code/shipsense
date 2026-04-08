@@ -1,3 +1,8 @@
 # allow crawling everything by default
 User-agent: *
 Disallow:
+
+# dashboard pages require auth, no need to index
+Disallow: /dashboard
+
+Sitemap: https://shipsense.app/sitemap.xml

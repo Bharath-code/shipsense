@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	let {
 		children,
 		fallback = undefined
@@ -29,6 +27,7 @@
 	{:else}
 		<div
 			class="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center"
+			role="alert"
 		>
 			<p class="mb-4 font-medium text-destructive">{errorMessage}</p>
 			<button

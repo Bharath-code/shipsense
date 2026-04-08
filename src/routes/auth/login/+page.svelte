@@ -37,6 +37,15 @@
 <svelte:head>
 	<title>Sign In — ShipSense</title>
 	<meta name="description" content="Sign in to ShipSense with GitHub to track repo health, daily briefs, and growth intelligence." />
+	<meta name="author" content="ShipSense" />
+	<meta name="theme-color" content="#0a0a0a" />
+	<meta property="og:title" content="Sign In — ShipSense" />
+	<meta property="og:description" content="Sign in with GitHub to start tracking repository health with ShipSense." />
+	<meta property="og:site_name" content="ShipSense" />
+	<meta property="og:image" content="https://shipsense.app/api/og" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content="https://shipsense.app/api/og" />
+	<link rel="canonical" href="https://shipsense.app/auth/login" />
 	<style>
 		@keyframes auth-drift {
 			0%,
@@ -137,6 +146,12 @@
 					<div
 						class="border-b border-border bg-gradient-to-b from-muted to-transparent px-8 pt-8 pb-6"
 					>
+						<a
+							href="/"
+							class="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline decoration-transparent transition-colors hover:decoration-current"
+						>
+							← Back to home
+						</a>
 						<div
 							class="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.25rem] border border-border bg-primary text-2xl font-black text-primary-foreground shadow-md"
 						>

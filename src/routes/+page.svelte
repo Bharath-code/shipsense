@@ -14,17 +14,96 @@
 		Shield,
 		Rocket,
 		HelpCircle,
-		Share2
+		Share2,
+		Menu,
+		X,
+		ChevronDown,
+		ChevronUp
 	} from 'lucide-svelte';
+
+	let mobileMenuOpen = $state(false);
+
+	function closeMobileMenu() {
+		mobileMenuOpen = false;
+	}
+
+	// FAQ accordion state
+	const faqData = [
+		{
+			q: "What is ShipSense?",
+			a: "ShipSense is a daily repo health intelligence platform for GitHub. Connect your repositories and get one-page briefs showing what changed, what matters, and what to do next — with health scores, anomaly detection, and growth forecasting."
+		},
+		{
+			q: "What data do you access?",
+			a: "We only read public repository metadata and activity data from GitHub — stars, commits, issues, PRs, and contributors. We never access your source code, secrets, or private repositories unless you explicitly grant permission."
+		},
+		{
+			q: "Is it free?",
+			a: "Yes — the Free plan covers 1 repository with full health scores, daily briefs, and anomaly detection. Paid plans ($9/mo Indie, $49/mo Builder) unlock traffic intelligence, conversion funnels, star forecasts, and more repos."
+		},
+		{
+			q: "Do I need to install anything?",
+			a: "No. ShipSense is a web app. Sign in with GitHub, connect your repos, and your first health brief appears in under 30 seconds. No CLI, no config files, no setup."
+		},
+		{
+			q: "Can I use it for private repos?",
+			a: "Yes. When you authorize ShipSense via GitHub OAuth, you can choose to grant access to private repositories. We treat private repo data with the same encryption and storage standards as public data."
+		}
+	];
+	let openFaq = $state(-1);
 </script>
 
 <svelte:head>
 	<title>ShipSense — Daily Repo Health Intelligence</title>
 	<meta name="description" content="ShipSense turns GitHub activity into a daily health brief. Connect your repos, see what changed, and know exactly what to do next." />
+	<meta name="author" content="ShipSense" />
+	<meta name="theme-color" content="#0a0a0a" />
 	<meta property="og:title" content="ShipSense — Daily Repo Health Intelligence" />
 	<meta property="og:description" content="ShipSense turns GitHub activity into a daily health brief. Connect your repos, see what changed, and know exactly what to do next." />
 	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://shipsense.app/" />
+	<meta property="og:site_name" content="ShipSense" />
+	<meta property="og:image" content="https://shipsense.app/api/og" />
 	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@shipsense" />
+	<meta name="twitter:image" content="https://shipsense.app/api/og" />
+	<link rel="canonical" href="https://shipsense.app/" />
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "SoftwareApplication",
+			"name": "ShipSense",
+			"description": "Daily repository health intelligence for GitHub — health scores, anomaly detection, growth forecasting, and daily action briefs.",
+			"url": "https://shipsense.app/",
+			"applicationCategory": "DeveloperApplication",
+			"operatingSystem": "Web",
+			"offers": [
+				{
+					"@type": "Offer",
+					"name": "Free",
+					"price": "0",
+					"priceCurrency": "USD",
+					"description": "1 repository, health scores, daily briefs, anomaly detection"
+				},
+				{
+					"@type": "Offer",
+					"name": "Indie",
+					"price": "9",
+					"priceCurrency": "USD",
+					"billingIncrement": "P1M",
+					"description": "5 repositories, traffic intelligence, conversion funnels, star forecasts"
+				},
+				{
+					"@type": "Offer",
+					"name": "Builder",
+					"price": "49",
+					"priceCurrency": "USD",
+					"billingIncrement": "P1M",
+					"description": "50 repositories, team collaboration, Slack/Discord integrations"
+				}
+			]
+		}
+	</script>
 	<style>
 		@keyframes float {
 			0%,
@@ -50,6 +129,13 @@
 		}
 		.animate-pulse-soft {
 			animation: pulse-soft 6s ease-in-out infinite;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.animate-float,
+			.animate-pulse-soft {
+				animation: none;
+			}
 		}
 
 		.glass-nav {
@@ -88,7 +174,7 @@
 				<div
 					class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground shadow-lg"
 				>
-					<Fingerprint size={16} />
+					<Fingerprint size={16} aria-hidden="true" />
 				</div>
 				<span class="hidden sm:inline-block">ShipSense</span>
 			</div>
@@ -106,18 +192,55 @@
 					href="#pricing"
 					class="text-foreground/70 transition-colors duration-300 hover:text-foreground">Pricing</a
 				>
+				<a
+					href="#faq"
+					class="text-foreground/70 transition-colors duration-300 hover:text-foreground">FAQ</a
+				>
 			</nav>
 			<div class="flex items-center gap-3">
 				<ThemeToggle />
+				<!-- Hamburger (mobile only) -->
+				<button
+					type="button"
+					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+					class="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+					aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+					aria-expanded={mobileMenuOpen}
+				>
+					{#if mobileMenuOpen}
+						<X size={20} aria-hidden="true" />
+					{:else}
+						<Menu size={20} aria-hidden="true" />
+					{/if}
+				</button>
 				<Button
 					href="/auth/login"
-					class="rounded-full bg-foreground px-6 font-medium text-background shadow-md transition-all duration-300 hover:scale-105 hover:bg-foreground/90 active:scale-95"
+					class="hidden rounded-full bg-foreground px-6 font-medium text-background shadow-md transition-all duration-300 hover:scale-105 hover:bg-foreground/90 active:scale-95 sm:inline-flex"
 				>
 					Sign In
 				</Button>
 			</div>
 		</header>
 	</div>
+
+	<!-- Mobile Menu -->
+	{#if mobileMenuOpen}
+		<div class="fixed inset-0 z-40 bg-background pt-20 md:hidden" role="dialog" aria-label="Mobile navigation" aria-modal="true">
+			<nav class="flex flex-col items-center gap-6 pt-12 text-lg font-medium font-mono">
+				<a href="#vision" onclick={closeMobileMenu} class="text-foreground/80 transition-colors hover:text-foreground">Vision</a>
+				<a href="#capabilities" onclick={closeMobileMenu} class="text-foreground/80 transition-colors hover:text-foreground">Capabilities</a>
+				<a href="#pricing" onclick={closeMobileMenu} class="text-foreground/80 transition-colors hover:text-foreground">Pricing</a>
+				<a href="#faq" onclick={closeMobileMenu} class="text-foreground/80 transition-colors hover:text-foreground">FAQ</a>
+				<Button
+					href="/auth/login"
+					onclick={closeMobileMenu}
+					class="mt-4 rounded-full bg-foreground px-8 font-medium text-background shadow-md"
+				>
+					Sign In
+				</Button>
+			</nav>
+		</div>
+	{/if}
 
 	<main class="relative z-10 pt-24 pb-24">
 		<!-- Hero Area -->
@@ -155,14 +278,14 @@
 					class="h-14 w-full rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition-all duration-300 hover:bg-primary/90 sm:w-auto"
 				>
 					Check My Repo Health
-					<ArrowRight class="ml-2 h-4 w-4" />
+					<ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
 				</Button>
 				<a
 					href="#capabilities"
 					class="h-14 w-full rounded-full border border-foreground/15 bg-transparent px-8 text-center text-base font-semibold text-foreground/70 transition-all duration-300 hover:bg-foreground/5 hover:text-foreground sm:w-auto flex items-center justify-center"
 				>
 					See how it works
-					<ArrowRight class="ml-2 h-4 w-4" />
+					<ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
 				</a>
 			</div>
 
@@ -176,7 +299,7 @@
 					<div class="mb-6 flex items-center justify-between">
 						<div class="flex items-center gap-3">
 							<div class="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-								<Fingerprint size={16} />
+								<Fingerprint size={16} aria-hidden="true" />
 							</div>
 							<div>
 								<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase font-mono">Today's Brief</p>
@@ -581,7 +704,87 @@
 			</div>
 		</section>
 
+		<!-- FAQ -->
+		<section id="faq" class="container mx-auto max-w-3xl px-6 py-24" aria-label="Frequently asked questions">
+			<div class="mb-12 text-center">
+				<h2 class="text-3xl font-bold tracking-tight md:text-4xl">Questions? Answers.</h2>
+				<p class="mt-3 text-lg text-muted-foreground">Everything you need to know before getting started.</p>
+			</div>
+			<div class="divide-y divide-border/40">
+				{#each faqData as faq, i}
+					<div>
+						<button
+							type="button"
+							onclick={() => (openFaq = openFaq === i ? -1 : i)}
+							class="group flex w-full cursor-pointer items-center justify-between py-5 text-left"
+							aria-expanded={openFaq === i}
+							aria-controls="faq-panel-{i}"
+						>
+							<span class="pr-4 text-base font-semibold text-foreground">{faq.q}</span>
+							{#if openFaq === i}
+								<ChevronUp class="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:text-foreground" aria-hidden="true" />
+							{:else}
+								<ChevronDown class="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:text-foreground" aria-hidden="true" />
+							{/if}
+						</button>
+						{#if openFaq === i}
+							<div id="faq-panel-{i}" class="pb-5">
+								<p class="text-sm leading-relaxed text-muted-foreground">{faq.a}</p>
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
+		</section>
 
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "FAQPage",
+				"mainEntity": [
+					{
+						"@type": "Question",
+						"name": "What is ShipSense?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "ShipSense is a daily repo health intelligence platform for GitHub. Connect your repositories and get one-page briefs showing what changed, what matters, and what to do next — with health scores, anomaly detection, and growth forecasting."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "What data do you access?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "We only read public repository metadata and activity data from GitHub — stars, commits, issues, PRs, and contributors. We never access your source code, secrets, or private repositories unless you explicitly grant permission."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "Is it free?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "Yes — the Free plan covers 1 repository with full health scores, daily briefs, and anomaly detection. Paid plans ($9/mo Indie, $49/mo Builder) unlock traffic intelligence, conversion funnels, star forecasts, and more repos."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "Do I need to install anything?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "No. ShipSense is a web app. Sign in with GitHub, connect your repos, and your first health brief appears in under 30 seconds. No CLI, no config files, no setup."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "Can I use it for private repos?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "Yes. When you authorize ShipSense via GitHub OAuth, you can choose to grant access to private repositories. We treat private repo data with the same encryption and storage standards as public data."
+						}
+					}
+				]
+			}
+		</script>
 
 		<!-- Final CTA -->
 		<section class="container mx-auto max-w-6xl px-6 py-24">
@@ -603,7 +806,7 @@
 						class="h-14 rounded-full bg-primary px-10 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-300 hover:bg-primary/90"
 					>
 						Get Started Free
-						<ArrowRight class="ml-2 h-4 w-4" />
+						<ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
 					</Button>
 				</div>
 			</div>
@@ -614,7 +817,7 @@
 			class="relative z-10 container mx-auto mt-12 max-w-6xl border-t border-border px-6 py-12 text-center text-muted-foreground"
 		>
 			<div class="mb-4 flex items-center justify-center gap-2">
-				<Fingerprint size={20} class="opacity-40" />
+				<Fingerprint size={20} class="opacity-40" aria-hidden="true" />
 				<span class="text-sm font-medium">ShipSense</span>
 			</div>
 			<p class="text-sm">

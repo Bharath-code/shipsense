@@ -7,6 +7,11 @@
 <svelte:head>
 	<title>Privacy Policy — ShipSense</title>
 	<meta name="description" content="Privacy policy for ShipSense — how we collect, use, and protect your data." />
+	<meta name="author" content="ShipSense" />
+	<meta name="theme-color" content="#0a0a0a" />
+	<meta property="og:site_name" content="ShipSense" />
+	<meta property="og:image" content="https://shipsense.app/api/og" />
+	<link rel="canonical" href="https://shipsense.app/legal/privacy" />
 </svelte:head>
 
 <div class="relative min-h-screen bg-background font-sans text-foreground">

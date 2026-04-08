@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { createEventDispatcher } from 'svelte';
 	import {
 		ArrowRight,
 		X,
@@ -16,8 +15,6 @@
 		open?: boolean;
 		currentStep?: number;
 	}>();
-
-	const dispatch = createEventDispatcher();
 
 	const TOUR_STORAGE_KEY = 'shipsense_tour_dismissed';
 
@@ -52,6 +49,8 @@
 		}
 	];
 
+	let modalRef = $state<HTMLDivElement | null>(null);
+
 	function next() {
 		if (currentStep < steps.length - 1) {
 			currentStep++;
@@ -71,18 +70,41 @@
 		if (browser) {
 			localStorage.setItem(TOUR_STORAGE_KEY, 'true');
 		}
-		dispatch('close');
 	}
 
 	function skipTour() {
 		closeTour();
 	}
 
-	// Keyboard navigation
+	// Focus trap: cycle Tab/Shift+Tab within the modal
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') closeTour();
+		if (!modalRef) return;
+		if (e.key === 'Escape') {
+			closeTour();
+			return;
+		}
 		if (e.key === 'ArrowRight') next();
 		if (e.key === 'ArrowLeft') prev();
+
+		if (e.key !== 'Tab') return;
+
+		const focusable = modalRef.querySelectorAll<HTMLElement>(
+			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+		);
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+
+		if (e.shiftKey) {
+			if (document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			}
+		} else {
+			if (document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		}
 	}
 </script>
 
@@ -96,6 +118,7 @@
 		aria-label="Onboarding tour"
 	>
 		<div
+			bind:this={modalRef}
 			class="relative mx-4 w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-background p-8 shadow-2xl"
 		>
 			<!-- Close button -->
