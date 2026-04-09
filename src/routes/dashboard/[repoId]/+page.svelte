@@ -113,8 +113,9 @@
 
 	function formatMomentum(momentum: number | null | undefined): string {
 		if (typeof momentum !== 'number') return 'No prior score';
-		if (momentum > 0) return `+${momentum}`;
-		if (momentum < 0) return `${momentum}`;
+		const rounded = Math.round(momentum * 10) / 10;
+		if (rounded > 0) return `+${rounded}`;
+		if (rounded < 0) return `${rounded}`;
 		return '0';
 	}
 
@@ -367,9 +368,9 @@
 	<div class="flex items-center justify-between">
 		<Button
 			variant="ghost"
-			size="sm"
+			size="default"
 			href="/dashboard"
-			class="group rounded-full bg-white/5 px-4 py-2 text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
+			class="group rounded-full bg-white/5 text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
 		>
 			<ArrowLeft class="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
 			Back to Ecosystem
@@ -379,8 +380,8 @@
 			<div class="flex items-center gap-3">
 				<Button
 					variant="outline"
-					size="sm"
-					class="rounded-full border-white/10 bg-white/5 px-4 hover:bg-white/10"
+					size="default"
+					class="rounded-full border-white/10 bg-white/5 hover:bg-white/10"
 					disabled={isSyncing}
 					onclick={triggerSync}
 				>
@@ -389,8 +390,8 @@
 				</Button>
 				<Button
 					variant="destructive"
-					size="sm"
-					class="rounded-full px-4"
+					size="default"
+					class="rounded-full"
 					disabled={isDisconnecting}
 					onclick={disconnectRepo}
 				>
@@ -559,7 +560,7 @@
 						<p class="mt-2 text-sm text-muted-foreground">
 							{repo.hasTrend
 								? `Score delta ${formatMomentum(repo.momentum)}`
-								: 'Waiting for a second score'}
+								: 'No recent activity'}
 						</p>
 					</div>
 
@@ -694,8 +695,8 @@
 						{/if}
 						<div class="mt-4 flex flex-wrap gap-2">
 							<Button
-								size="sm"
-								class="h-9 rounded-full"
+								size="default"
+								class="rounded-full"
 								onclick={() => completeTask(primaryTask._id)}
 							>
 								<CheckCircle2 class="mr-2 h-4 w-4" />
@@ -704,8 +705,8 @@
 							{#if tasks.length > 1}
 								<Button
 									variant="outline"
-									size="sm"
-									class="h-9 rounded-full"
+									size="default"
+									class="rounded-full"
 									onclick={() => switchTab('tasks')}
 								>
 									See all {tasks.length} tasks
@@ -733,7 +734,7 @@
 						<p class="text-sm text-foreground">{dailyBrief.topWin}</p>
 						<button
 							type="button"
-							class="mt-2 inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-success hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-success/50 focus-visible:outline-none"
+							class="mt-2 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-success hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-success/50 focus-visible:outline-none"
 							onclick={() => switchTab('share')}
 						>
 							Share this <ChevronRight class="h-3 w-3" />
@@ -763,7 +764,7 @@
 									</div>
 									<button
 										type="button"
-										class="rounded-lg px-2 py-1 text-xs font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+										class="min-h-[44px] rounded-lg px-2 py-1 text-sm font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
 										onclick={() => switchTab('growth')}
 									>
 										Full view <ChevronRight class="ml-0.5 inline h-3 w-3" />
@@ -1000,7 +1001,7 @@
 													{/if}
 												</div>
 												<Button
-													size="sm"
+													size="default"
 													variant="outline"
 													class="rounded-full"
 													onclick={() => completeTask(task._id)}
@@ -1133,9 +1134,9 @@
 							<p class="text-xs font-medium text-muted-foreground">Public link</p>
 							<p class="mt-2 text-sm break-all text-foreground">{publicUrl}</p>
 							<Button
-								size="sm"
+								size="default"
 								variant="ghost"
-								class="mt-3 rounded-full"
+								class="rounded-full"
 								onclick={() => copyText(publicUrl, 'public')}
 							>
 								{publicLinkCopied ? 'Copied' : 'Copy link'}
@@ -1162,8 +1163,8 @@
 	>
 		<div class="mt-3 flex gap-2">
 			<Button
-				size="sm"
-				class="h-8 rounded-lg bg-emerald-500 font-semibold text-white hover:bg-emerald-600"
+				size="default"
+				class="rounded-lg bg-emerald-500 font-semibold text-white hover:bg-emerald-600"
 				onclick={() => {
 					showFirstSyncToast = false;
 					showGrowthCard = true;
@@ -1172,9 +1173,9 @@
 				{LABELS.TOAST_SHARE_NOW}
 			</Button>
 			<Button
-				size="sm"
+				size="default"
 				variant="ghost"
-				class="h-8 rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
+				class="rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
 				onclick={dismissToast}
 			>
 				{LABELS.TOAST_LATER}
@@ -1238,7 +1239,7 @@
 						<button
 							type="button"
 							onclick={() => copyText(badgeMarkdown, 'badge')}
-							class="shrink-0 cursor-pointer rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+							class="shrink-0 cursor-pointer rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 min-h-[44px]"
 						>
 							{badgeCopied ? 'Copied!' : 'Copy'}
 						</button>

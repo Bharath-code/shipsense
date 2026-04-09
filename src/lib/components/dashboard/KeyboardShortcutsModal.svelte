@@ -47,7 +47,7 @@
 				<p class="text-sm text-muted-foreground">
 					Press keys to trigger actions anywhere in the app.
 				</p>
-				<Button variant="outline" size="sm" onclick={toggleShortcuts}>
+				<Button variant="outline" size="default" onclick={toggleShortcuts}>
 					{keyboardHandler.getEnabled() ? 'Disable' : 'Enable'}
 				</Button>
 			</div>

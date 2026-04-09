@@ -598,6 +598,86 @@ Moved to Phase 22 for proper implementation with unified insights layer.
 - [x] Add `content-visibility: auto` to below-the-fold landing page sections (capabilities, vision, pricing, CTA)
 - [x] Reduce ambient glow blur from `blur-[140px]` to `blur-[100px]` for mobile perf
 
+---
+
+## Phase 34 — Gemini Prompt Reliability & Output Quality
+
+> Goal: Make AI insights deterministic, structured, and trustworthy. Users should get consistent, actionable guidance — not vague, varying text.
+
+### Problem
+
+Current Gemini prompting has 4 critical reliability gaps:
+1. No output validation — malformed JSON or missing keys gets saved to DB
+2. No `responseSchema` — Gemini can return any JSON shape
+3. No temperature/seed — identical inputs produce different outputs
+4. Missing trend context — Gemini doesn't know if repo is improving or declining
+
+### Prompt Structure Overhaul
+
+- [x] Restructure prompt with explicit XML-tagged sections: `<role>`, `<task>`, `<repository>`, `<metrics>`, `<output_format>`
+- [x] Add metric glossary so Gemini knows what each field means and its time window (e.g. "prsMerged7d = PRs merged in last 7 days")
+- [x] Add risk evaluation criteria: what constitutes low/medium/high risk (e.g. "high = score dropped 15+ points, no commits in 14+ days")
+- [x] Add action quality guidance: actions must be specific, prioritized, and tied to observed metrics (not generic advice)
+- [x] Remove leading whitespace from template literal to save tokens
+- [x] Drop `scoreExplanation` from metrics payload (too verbose, duplicates info model can infer)
+
+### Input Data Enrichment
+
+- [x] Add `scoreTrend` ('up' | 'down' | 'stable') to metrics payload
+- [x] Add `previousScore` to metrics payload for context
+- [x] Add `commitGapHours` interpretation hint (e.g. "last commit was X hours ago")
+- [x] Add `anomalyFlags` array if recent anomalies detected (e.g. ["momentum_drop", "star_spike"])
+- [x] Add `hasRecentCommits` boolean for quick context
+
+### Response Format Enforcement
+
+- [x] Add `responseSchema` to `generationConfig` with strict JSON schema:
+  ```ts
+  {
+    type: 'object',
+    properties: {
+      summary: { type: 'string', description: '2-3 sentence assessment, max 200 chars' },
+      risk: { type: 'string', enum: ['low', 'medium', 'high'] },
+      actions: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 4 }
+    },
+    required: ['summary', 'risk', 'actions']
+  }
+  ```
+
+### Determinism Configuration
+
+- [x] Set `temperature: 0.1` for consistent, analytical outputs
+- [x] Set `maxOutputTokens: 1024` to prevent runaway responses
+- [x] Set `topP: 0.9` for focused sampling
+- [x] Set `candidateCount: 1` (default, but explicit)
+
+### Output Validation
+
+- [x] Validate `summary` exists and is a string before saving
+- [x] Validate `risk` is one of `['low', 'medium', 'high']`
+- [x] Validate `actions` is a non-empty array of strings
+- [x] Throw descriptive error if validation fails (triggers fallback insight)
+- [x] Add defensive JSON parsing: `json?.candidates?.[0]?.content?.parts?.[0]?.text`
+
+### Error Handling Improvements
+
+- [x] Add retry logic with exponential backoff for 429/5xx errors
+- [x] Check for existing recent insight before inserting duplicate fallback
+- [x] Improve error messages to include repo context for debugging
+
+### Model Configuration
+
+- [x] Keep `gemini-3-flash-preview` for all plans (user decision)
+- [x] Document model choice in `SCORING_SYSTEM.md` alongside funnel docs
+
+### Verification
+
+- [x] Add unit tests for prompt builder function
+- [x] Add unit tests for output validation logic
+- [ ] Manual test: run sync twice with same data, verify identical insight output
+- [ ] Test fallback behavior when Gemini API returns malformed response
+- [ ] Test error recovery with retry logic
+
 ### Strategic (deferred to post-launch)
 
 - [ ] **Phase 20** — Real-time Convex subscriptions (live sync indicator, push notifications)

@@ -178,7 +178,7 @@
 				</div>
 				<Button
 					variant="ghost"
-					size="sm"
+					size="default"
 					onclick={() => (showPlanPicker = !showPlanPicker)}
 					class="gap-1.5 text-primary hover:text-primary/80"
 				>
@@ -260,16 +260,16 @@
 							{#if p.id === 'free'}
 								<Button
 									variant="outline"
-									size="sm"
-									class="w-full rounded-full text-xs"
+									size="default"
+									class="w-full rounded-full"
 									disabled={isButtonDisabled(p.id)}
 								>
 									{getButtonText(p.id)}
 								</Button>
 							{:else}
 								<Button
-									size="sm"
-									class="w-full rounded-full text-xs"
+									size="default"
+									class="w-full rounded-full"
 									variant={getButtonVariant(p.id)}
 									onclick={() => p.productId && handleUpgrade(p.productId)}
 									disabled={isButtonDisabled(p.id)}

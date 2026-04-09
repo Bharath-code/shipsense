@@ -120,8 +120,9 @@
 	}
 
 	function formatMomentum(momentum: number) {
-		if (momentum > 0) return `+${momentum}`;
-		return `${momentum}`;
+		const rounded = Math.round(momentum * 10) / 10;
+		if (rounded > 0) return `+${rounded}`;
+		return `${rounded}`;
 	}
 
 	function momentumTone(trend: 'up' | 'down' | 'stable') {
@@ -140,7 +141,7 @@
 		trend: 'up' | 'down' | 'stable';
 	}) {
 		if (!repo.hasScore) return 'Status';
-		return repo.hasTrend ? 'Trend' : 'Status';
+		return repo.hasTrend ? 'Trend' : 'Activity';
 	}
 </script>
 
@@ -157,7 +158,8 @@
 
 		<Button
 			href="/dashboard/connect"
-			class="group relative h-12 overflow-hidden rounded-full bg-primary px-8 font-semibold text-primary-foreground transition-all hover:ring-2 hover:ring-primary/50 hover:ring-offset-2 hover:ring-offset-background"
+			size="lg"
+			class="group relative overflow-hidden rounded-full px-8 font-semibold text-primary-foreground transition-all hover:ring-2 hover:ring-primary/50 hover:ring-offset-2 hover:ring-offset-background"
 		>
 			<span class="relative z-10 flex items-center gap-2">
 				Connect Repository
@@ -323,7 +325,8 @@
 			<Button
 				href="/dashboard/connect"
 				variant="outline"
-				class="h-12 rounded-full border-border bg-muted px-10 hover:bg-muted/80"
+				size="lg"
+				class="rounded-full px-10 hover:bg-muted/80"
 			>
 				Connect your first repo
 			</Button>
@@ -409,7 +412,7 @@
 								{#if !repo.hasScore}
 									<div class="text-sm font-medium text-muted-foreground">Syncing</div>
 								{:else if !repo.hasTrend}
-									<div class="text-sm font-medium text-muted-foreground">Baseline</div>
+									<div class="text-sm font-medium text-muted-foreground">Inactive</div>
 								{:else if hasNumericMomentum(repo.momentum)}
 									<div class={`text-lg font-bold ${momentumTone(repo.trend)}`}>
 										{formatMomentum(repo.momentum)}

@@ -130,7 +130,7 @@
 	<button
 		type="button"
 		onclick={toggleDropdown}
-		class="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+		class="relative flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 		aria-label="Notifications"
 		aria-expanded={isOpen}
 	>

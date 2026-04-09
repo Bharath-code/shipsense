@@ -313,7 +313,8 @@
 		<!-- Action Buttons - Share Primary -->
 		<div class="grid grid-cols-1 gap-3 border-t border-white/10 bg-black/60 p-6">
 			<Button
-				class="h-12 w-full rounded-xl bg-[#000000] text-base font-bold text-white transition-all hover:bg-[#1a1a1a] active:scale-[0.98]"
+				size="lg"
+				class="w-full rounded-xl bg-[#000000] text-base font-bold text-white transition-all hover:bg-[#1a1a1a] active:scale-[0.98]"
 				onclick={shareToTwitter}
 				aria-label="Share on X"
 			>
@@ -331,7 +332,8 @@
 			</Button>
 			<Button
 				variant="outline"
-				class="h-11 w-full rounded-xl border-white/20 bg-white/5 text-sm font-medium text-white/80 hover:bg-white/10"
+				size="default"
+				class="w-full rounded-xl border-white/20 bg-white/5 font-medium text-white/80 hover:bg-white/10"
 				onclick={downloadCard}
 				disabled={downloading}
 				aria-label={LABELS.DOWNLOAD_IMAGE}

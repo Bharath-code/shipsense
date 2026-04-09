@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeRepoScore, determineTrend } from './scorer';
+import { computeRepoScore, determineTrend, computeMomentumDelta, computeMomentumWithTime } from './scorer';
 
 describe('computeRepoScore', () => {
 	it('calculates a high score for an active, popular repo', () => {
@@ -232,5 +232,137 @@ describe('determineTrend', () => {
 		// 5 scores → n = min(3, floor(5/2)) = 2
 		// Recent(58,60)=59, prior(45,48)=46.5 → delta 12.5 → up
 		expect(determineTrend([45, 48, 52, 58, 60])).toBe('up');
+	});
+});
+
+describe('computeMomentumDelta', () => {
+	it('returns null with no history', () => {
+		expect(computeMomentumDelta([])).toBe(null);
+	});
+
+	it('returns null with a single score', () => {
+		expect(computeMomentumDelta([42])).toBe(null);
+	});
+
+	it('returns single-point delta with 2-3 scores', () => {
+		expect(computeMomentumDelta([60, 63])).toBe(3);
+		expect(computeMomentumDelta([60, 57])).toBe(-3);
+		expect(computeMomentumDelta([60, 62])).toBe(2);
+		expect(computeMomentumDelta([60, 58])).toBe(-2);
+	});
+
+	it('returns averaged delta with ≥ 4 scores', () => {
+		// 4 scores → n=2: recent(55,60)=57.5, prior(45,50)=47.5 → 10
+		expect(computeMomentumDelta([45, 50, 55, 60])).toBe(10);
+	});
+
+	it('returns negative averaged delta for declining repos', () => {
+		// 6 scores → n=3: recent(55,53,51)=53, prior(62,60,58)=60 → -7
+		expect(computeMomentumDelta([62, 60, 58, 55, 53, 51])).toBe(-7);
+	});
+
+	it('matches determineTrend direction for ≥ 4 scores', () => {
+		const scores = [58, 60, 62, 65, 67, 69];
+		const delta = computeMomentumDelta(scores);
+		// Recent(65,67,69)=67, prior(58,60,62)=60 → delta 7 → up
+		expect(delta).toBe(7);
+		expect(determineTrend(scores)).toBe('up');
+	});
+
+	it('returns small positive when trend is up by narrow margin', () => {
+		// 6 scores → n=3: recent(60,61,62)=61, prior(59,60,61)=60 → delta 1
+		// determineTrend says stable (delta < 2), but delta is still +1
+		const scores = [59, 60, 61, 60, 61, 62];
+		expect(computeMomentumDelta(scores)).toBe(1);
+		expect(determineTrend(scores)).toBe('stable');
+	});
+});
+
+describe('computeMomentumWithTime', () => {
+	const now = Date.now();
+	const day = 24 * 60 * 60 * 1000;
+
+	it('returns no recent activity when all scores are older than 7 days', () => {
+		const scores = [
+			{ healthScore: 80, calculatedAt: now - 12 * day },
+			{ healthScore: 82, calculatedAt: now - 10 * day },
+			{ healthScore: 85, calculatedAt: now - 8 * day }
+		];
+		const result = computeMomentumWithTime(scores, now);
+		expect(result.hasRecentActivity).toBe(false);
+		expect(result.delta).toBe(null);
+		expect(result.trend).toBe('stable');
+	});
+
+	it('detects improvement when recent scores are higher than prior week', () => {
+		const scores = [
+			{ healthScore: 55, calculatedAt: now - 13 * day },
+			{ healthScore: 58, calculatedAt: now - 10 * day },
+			{ healthScore: 62, calculatedAt: now - 6 * day },
+			{ healthScore: 65, calculatedAt: now - 3 * day },
+			{ healthScore: 68, calculatedAt: now - 1 * day }
+		];
+		const result = computeMomentumWithTime(scores, now);
+		expect(result.hasRecentActivity).toBe(true);
+		// Recent avg: (62+65+68)/3 = 65, Prior avg: (55+58)/2 = 56.5, delta ≈ 8.5
+		expect(result.delta).toBeGreaterThan(2);
+		expect(result.trend).toBe('up');
+	});
+
+	it('detects decline when recent scores are lower than prior week', () => {
+		const scores = [
+			{ healthScore: 70, calculatedAt: now - 13 * day },
+			{ healthScore: 68, calculatedAt: now - 10 * day },
+			{ healthScore: 65, calculatedAt: now - 6 * day },
+			{ healthScore: 60, calculatedAt: now - 3 * day },
+			{ healthScore: 58, calculatedAt: now - 1 * day }
+		];
+		const result = computeMomentumWithTime(scores, now);
+		expect(result.hasRecentActivity).toBe(true);
+		// Recent avg: (65+60+58)/3 ≈ 61, Prior avg: (70+68)/2 = 69, delta ≈ -8
+		expect(result.delta).toBeLessThan(-2);
+		expect(result.trend).toBe('down');
+	});
+
+	it('shows stable when recent and prior are similar', () => {
+		const scores = [
+			{ healthScore: 60, calculatedAt: now - 10 * day },
+			{ healthScore: 62, calculatedAt: now - 5 * day },
+			{ healthScore: 61, calculatedAt: now - 1 * day }
+		];
+		const result = computeMomentumWithTime(scores, now);
+		expect(result.hasRecentActivity).toBe(true);
+		expect(result.trend).toBe('stable');
+	});
+
+	it('falls back to oldest score when no prior window exists', () => {
+		// Only scores from the last 7 days — no prior window
+		const scores = [
+			{ healthScore: 50, calculatedAt: now - 5 * day },
+			{ healthScore: 58, calculatedAt: now - 2 * day },
+			{ healthScore: 60, calculatedAt: now - 1 * day }
+		];
+		const result = computeMomentumWithTime(scores, now);
+		expect(result.hasRecentActivity).toBe(true);
+		// Recent avg: (50+58+60)/3 = 56, oldest: 50, delta = 6
+		expect(result.delta).toBe(6);
+		expect(result.trend).toBe('up');
+	});
+
+	it('uses ±3 threshold when no prior window (single-point comparison)', () => {
+		const scores = [
+			{ healthScore: 60, calculatedAt: now - 3 * day },
+			{ healthScore: 62, calculatedAt: now - 1 * day }
+		];
+		const result = computeMomentumWithTime(scores, now);
+		// Delta = 62 - 60 = 2 → stable (below ±3 threshold)
+		expect(result.trend).toBe('stable');
+	});
+
+	it('handles empty scores gracefully', () => {
+		const result = computeMomentumWithTime([], now);
+		expect(result.hasRecentActivity).toBe(false);
+		expect(result.delta).toBe(null);
+		expect(result.trend).toBe('stable');
 	});
 });

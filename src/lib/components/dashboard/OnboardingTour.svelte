@@ -125,7 +125,7 @@
 			<button
 				type="button"
 				onclick={closeTour}
-				class="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+				class="absolute top-4 right-4 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
 				aria-label="Close tour"
 			>
 				<X class="h-4 w-4" />
@@ -182,7 +182,7 @@
 						</Button>
 					{/if}
 
-					<Button onclick={next} class="gap-2">
+					<Button size="lg" onclick={next} class="gap-2">
 						{steps[currentStep].cta}
 						<ArrowRight class="h-4 w-4" />
 					</Button>

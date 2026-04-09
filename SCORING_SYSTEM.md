@@ -101,9 +101,28 @@ contributorScore = min(10, round(3 + 7 × (1 - e^(-contributors14d / 4))))
 
 ## 2. Trend Detection
 
-**File:** `convex/scorer.ts` — `determineTrend()`
+**File:** `convex/scorer.ts` — `determineTrend()`, `computeMomentumDelta()`, `computeMomentumWithTime()`
 
-### With < 4 scores (fallback)
+### Trend vs Shipping Streak — Different Signals
+
+The **trend** and the **shipping streak** measure fundamentally different things:
+
+| Signal | Answers | Based On |
+|--------|---------|----------|
+| **Shipping streak** | "Did you commit on consecutive days?" | Daily commit presence (binary yes/no) |
+| **Trend** | "Did the health score go up or down?" | Score comparison over time windows |
+
+An 11-day shipping streak with a trend of 0 is **expected and correct**. The streak says "you're shipping consistently." The trend says "your health score hasn't changed." This happens when daily commits are small fixes or feature work that don't move the needle on any of the 5 scoring components (stars, commit gap, issues, PRs, contributors).
+
+**Analogy:** Going to the gym 11 days straight = great streak. Lifting the same weight every day = no trend in your strength.
+
+The trend is the actionable signal: it tells you to ship something worth talking about, close issues, or attract contributors — not just push code.
+
+### Stored trend (at sync time)
+
+When `calculateScore()` runs during a sync, it computes trend using the last 6 score records:
+
+#### With < 4 scores (fallback)
 
 ```
 delta = lastScore - previousScore
@@ -114,7 +133,7 @@ otherwise:      'stable'
 
 The ±3 threshold filters rounding noise (scores are `Math.round`'d).
 
-### With ≥ 4 scores (momentum buckets)
+#### With ≥ 4 scores (momentum buckets)
 
 ```
 n = min(3, floor(scores.length / 2))
@@ -127,19 +146,44 @@ if delta ≤ -2:  'down'
 otherwise:      'stable'
 ```
 
-**Why ±2 for averages:** Averages are smoother than single points, so a smaller threshold (2 vs 3) catches real trends without being overly sensitive.
+### Displayed momentum (at page load time)
+
+The trend stored at sync time can become stale — inactive repos keep their last positive delta. To fix this, the displayed momentum is computed **fresh at page load** using `computeMomentumWithTime()`, which uses **actual time windows** instead of score record counts:
+
+```
+Recent window = last 7 days from now
+Prior window  = 7–14 days ago
+
+if no scores in recent window:
+    → hasRecentActivity = false, trend = 'stable', delta = null
+    → Display: "Inactive" / "No recent activity"
+else if no scores in prior window:
+    → Compare recent average to oldest known score (±3 threshold)
+else:
+    → delta = recentAvg - priorAvg
+    → if delta ≥ +2: 'up'  |  if delta ≤ -2: 'down'  |  otherwise: 'stable'
+```
+
+**Why time windows over record counts:** A score from 3 days ago and a score from 3 weeks ago are treated equally by "last N records." Time windows ensure the comparison is always between "this week" and "last week," so inactive repos immediately show "Inactive" instead of a frozen positive delta.
 
 **Example:**
 ```
-[58, 60, 62, 65, 67, 69]  → recent avg 67, prior avg 60  → delta +7 → 'up'
-[62, 60, 58, 55, 53, 51]  → recent avg 53, prior avg 60  → delta -7 → 'down'
-[59, 60, 61, 60, 61, 62]  → recent avg 61, prior avg 60  → delta +1 → 'stable'
-[50, 52, 50, 52, 50, 52]  → both avg 51                    → delta 0  → 'stable' (no false oscillation)
+[58, 60, 62, 65, 67, 69]  all within 7 days  → delta +7, recent → 'up'
+[80, 82, 85]  all 10+ days old               → hasRecentActivity=false → 'Inactive'
+[60]  synced 2 days ago, no prior history     → delta from first sync → 'Baseline'
 ```
 
 ### Stored in database
 
 `calculateScore()` (internal mutation) fetches the last 6 scores, computes trend, and stores it in `repoScores.trend`. Downstream consumers read `score?.trend ?? 'stable'`.
+
+### Displayed to users
+
+`getRepoDetails()` (individual repo page) and `listMyRepos()` (dashboard list) both:
+1. Fetch the last 6 scores from `repoScores` (with `_id`, `healthScore`, `calculatedAt`)
+2. Call `computeMomentumWithTime(scoreHistory)` which uses time windows (7d / 14d)
+3. Display the result rounded to 1 decimal (e.g., `+7.0`, `-2.3`)
+4. If `hasRecentActivity` is false, show "Inactive" instead of a stale delta
 
 ---
 
@@ -246,7 +290,7 @@ Indexed by `by_repoId_calculatedAt` for efficient history queries.
 3. **Noise-filtered trends** — ±3 point threshold for single-point, ±2 for averages.
 4. **Percentage over absolute** — Star growth uses %, not raw difference.
 5. **Smooth decay over binary** — Commit recency is a continuum, not a cliff at 48h.
-6. **Momentum over snapshot** — Trend compares rolling averages, not just last 2 points.
+6. **Time windows over record counts** — Trend compares "this week vs last week" using actual time windows, not "last N score records." Inactive repos show "Inactive" immediately instead of a frozen positive delta. The displayed delta is always recomputed from time windows at page load, never read from a stale stored value.
 7. **Stock vs Flow separation** — Conversion funnel is computed twice: cumulative (all-time totals tracked from first sync) and weekly (14-day rolling metrics from GitHub), so users see both the big picture and recent momentum.
 
 ---
@@ -402,3 +446,68 @@ A diagnostic toggle is available in the Conversion Funnel UI (`ConversionFunnel.
 2. **GitHub API limitations handled:** Traffic data starts from first sync, not historical. We compensate by tracking our own cumulative totals.
 3. **First-sync accuracy:** On first sync, `starsLast7d` is fetched directly from GitHub's stargazers API (not delta-based) to ensure accurate weekly stars count.
 4. **No silent zeros:** Comprehensive logging (`[Stars]`, `[Traffic]`, `[Contributors]` prefixes) and diagnostic panel surface exactly what GitHub returns, making data issues visible.
+
+---
+
+## 7. AI Insight Generation (Gemini)
+
+> Documented: 2026-04-09. All prompt, model, and validation details.
+
+**File:** `convex/insightGenerator.ts` — `generateInsights()`, `buildInsightPrompt()`
+
+### Model Choice
+
+All plans use **`gemini-3-flash-preview`** via the Gemini REST API (`https://generativelanguage.googleapis.com/v1beta/models`).
+
+### Determinism Configuration
+
+| Parameter | Value | Why |
+|-----------|-------|-----|
+| `temperature` | 0.1 | Analytical, consistent outputs |
+| `maxOutputTokens` | 1024 | Prevents runaway responses |
+| `topP` | 0.9 | Focused sampling |
+| `candidateCount` | 1 | Single best response |
+| `responseMimeType` | `application/json` | Forces JSON output |
+| `responseSchema` | Strict JSON schema | Gemini must match `summary`, `risk`, `actions` exactly |
+
+### Prompt Structure
+
+Prompts use XML-tagged sections for clarity:
+
+- `<role>` — System identity as a growth advisor
+- `<task>` — What to produce (JSON summary, risk, actions)
+- `<repository>` — Name and description
+- `<metrics>` — All metric key-value pairs (filters out `scoreExplanation`)
+- `<metric_glossary>` — Definitions of every metric field and its time window
+- `<risk_criteria>` — What constitutes low/medium/high risk
+- `<action_guidance>` — Rules for action quality (specific, prioritized, tied to data)
+- `<output_format>` — The exact JSON schema expected in response
+
+### Input Data Enrichment
+
+The metrics payload includes trend context beyond raw numbers:
+
+| Field | Source | Purpose |
+|-------|--------|---------|
+| `scoreTrend` | `repoScores.trend` | Whether repo is improving, declining, or stable |
+| `previousScore` | `repoScores.previousScore` | Prior health score for comparison |
+| `hasRecentCommits` | Derived from `commitGapHours` | Quick boolean context for activity recency |
+| `anomalyFlags` | `repoAnomalies` (active) | Detected anomalies like `momentum_drop`, `star_spike` |
+
+### Output Validation
+
+Before saving to `repoInsights`, every response is validated:
+
+| Check | Rule |
+|-------|------|
+| `summary` | Non-empty string, max 200 characters |
+| `risk` | One of `['low', 'medium', 'high']` |
+| `actions` | Non-empty array, 1–4 items, all non-empty strings |
+
+Invalid outputs trigger a retry or fallback — they are never saved to the database.
+
+### Retry & Fallback
+
+- **Retries:** Up to 2 retries with exponential backoff (1s, 2s) for 429 and 5xx errors
+- **Fallback:** When Gemini fails completely, a deterministic insight is generated from real metric values (commit gap, open issues, score trend) so the user always sees something useful
+- **Defensive parsing:** Safe path traversal (`json?.candidates?.[0]?.content?.parts?.[0]?.text`) with graceful error handling at every step

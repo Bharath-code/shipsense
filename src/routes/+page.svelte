@@ -239,7 +239,7 @@
 				<button
 					type="button"
 					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
-					class="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+					class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
 					aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
 					aria-expanded={mobileMenuOpen}
 				>
@@ -331,7 +331,8 @@
 			>
 				<Button
 					href="/auth/login"
-					class="h-14 w-full rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition-all duration-300 hover:bg-primary/90 sm:w-auto"
+					size="xl"
+					class="w-full rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition-all duration-300 hover:bg-primary/90 sm:w-auto"
 				>
 					Check My Repo Health
 					<ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
@@ -635,7 +636,8 @@
 					<Button
 						href="/auth/login"
 						variant="outline"
-						class="h-12 w-full rounded-full font-semibold"
+						size="lg"
+						class="w-full rounded-full font-semibold"
 					>
 						Start Free
 					</Button>
@@ -705,7 +707,8 @@
 
 					<Button
 						href="/auth/login"
-						class="mt-6 h-12 w-full rounded-full bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
+						size="lg"
+						class="mt-6 w-full rounded-full bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
 					>
 						Get Started · ${foundingMemberPrice}/mo
 					</Button>
@@ -755,7 +758,8 @@
 					<Button
 						href="mailto:hello@shipsense.ai"
 						variant="outline"
-						class="h-12 w-full rounded-full font-semibold"
+						size="lg"
+						class="w-full rounded-full font-semibold"
 					>
 						Contact Sales
 					</Button>
@@ -920,7 +924,8 @@
 					</p>
 					<Button
 						href="/auth/login"
-						class="h-14 rounded-full bg-primary px-10 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-300 hover:bg-primary/90"
+						size="xl"
+						class="rounded-full bg-primary px-10 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-300 hover:bg-primary/90"
 					>
 						Get Started Free
 						<ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
@@ -951,7 +956,8 @@
 			<div class="fixed bottom-6 right-6 z-50 animate-float">
 				<Button
 					href="/auth/login"
-					class="h-12 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-xl shadow-primary/25 transition-all duration-300 hover:scale-105 hover:bg-primary/90 active:scale-95"
+					size="lg"
+					class="rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-xl shadow-primary/25 transition-all duration-300 hover:scale-105 hover:bg-primary/90 active:scale-95"
 				>
 					<Zap size={16} class="mr-1.5" aria-hidden="true" />
 					Get Started Free

@@ -177,9 +177,10 @@
 						{/if}
 
 						<Button
+							size="xl"
 							onclick={handleLogin}
 							disabled={loading}
-							class="h-13 w-full rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg disabled:translate-y-0 disabled:opacity-60"
+							class="w-full rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-md transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg disabled:translate-y-0 disabled:opacity-60"
 						>
 							{#if loading}
 								<svg

@@ -103,6 +103,7 @@
 				type="button"
 				onclick={() => activeTab = 'weekly'}
 				class="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition-colors {activeTab === 'weekly' ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}"
+				style="min-height: 44px;"
 			>
 				Weekly
 			</button>
@@ -110,6 +111,7 @@
 				type="button"
 				onclick={() => activeTab = 'cumulative'}
 				class="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition-colors {activeTab === 'cumulative' ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}"
+				style="min-height: 44px;"
 			>
 				Cumulative
 			</button>

@@ -166,6 +166,98 @@ export function determineTrend(
 	return 'stable';
 }
 
+/**
+ * Compute the numeric momentum delta using the same logic as determineTrend.
+ * Returns the averaged score difference that drives the trend direction,
+ * so the displayed delta always matches the trend label.
+ *
+ * With < 4 scores: single-point delta (latest - previous).
+ * With >= 4 scores: average of last N scores minus average of prior N scores,
+ * where N = min(3, floor(scores.length / 2)).
+ */
+export function computeMomentumDelta(scores: number[]): number | null {
+	if (scores.length < 2) return null;
+
+	// Not enough history — use single-point delta
+	if (scores.length < 4) {
+		return scores[scores.length - 1] - scores[scores.length - 2];
+	}
+
+	// Momentum buckets: average of last N vs average of prior N
+	const n = Math.min(3, Math.floor(scores.length / 2));
+	const recent = scores.slice(-n);
+	const prior = scores.slice(-n * 2, -n);
+
+	const recentAvg = recent.reduce((a, b) => a + b, 0) / n;
+	const priorAvg = prior.reduce((a, b) => a + b, 0) / n;
+
+	return recentAvg - priorAvg;
+}
+
+/**
+ * Time-window-aware momentum computation.
+ *
+ * Unlike computeMomentumDelta (which compares the last N score records
+ * regardless of when they were captured), this function uses actual
+ * time windows so inactive repos don't show stale positive momentum.
+ *
+ * Windows:
+ *   Recent = last 7 days
+ *   Prior  = 7–14 days ago
+ *
+ * Returns:
+ *   { delta, trend, hasRecentActivity }
+ *   - delta: the averaged score difference (can be fractional)
+ *   - trend: 'up' | 'down' | 'stable' based on the delta
+ *   - hasRecentActivity: false when no scores exist in the recent window
+ */
+export type TimedMomentumResult = {
+	delta: number | null;
+	trend: 'up' | 'down' | 'stable';
+	hasRecentActivity: boolean;
+};
+
+export function computeMomentumWithTime(
+	scores: { healthScore: number; calculatedAt: number }[],
+	now: number = Date.now()
+): TimedMomentumResult {
+	const RECENT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+	const PRIOR_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+	const recent = scores.filter((s) => s.calculatedAt >= now - RECENT_MS);
+	const prior = scores.filter(
+		(s) => s.calculatedAt >= now - PRIOR_MS && s.calculatedAt < now - RECENT_MS
+	);
+
+	// No recent scores — repo is inactive
+	if (recent.length === 0) {
+		return { delta: null, trend: 'stable', hasRecentActivity: false };
+	}
+
+	const recentAvg = recent.reduce((a, b) => a + b.healthScore, 0) / recent.length;
+
+	// No prior window — compare recent avg to the oldest known score
+	if (prior.length === 0) {
+		const oldestScore = scores.length > 0 ? scores[0].healthScore : recentAvg;
+		const delta = recentAvg - oldestScore;
+		return {
+			delta,
+			trend: delta >= 3 ? 'up' : delta <= -3 ? 'down' : 'stable',
+			hasRecentActivity: true
+		};
+	}
+
+	const priorAvg = prior.reduce((a, b) => a + b.healthScore, 0) / prior.length;
+	const delta = recentAvg - priorAvg;
+
+	// ±2 threshold for averaged windows (same as determineTrend's bucket logic)
+	return {
+		delta,
+		trend: delta >= 2 ? 'up' : delta <= -2 ? 'down' : 'stable',
+		hasRecentActivity: true
+	};
+}
+
 export const calculateScore = internalMutation({
 	args: { repoId: v.id('repos'), snapshotId: v.id('repoSnapshots') },
 	handler: async (ctx, { repoId, snapshotId }) => {

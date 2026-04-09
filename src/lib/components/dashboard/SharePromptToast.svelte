@@ -43,7 +43,7 @@
 		<div class="flex gap-2">
 			<Button
 				size="sm"
-				class="h-8 rounded-lg bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
+				class="rounded-lg bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
 				onclick={shareNow}
 			>
 				<Share2 class="mr-2 h-3.5 w-3.5" />
@@ -52,7 +52,7 @@
 			<Button
 				size="sm"
 				variant="ghost"
-				class="h-8 rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
+				class="rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
 				onclick={dismiss}
 			>
 				Not now

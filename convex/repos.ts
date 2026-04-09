@@ -3,6 +3,7 @@ import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { getPlanConfig, type PlanType } from './plan';
 import { internal } from './_generated/api';
+import { computeMomentumDelta, computeMomentumWithTime } from './scorer.js';
 
 // List all active repos for the logged in user
 export const listMyRepos = query({
@@ -21,37 +22,46 @@ export const listMyRepos = query({
 		// Fetch all scores in parallel - faster than N sequential queries
 		const scoreResults = await Promise.all(
 			repos.map(async (repo) => {
-				const latestScore = await ctx.db
-					.query('repoScores')
-					.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repo._id))
-					.order('desc')
-					.first();
-				return { repoId: repo._id, latestScore };
+				const [latestScore, scoreHistory] = await Promise.all([
+					ctx.db
+						.query('repoScores')
+						.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repo._id))
+						.order('desc')
+						.first(),
+					ctx.db
+						.query('repoScores')
+						.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', repo._id))
+						.order('desc')
+						.take(6)
+				]);
+				return { repoId: repo._id, latestScore, scoreHistory };
 			})
 		);
 
 		// Create lookup map
 		const scoreMap: Record<string, (typeof scoreResults)[0]['latestScore']> = {};
+		const historyMap: Record<string, (typeof scoreResults)[0]['scoreHistory']> = {};
 		for (const result of scoreResults) {
 			scoreMap[result.repoId as string] = result.latestScore;
+			historyMap[result.repoId as string] = result.scoreHistory;
 		}
 
 		// Enrich repos with scores
 		const enrichedRepos = repos.map((repo) => {
 			const latestScore = scoreMap[repo._id as string];
+			const scoreHistory = historyMap[repo._id as string];
 
-			const momentum =
-				latestScore?.previousScore !== undefined
-					? latestScore.healthScore - latestScore.previousScore
-					: null;
+			// Use time-window momentum so inactive repos don't show stale deltas
+			const momentumResult = computeMomentumWithTime(scoreHistory ?? []);
+			const momentum = momentumResult.delta;
 
 			return {
 				...repo,
 				healthScore: latestScore?.healthScore ?? null,
 				momentum,
-				trend: latestScore?.trend ?? 'stable',
+				trend: momentumResult.trend,
 				hasScore: !!latestScore,
-				hasTrend: latestScore?.previousScore !== undefined
+				hasTrend: momentumResult.hasRecentActivity
 			};
 		});
 

@@ -2,6 +2,7 @@ import { query, mutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { computeTrafficIntelligence } from './trafficIntelligence.js';
+import { computeMomentumDelta, computeMomentumWithTime } from './scorer.js';
 
 export type GrowthMoment = {
 	kind:
@@ -135,7 +136,7 @@ export const getRepoDetails = query({
 		const repo = await ctx.db.get(args.repoId);
 		if (!repo || repo.userId !== userId) return null;
 
-		const [latestSnapshot, latestScore] = await Promise.all([
+		const [latestSnapshot, latestScore, scoreHistory] = await Promise.all([
 			ctx.db
 				.query('repoSnapshots')
 				.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
@@ -145,13 +146,17 @@ export const getRepoDetails = query({
 				.query('repoScores')
 				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
 				.order('desc')
-				.first()
+				.first(),
+			ctx.db
+				.query('repoScores')
+				.withIndex('by_repoId_calculatedAt', (q) => q.eq('repoId', args.repoId))
+				.order('desc')
+				.take(6)
 		]);
 
-		const momentum =
-			latestScore?.previousScore !== undefined
-				? latestScore.healthScore - latestScore.previousScore
-				: null;
+		// Compute momentum using time windows so inactive repos don't show stale deltas
+		const momentumResult = computeMomentumWithTime(scoreHistory);
+		const momentum = momentumResult.delta;
 
 		return {
 			...repo,
@@ -160,9 +165,9 @@ export const getRepoDetails = query({
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			healthScore: latestScore?.healthScore ?? null,
 			momentum,
-			trend: latestScore?.trend ?? 'stable',
+			trend: momentumResult.trend,
 			hasScore: !!latestScore,
-			hasTrend: latestScore?.previousScore !== undefined
+			hasTrend: momentumResult.hasRecentActivity
 		};
 	}
 });

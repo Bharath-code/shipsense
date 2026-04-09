@@ -59,7 +59,8 @@
 		{#if onViewAll}
 			<button
 				type="button"
-				class="rounded-lg px-2 py-1 text-xs font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+				class="rounded-lg px-3 py-2 text-xs font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+				style="min-height: 44px;"
 				onclick={onViewAll}
 			>
 				Details <ChevronRight class="ml-0.5 inline h-3 w-3" />

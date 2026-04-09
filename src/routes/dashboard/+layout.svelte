@@ -173,7 +173,7 @@
 					variant="ghost"
 					size="icon"
 					title="Keyboard shortcuts (? or Ctrl+K)"
-					class="h-8 w-8 rounded-lg hover:bg-muted lg:h-9 lg:w-9 lg:rounded-full"
+					class="rounded-full hover:bg-muted"
 					onclick={() =>
 						import('$lib/components/dashboard/KeyboardShortcutsModal.svelte').then((m) => {
 							import('$lib/stores/keyboard').then((s) => s.showKeyboardShortcutsModal.set(true));
@@ -188,7 +188,7 @@
 					size="icon"
 					onclick={handleSignOut}
 					title="Log out"
-					class="h-8 w-8 rounded-lg hover:bg-red-500/10 hover:text-red-400 lg:h-9 lg:w-9 lg:rounded-full"
+					class="rounded-full hover:bg-red-500/10 hover:text-red-400"
 				>
 					<LogOutIcon class="h-4 w-4" />
 				</Button>
