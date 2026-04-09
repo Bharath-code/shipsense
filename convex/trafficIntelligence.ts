@@ -1136,33 +1136,62 @@ function computeFunnelStages(input: {
 	return [stage1, stage2, stage3, stage4];
 }
 
-function computeMomentumVector(input: {
+export function computeMomentumVector(input: {
 	scoreTrend: 'up' | 'down' | 'stable';
 	starsLast7d: number;
 	prevStarsLast7d: number | null;
 	commitGapHours: number;
 }): { vector: MomentumVector; reason: string } {
 	const { scoreTrend, starsLast7d, prevStarsLast7d, commitGapHours } = input;
-	const starAccelerating =
-		prevStarsLast7d !== null && prevStarsLast7d >= 0 && starsLast7d > prevStarsLast7d;
-	const commitFresh = commitGapHours <= 48;
 
-	if (scoreTrend === 'up' && starAccelerating && commitFresh) {
-		return { vector: 'accelerating', reason: 'Score improving, stars growing, commits fresh' };
+	// Star growth rate: % change vs prior period (not absolute difference).
+	// Going from 1→2 stars (100%) is more significant than 100→101 (1%).
+	let starGrowthRate = 0;
+	if (prevStarsLast7d !== null && prevStarsLast7d > 0) {
+		starGrowthRate = (starsLast7d - prevStarsLast7d) / prevStarsLast7d;
+	} else if (starsLast7d > 0) {
+		starGrowthRate = 1; // Had zero before, now positive
+	}
+	const starGrowing = starGrowthRate > 0.1; // >10% increase
+
+	// Commit recency: smooth decay instead of hard binary at 48h.
+	// 0h = 1.0, 24h = 0.9, 48h = 0.7, 7d = 0.1, 14d+ = 0
+	const commitRecency = commitGapHours <= 0
+		? 1
+		: Math.max(0, 1 - (commitGapHours / (14 * 24)));
+
+	// Decision matrix (symmetric — equal logic for up/down):
+	// accelerating = score up AND (stars growing OR commits fresh)
+	// stalling     = score down OR commits dead (>7 days)
+	// coasting     = everything else (stable score, moderate activity)
+	if (scoreTrend === 'up' && (starGrowing || commitRecency > 0.5)) {
+		return {
+			vector: 'accelerating',
+			reason: starGrowing
+				? `Score improving + stars growing ${Math.round(starGrowthRate * 100)}%`
+				: 'Score improving with recent commits'
+		};
 	}
 	if (scoreTrend === 'down' || commitGapHours > 168) {
 		return {
 			vector: 'stalling',
-			reason:
-				scoreTrend === 'down'
-					? 'Health score is declining'
-					: 'No commits in the last 7 days'
+			reason: scoreTrend === 'down'
+				? 'Health score is declining'
+				: 'No commits in the last 7 days'
 		};
 	}
-	if (starAccelerating || scoreTrend === 'up') {
-		return { vector: 'accelerating', reason: 'Stars growing or score on the rise' };
+	if (scoreTrend === 'stable' && starGrowing) {
+		return {
+			vector: 'coasting',
+			reason: `Score flat but stars growing ${Math.round(starGrowthRate * 100)}%`
+		};
 	}
-	return { vector: 'coasting', reason: 'Steady but not growing — needs a catalyst' };
+	return {
+		vector: 'coasting',
+		reason: commitRecency > 0.7
+			? 'Steady with recent commits'
+			: 'Quiet — needs a catalyst'
+	};
 }
 
 function computeFunnelOneThing(

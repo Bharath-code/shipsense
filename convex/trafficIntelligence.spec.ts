@@ -7,6 +7,7 @@ import {
 	computeTopSourceAction,
 	computeOneThing,
 	computeExternalReachScore,
+	computeMomentumVector,
 	classifyReferrer,
 	isSearchEngine,
 	isSocialPlatform,
@@ -414,5 +415,106 @@ describe('computeExternalReachScore', () => {
 
 		// Should be low but not zero
 		expect(result.score).toBeLessThan(40);
+	});
+});
+
+// ── computeMomentumVector ─────────────────────────────────────────
+
+describe('computeMomentumVector', () => {
+	it('detects accelerating when score is up and stars are growing', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'up',
+			starsLast7d: 15,
+			prevStarsLast7d: 10, // 50% growth
+			commitGapHours: 12
+		});
+
+		expect(result.vector).toBe('accelerating');
+		expect(result.reason).toContain('growing');
+	});
+
+	it('detects accelerating when score is up with recent commits (no star growth)', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'up',
+			starsLast7d: 5,
+			prevStarsLast7d: 5, // 0% growth
+			commitGapHours: 6
+		});
+
+		expect(result.vector).toBe('accelerating');
+		expect(result.reason).toContain('recent commits');
+	});
+
+	it('detects stalling when score is declining', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'down',
+			starsLast7d: 10,
+			prevStarsLast7d: 15,
+			commitGapHours: 24
+		});
+
+		expect(result.vector).toBe('stalling');
+		expect(result.reason).toContain('declining');
+	});
+
+	it('detects stalling when no commits in 7 days', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'stable',
+			starsLast7d: 0,
+			prevStarsLast7d: 0,
+			commitGapHours: 200
+		});
+
+		expect(result.vector).toBe('stalling');
+		expect(result.reason).toContain('No commits');
+	});
+
+	it('shows coasting for stable score with moderate activity', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'stable',
+			starsLast7d: 5,
+			prevStarsLast7d: 5,
+			commitGapHours: 12
+		});
+
+		expect(result.vector).toBe('coasting');
+	});
+
+	it('shows coasting with star growth even when score is flat', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'stable',
+			starsLast7d: 20,
+			prevStarsLast7d: 10, // 100% growth
+			commitGapHours: 48
+		});
+
+		expect(result.vector).toBe('coasting');
+		expect(result.reason).toContain('stars growing');
+	});
+
+	it('requires >10% star growth to count as growing', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'up',
+			starsLast7d: 11,
+			prevStarsLast7d: 10, // 10% — at the boundary
+			commitGapHours: 200 // commits dead
+		});
+
+		// 10% is NOT > 10%, so starGrowing = false, commitRecency is ~0.01, so < 0.5
+		// But scoreTrend is 'up', so still accelerating via commits? No — commitRecency is too low.
+		// Actually: scoreTrend='up' AND (starGrowing=false OR commitRecency < 0.5)
+		// So it falls through to stalling check (scoreTrend != down, commitGapHours > 168 = true)
+		expect(result.vector).toBe('stalling');
+	});
+
+	it('handles zero previous stars gracefully', () => {
+		const result = computeMomentumVector({
+			scoreTrend: 'up',
+			starsLast7d: 3,
+			prevStarsLast7d: 0,
+			commitGapHours: 24
+		});
+
+		expect(result.vector).toBe('accelerating');
 	});
 });

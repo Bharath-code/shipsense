@@ -5,7 +5,7 @@ export const TOOLTIPS = {
 	FORKS: 'Total forks. Shows how many developers have copied your project.',
 	WATCHERS: 'Users watching this repository for notifications.',
 	STREAK: 'Consecutive days with at least one commit. Measures consistent shipping.',
-	MOMENTUM: 'Change in health score compared to 7 days ago. Positive means improving.',
+	MOMENTUM: 'Change in health score since last sync. Positive means improving.',
 	CONTRIBUTORS_14D: 'Unique contributors in the last 14 days. Shows active collaboration.',
 	ISSUE_RESPONSE: 'Median hours until first response to new issues. Lower is better.',
 	LAST_SYNC: 'Last time ShipSense fetched fresh data from GitHub.',
