@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import { Star, TrendingUp, TrendingDown, Minus, Target, Zap } from 'lucide-svelte';
+	import { Star, TrendingUp, TrendingDown, ArrowRight, Target, Zap } from 'lucide-svelte';
 
 	let { repoId }: { repoId: string } = $props();
 
@@ -15,7 +15,7 @@
 	function trendIcon(t: 'accelerating' | 'decelerating' | 'stable') {
 		if (t === 'accelerating') return TrendingUp;
 		if (t === 'decelerating') return TrendingDown;
-		return Minus;
+		return ArrowRight;
 	}
 
 	function trendClass(t: 'accelerating' | 'decelerating' | 'stable') {

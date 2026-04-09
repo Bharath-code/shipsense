@@ -17,6 +17,7 @@ export const createNotification = internalMutation({
 			v.literal('dependency_alert'),
 			v.literal('anomaly_alert'),
 			v.literal('traffic_alert'),
+			v.literal('stagnation_nudge'),
 			v.literal('win')
 		),
 		title: v.string(),

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import { AlertTriangle, TrendingUp, Users, ChevronRight } from 'lucide-svelte';
+	import { AlertTriangle, TrendingUp, Users, ChevronRight, Zap } from 'lucide-svelte';
 
 	let { repoId } = $props<{ repoId: string }>();
 
@@ -13,6 +13,7 @@
 	function iconFor(kind: string) {
 		if (kind === 'star_spike') return TrendingUp;
 		if (kind === 'contributor_spike') return Users;
+		if (kind === 'stagnation') return Zap;
 		return AlertTriangle;
 	}
 

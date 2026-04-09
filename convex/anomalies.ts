@@ -10,7 +10,8 @@ export type AnomalySignal = {
 		| 'momentum_drop'
 		| 'traffic_spike'
 		| 'referrer_spike'
-		| 'conversion_leak';
+		| 'conversion_leak'
+		| 'stagnation';
 	severity: 'low' | 'medium' | 'high';
 	title: string;
 	description: string;
@@ -58,6 +59,8 @@ export function detectAnomalies(input: {
 	previousTraffic?: { views: number; uniques: number };
 	currentReferrers?: Array<{ referrer: string; count: number }>;
 	previousReferrers?: Array<{ referrer: string; count: number }>;
+	trend?: 'up' | 'down' | 'stable';
+	currentStreak?: number;
 }): AnomalySignal[] {
 	const signals: AnomalySignal[] = [];
 
@@ -167,6 +170,23 @@ export function detectAnomalies(input: {
 		}
 	}
 
+	// Stagnation detection: shipping consistently but not growing
+	// This fires when the user has an active streak but the trend is stable (no growth)
+	if (input.trend === 'stable' && (input.currentStreak ?? 0) >= 3) {
+		const streakValue = input.currentStreak ?? 0;
+		const severity = streakValue >= 14 ? 'high' : streakValue >= 7 ? 'medium' : 'low';
+		signals.push({
+			kind: 'stagnation',
+			severity,
+			title: `${streakValue}-day streak but no score growth`,
+			description: `You've shipped for ${streakValue} days straight, but your health score hasn't improved. The work is going in — time to ship something different.`,
+			recommendedAction:
+				'Consider closing issues, improving docs for visibility, or shipping a feature worth sharing. Consistency is your moat — now aim it at something that moves the needle.',
+			metricValue: streakValue,
+			baselineValue: 0
+		});
+	}
+
 	return signals;
 }
 
@@ -181,7 +201,8 @@ export const replaceRepoAnomalies = internalMutation({
 					v.literal('momentum_drop'),
 					v.literal('traffic_spike'),
 					v.literal('referrer_spike'),
-					v.literal('conversion_leak')
+					v.literal('conversion_leak'),
+					v.literal('stagnation')
 				),
 				severity: v.union(v.literal('low'), v.literal('medium'), v.literal('high')),
 				title: v.string(),
@@ -227,9 +248,11 @@ export const analyzeRepoAnomalies = internalAction({
 		userId: v.id('users'),
 		repoName: v.string(),
 		previousScore: v.optional(v.number()),
-		currentScore: v.optional(v.number())
+		currentScore: v.optional(v.number()),
+		trend: v.optional(v.string()),
+		currentStreak: v.optional(v.number())
 	},
-	handler: async (ctx, { repoId, userId, repoName, previousScore, currentScore }) => {
+	handler: async (ctx, { repoId, userId, repoName, previousScore, currentScore, trend, currentStreak }) => {
 		const latestSnapshot = await ctx.runQuery(internal.collector.getLatestSnapshot, { repoId });
 		if (!latestSnapshot) return [];
 
@@ -250,6 +273,8 @@ export const analyzeRepoAnomalies = internalAction({
 			previousContributors14d: previousSnapshot?.contributors14d ?? 0,
 			previousScore,
 			currentScore,
+			trend: trend as 'up' | 'down' | 'stable' | undefined,
+			currentStreak,
 			currentTraffic: latestSnapshot.views
 				? {
 						views: latestSnapshot.views,
@@ -277,11 +302,13 @@ export const analyzeRepoAnomalies = internalAction({
 				anomaly.kind === 'referrer_spike' ||
 				anomaly.kind === 'conversion_leak'
 					? 'traffic_alert'
-					: 'anomaly_alert';
+					: anomaly.kind === 'stagnation'
+						? 'stagnation_nudge'
+						: 'anomaly_alert';
 
 			await ctx.runMutation(internal.notifications.createNotification, {
 				userId,
-				type: notificationType,
+				type: notificationType as any,
 				title: anomaly.title,
 				message: anomaly.description,
 				repoId,

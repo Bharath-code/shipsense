@@ -2,7 +2,7 @@
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { FunnelStage } from '$convex/trafficIntelligence';
-	import { TrendingUp, TrendingDown, Minus, Eye, Star, GitFork, Users, ArrowRight, Sparkles, Bug } from 'lucide-svelte';
+	import { TrendingUp, TrendingDown, Eye, Star, GitFork, Users, ArrowRight, Sparkles, Bug } from 'lucide-svelte';
 
 	let { repoId }: { repoId: string } = $props();
 
@@ -41,7 +41,7 @@
 			return { label: 'Accelerating', icon: TrendingUp, cls: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' };
 		if (v === 'stalling')
 			return { label: 'Stalling', icon: TrendingDown, cls: 'text-red-400 bg-red-400/10 border-red-400/20' };
-		return { label: 'Coasting', icon: Minus, cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' };
+		return { label: 'Coasting', icon: ArrowRight, cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' };
 	}
 
 	function formatRate(r: number | null): string {
@@ -81,7 +81,7 @@
 				{:else if funnel.momentumVector === 'stalling'}
 					<TrendingDown class="h-4 w-4" />
 				{:else}
-					<Minus class="h-4 w-4" />
+					<ArrowRight class="h-4 w-4" />
 				{/if}
 				{cfg.label}
 			</div>

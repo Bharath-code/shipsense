@@ -201,7 +201,8 @@ export default defineSchema({
 			v.literal('momentum_drop'),
 			v.literal('traffic_spike'),
 			v.literal('referrer_spike'),
-			v.literal('conversion_leak')
+			v.literal('conversion_leak'),
+			v.literal('stagnation')
 		),
 		severity: v.union(v.literal('low'), v.literal('medium'), v.literal('high')),
 		title: v.string(),
@@ -304,6 +305,7 @@ export default defineSchema({
 			v.literal('dependency_alert'),
 			v.literal('anomaly_alert'),
 			v.literal('traffic_alert'),
+			v.literal('stagnation_nudge'),
 			v.literal('win')
 		),
 		title: v.string(),

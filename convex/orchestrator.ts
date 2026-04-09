@@ -51,12 +51,16 @@ export const syncRepoNow = internalAction({
 			}
 
 			if (repo && newScore) {
+				const streakForAnomalies = await ctx.runQuery(internal.dashboard.getRepoStreakInternal, { repoId });
+
 				await ctx.runAction(internal.anomalies.analyzeRepoAnomalies, {
 					repoId,
 					userId: repo.userId,
 					repoName: repo.name,
 					previousScore: previousScore?.healthScore,
-					currentScore: newScore.healthScore
+					currentScore: newScore.healthScore,
+					trend: newScore.trend,
+					currentStreak: streakForAnomalies?.currentStreak
 				});
 
 				await ctx.runAction(internal.sharePrompts.generateSharePrompt, {

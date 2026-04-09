@@ -795,7 +795,7 @@ export function computeExternalReachScore(input: {
 export type RiskTier = 'critical' | 'high' | 'moderate' | 'low' | 'clean';
 
 export type RiskItem = {
-	type: 'vulnerability' | 'anomaly' | 'outdated_dep' | 'readme_gap';
+	type: 'vulnerability' | 'deprecated' | 'anomaly' | 'outdated_dep' | 'readme_gap';
 	severity: 'critical' | 'high' | 'medium' | 'low';
 	title: string;
 	description: string;
@@ -884,7 +884,7 @@ function computeRiskStack(input: {
 	for (const dep of deprecated) {
 		totalScore += 10;
 		items.push({
-			type: 'vulnerability',
+			type: 'deprecated',
 			severity: 'high',
 			title: `Deprecated dependency: ${dep.name}`,
 			description: dep.deprecationMessage ?? `${dep.name} is no longer maintained.`,
@@ -895,8 +895,11 @@ function computeRiskStack(input: {
 		});
 	}
 
-	// 2. Active anomalies (momentum drop, etc.)
+	// 2. Active anomalies — but only negative signals, not positive growth
+	const NEGATIVE_ANOMALIES = new Set(['momentum_drop', 'conversion_leak']);
 	for (const anomaly of input.anomalies) {
+		if (!NEGATIVE_ANOMALIES.has(anomaly.kind)) continue;
+
 		const sevScore = ANOMALY_SEVERITY_SCORE[anomaly.severity] ?? 0;
 		totalScore += sevScore;
 
@@ -992,9 +995,9 @@ function computeRiskStack(input: {
 	} else if (tier === 'moderate') {
 		narrative = `A few things to schedule — ${items.length} item${items.length > 1 ? 's' : ''} to handle this week. Nothing urgent.`;
 	} else if (tier === 'high') {
-		narrative = `Act today — ${topRisk ? topRisk.title.toLowerCase() : 'a significant risk needs attention'}. ${items.length - 1} additional item${items.length > 2 ? 's' : ''} to follow up on.`;
+		narrative = `Act today — ${topRisk ? topRisk.title : 'a significant risk needs attention'}. ${items.length - 1} additional item${items.length > 2 ? 's' : ''} to follow up on.`;
 	} else {
-		narrative = `🔴 Critical risk — ${topRisk ? topRisk.action : 'Fix immediately'}. ${items.length - 1} more item${items.length > 2 ? 's' : ''} to review after.`;
+		narrative = `Critical risk — ${topRisk ? topRisk.action : 'Fix immediately'}. ${items.length - 1} more item${items.length > 2 ? 's' : ''} to review after.`;
 	}
 
 	return {

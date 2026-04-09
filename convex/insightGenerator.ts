@@ -202,7 +202,7 @@ export function generateFallbackInsight(
 	}
 
 	return {
-		summary: `Repo synced. ${stars} stars, ${openIssues} open issues, last commit ${commitGap}h ago.`,
+		summary: `Repo synced. ${stars} stars, ${openIssues} open issues, last commit ${commitGap.toFixed(1)}h ago.`,
 		risk,
 		actions: actions.slice(0, 4),
 		modelUsed
@@ -393,6 +393,16 @@ export const saveInsight = internalMutation({
 		modelUsed: v.string()
 	},
 	handler: async (ctx, { repoId, summary, risk, actions, modelUsed }) => {
+		// Delete old insights to avoid stale data
+		const oldInsights = await ctx.db
+			.query('repoInsights')
+			.withIndex('by_repoId_generatedAt', (q) => q.eq('repoId', repoId))
+			.collect();
+
+		for (const insight of oldInsights) {
+			await ctx.db.delete(insight._id);
+		}
+
 		await ctx.db.insert('repoInsights', {
 			repoId,
 			summary,

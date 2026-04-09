@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Shield, ShieldAlert, ShieldCheck, ChevronRight, ChevronDown } from 'lucide-svelte';
+	import { Shield, ShieldAlert, ShieldCheck, ChevronRight, ChevronDown, CheckCircle2 } from 'lucide-svelte';
 	import type { RiskStack, RiskItem } from '$convex/trafficIntelligence';
 
 	let { riskStack, onViewAll }: { riskStack: RiskStack; onViewAll?: () => void } = $props();
@@ -15,7 +15,7 @@
 			case 'low':
 				return { icon: ShieldCheck, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20', label: 'Low' };
 			default:
-				return { icon: Shield, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20', label: 'Clean' };
+				return { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20', label: 'Clean' };
 		}
 	}
 
@@ -40,8 +40,9 @@
 	function itemTypeLabel(type: RiskItem['type']) {
 		switch (type) {
 			case 'vulnerability': return 'Vuln';
+			case 'deprecated': return 'Dep';
 			case 'anomaly': return 'Signal';
-			case 'outdated_dep': return 'Dep';
+			case 'outdated_dep': return 'Update';
 			case 'readme_gap': return 'README';
 		}
 	}
@@ -61,14 +62,17 @@
 			<span class="rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase {cfg.color} {cfg.bg} {cfg.border}">
 				{cfg.label}
 			</span>
-			{#if onViewAll}
+			<span class="text-[10px] font-medium text-muted-foreground">
+				Score: {riskStack.score}/100
+			</span>
+			{#if onViewAll && riskStack.tier !== 'clean'}
 				<button
 					type="button"
 					class="rounded-lg px-3 py-2 text-xs font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
 					style="min-height: 44px;"
 					onclick={onViewAll}
 				>
-					Full health <ChevronRight class="ml-0.5 inline h-3 w-3" />
+					Details <ChevronRight class="ml-0.5 inline h-3 w-3" />
 				</button>
 			{/if}
 		</div>
@@ -76,6 +80,14 @@
 
 	<!-- Narrative -->
 	<p class="mb-3 text-xs leading-relaxed text-muted-foreground">{riskStack.narrative}</p>
+
+	<!-- Clean state: positive message, no expand needed -->
+	{#if riskStack.tier === 'clean'}
+		<div class="flex items-center gap-2 rounded-xl border border-emerald-400/10 bg-emerald-400/5 p-3">
+			<CheckCircle2 class="h-4 w-4 text-emerald-400" />
+			<p class="text-xs font-medium text-emerald-400">All clear — no vulnerabilities or anomalies detected.</p>
+		</div>
+	{/if}
 
 	<!-- Top risk (if any) -->
 	{#if riskStack.topRisk}
@@ -114,7 +126,7 @@
 	<!-- Additional items count -->
 	{#if riskStack.items.length > 1}
 		<p class="mt-2 text-[10px] text-muted-foreground">
-			{riskStack.items.length - 1} more item{riskStack.items.length > 2 ? 's' : ''} in Health tab
+			{riskStack.items.length - 1} more item{riskStack.items.length > 2 ? 's' : ''} detected
 		</p>
 	{/if}
 </div>
