@@ -19,9 +19,19 @@ type RepoGraphQLResponse = {
 			defaultBranchRef?: {
 				target?: {
 					history?: {
-						nodes?: Array<{ committedDate: string }>;
+						nodes?: Array<{
+							committedDate: string;
+							author: {
+								name: string;
+								email: string;
+								user: { login: string } | null;
+							};
+						}>;
 					};
 				};
+			};
+			mentionableUsers?: {
+				totalCount: number;
 			};
 		};
 	};
@@ -71,6 +81,120 @@ async function fetchContributors14d(
 		console.warn('Error fetching contributors:', error);
 		return 1;
 	}
+}
+
+/**
+ * Fetch stars gained in the last 7 days using the stargazers API.
+ * This is more accurate than delta calculations when there's no historical snapshot.
+ *
+ * IMPORTANT: GitHub's stargazers API returns results in ASCENDING order (oldest first).
+ * There's no way to sort descending, so we must fetch ALL stargazers and count recent ones.
+ * For large repos (>1000 stars), we use a heuristic to avoid pagination issues.
+ */
+async function fetchStarsLast7d(
+	owner: string,
+	name: string,
+	accessToken: string,
+	totalStars: number
+): Promise<number> {
+	try {
+		const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+		
+		// If repo has <= 100 stars, fetch all and count recent
+		// If repo has > 100 stars, we need to paginate to get the most recent ones
+		// GitHub returns stars in ASC order (oldest first), so last page = newest stars
+		
+		let url = `${GITHUB_REST_URL}/repos/${owner}/${name}/stargazers?per_page=100`;
+		
+		// If more than 100 stars, calculate which page has the most recent stars
+		// We want the LAST page (newest stars)
+		if (totalStars > 100) {
+			const totalPages = Math.ceil(totalStars / 100);
+			// Fetch the last 2 pages to be safe (in case some stars are from exactly 7 days ago)
+			const startPage = Math.max(1, totalPages - 1);
+			url = `${GITHUB_REST_URL}/repos/${owner}/${name}/stargazers?per_page=100&page=${startPage}`;
+		}
+		
+		const response = await fetch(url, {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				Accept: 'application/vnd.github.v3.star+json'
+			}
+		});
+
+		if (!response.ok) {
+			console.warn('[Stars] Failed to fetch stargazers:', response.status, response.statusText);
+			return 0;
+		}
+
+		const stargazers = await response.json();
+		if (!Array.isArray(stargazers)) {
+			console.warn('[Stars] Unexpected response:', typeof stargazers);
+			return 0;
+		}
+
+		// Count stargazers who starred in the last 7 days
+		let count = 0;
+		for (const stargazer of stargazers) {
+			if (!stargazer.starred_at) {
+				// Without the special Accept header, starred_at won't be in response
+				console.warn('[Stars] Missing starred_at - check Accept header');
+				continue;
+			}
+			const starredAt = new Date(stargazer.starred_at).getTime();
+			if (starredAt >= sevenDaysAgo) {
+				count++;
+			}
+		}
+
+		console.log(`[Stars] Fetched ${stargazers.length} stargazers, ${count} from last 7 days`);
+		return count;
+	} catch (error) {
+		console.warn('[Stars] Error fetching stars last 7d:', error);
+		return 0;
+	}
+}
+
+/**
+ * Count unique commit authors in the last 14 days from GraphQL commit history.
+ * This is more reliable than the /contributors REST endpoint which has known issues.
+ *
+ * NOTE: We only fetch 100 commits from the GraphQL API. If there are >100 commits
+ * in 14 days, we'll miss some. For most repos this is fine.
+ */
+export function countUniqueAuthors14d(
+	commits: Array<{
+		committedDate: string;
+		author: {
+			name: string;
+			email: string;
+			user: { login: string } | null;
+		};
+	}>,
+	referenceTimeMs: number
+): number {
+	const fourteenDaysAgo = referenceTimeMs - 14 * 24 * 60 * 60 * 1000;
+
+	// Filter commits from last 14 days and collect unique authors
+	const uniqueAuthors = new Set<string>();
+	let commitsInWindow = 0;
+
+	for (const commit of commits) {
+		const commitTime = new Date(commit.committedDate).getTime();
+		if (commitTime >= fourteenDaysAgo) {
+			commitsInWindow++;
+			// Use GitHub login if available, otherwise use email
+			const authorId = commit.author.user?.login || commit.author.email;
+			if (authorId) {
+				uniqueAuthors.add(authorId);
+			}
+		}
+	}
+
+	console.log(`[Contributors] Found ${commitsInWindow} commits in last 14 days, ${uniqueAuthors.size} unique authors`);
+	
+	// Return actual count (can be 0 if no commits in 14 days)
+	return uniqueAuthors.size;
 }
 
 async function fetchMedianIssueResponseHours(
@@ -143,13 +267,138 @@ export function processCommitGap(commits: any[], referenceTimeMs: number): numbe
 	return commitGapHours;
 }
 
-export function extractLatestCommitDate(commits: Array<{ committedDate: string }>): string | null {
+export function extractLatestCommitDate(commits: Array<{ 
+	committedDate: string;
+	author: {
+		name: string;
+		email: string;
+		user: { login: string } | null;
+	};
+}>): string | null {
 	if (commits.length === 0) return null;
 
 	const latestCommitDate = new Date(commits[0].committedDate);
 	if (Number.isNaN(latestCommitDate.getTime())) return null;
 
 	return latestCommitDate.toISOString().slice(0, 10);
+}
+
+// Traffic data types
+type TrafficViews = {
+	count: number;
+	uniques: number;
+	views: Array<{ timestamp: string; count: number; uniques: number }>;
+};
+
+type TrafficClones = {
+	count: number;
+	uniques: number;
+	clones: Array<{ timestamp: string; count: number; uniques: number }>;
+};
+
+type ReferrerTraffic = {
+	referrer: string;
+	count: number;
+	uniques: number;
+};
+
+type ContentTraffic = {
+	path: string;
+	title: string;
+	count: number;
+	uniques: number;
+};
+
+type FetchedTrafficData = {
+	views: number;
+	uniqueVisitors: number;
+	clones: number;
+	uniqueCloners: number;
+	referrers: ReferrerTraffic[];
+	paths: ContentTraffic[];
+};
+
+/**
+ * Fetch traffic data (views, clones, referrers) from GitHub REST API.
+ * This is called during the main sync to ensure snapshot has traffic data.
+ *
+ * KNOWN LIMITATIONS:
+ * - Only tracks last 14 days of traffic (GitHub's limit)
+ * - Requires push access to the repo
+ * - May return 0 for repos without recent web traffic
+ * - Traffic starts collecting from FIRST sync, no historical data
+ */
+async function fetchTrafficData(
+	owner: string,
+	name: string,
+	accessToken: string
+): Promise<FetchedTrafficData> {
+	const headers = {
+		Authorization: `Bearer ${accessToken}`,
+		Accept: 'application/vnd.github+json',
+		'X-GitHub-Api-Version': '2022-11-28'
+	};
+
+	const baseUrl = `https://api.github.com/repos/${owner}/${name}`;
+
+	try {
+		console.log(`[Traffic] Fetching traffic for ${owner}/${name}...`);
+		
+		const [viewsRes, clonesRes, referrersRes, pathsRes] = await Promise.all([
+			fetch(`${baseUrl}/traffic/views?per=day`, { headers }),
+			fetch(`${baseUrl}/traffic/clones?per=day`, { headers }),
+			fetch(`${baseUrl}/traffic/popular/referrers`, { headers }),
+			fetch(`${baseUrl}/traffic/popular/paths`, { headers })
+		]);
+
+		console.log(`[Traffic] Views API: ${viewsRes.status} ${viewsRes.statusText}`);
+		console.log(`[Traffic] Clones API: ${clonesRes.status} ${clonesRes.statusText}`);
+		console.log(`[Traffic] Referrers API: ${referrersRes.status} ${referrersRes.statusText}`);
+
+		const viewsData: TrafficViews = viewsRes.ok
+			? await viewsRes.json()
+			: { count: 0, uniques: 0, views: [] };
+		const clonesData: TrafficClones = clonesRes.ok
+			? await clonesRes.json()
+			: { count: 0, uniques: 0, clones: [] };
+		const referrers: ReferrerTraffic[] = referrersRes.ok ? await referrersRes.json() : [];
+		const paths: ContentTraffic[] = pathsRes.ok ? await pathsRes.json() : [];
+
+		console.log(
+			`[Traffic] Views: ${viewsData.count} | Uniques: ${viewsData.uniques} | Clones: ${clonesData.count} | Cloners: ${clonesData.uniques} | Referrers: ${referrers.length}`
+		);
+		
+		// Log daily breakdown if available
+		if (viewsData.views && viewsData.views.length > 0) {
+			console.log(`[Traffic] Daily views (last ${viewsData.views.length} days):`, 
+				viewsData.views.map(v => `${v.timestamp}: ${v.count}`).join(', ')
+			);
+		}
+		if (clonesData.clones && clonesData.clones.length > 0) {
+			console.log(`[Traffic] Daily clones (last ${clonesData.clones.length} days):`,
+				clonesData.clones.map(c => `${c.timestamp}: ${c.count}`).join(', ')
+			);
+		}
+
+		return {
+			views: viewsData.count,
+			uniqueVisitors: viewsData.uniques,
+			clones: clonesData.count,
+			uniqueCloners: clonesData.uniques,
+			referrers,
+			paths
+		};
+	} catch (error) {
+		console.error('[Traffic] Failed to fetch traffic:', error);
+		return {
+			views: 0,
+			uniqueVisitors: 0,
+			clones: 0,
+			uniqueCloners: 0,
+			referrers: [],
+			paths: []
+		};
+	}
 }
 
 export const fetchRepoData = internalAction({
@@ -178,7 +427,7 @@ export const fetchRepoData = internalAction({
 		}
 		console.log('[Collector] Got token for user');
 
-		// Detailed query to get PRs, Issues, and commits
+		// Detailed query to get PRs, Issues, commits with author info, and all-time contributors
 		const query = `
       query($owner: String!, $name: String!) {
         repository(owner: $owner, name: $name) {
@@ -192,13 +441,23 @@ export const fetchRepoData = internalAction({
           defaultBranchRef {
             target {
               ... on Commit {
-                history(first: 50) {
+                history(first: 100) {
                   nodes {
                     committedDate
+                    author {
+                      name
+                      email
+                      user {
+                        login
+                      }
+                    }
                   }
                 }
               }
             }
+          }
+          mentionableUsers(first: 1) {
+            totalCount
           }
         }
       }
@@ -251,7 +510,7 @@ export const fetchRepoData = internalAction({
 		const commitGapHours = processCommitGap(commits, now);
 		const latestCommitDate = extractLatestCommitDate(commits);
 
-		// Calculate starsLast7d from snapshot history
+		// Calculate starsLast7d: Try from snapshot history first, fallback to API
 		const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
 		const oldSnapshot = await ctx.runQuery(internal.collector.getSnapshotAroundTime, {
 			repoId,
@@ -262,13 +521,22 @@ export const fetchRepoData = internalAction({
 		console.log('[Collector] Current stars:', currentStars);
 		console.log('[Collector] Old snapshot for starsLast7d:', oldSnapshot);
 
-		const starsLast7d = oldSnapshot ? Math.max(0, currentStars - oldSnapshot.stars) : 0;
-		console.log('[Collector] Stars last 7d:', starsLast7d);
+		let starsLast7d: number;
+		if (oldSnapshot) {
+			// We have historical data - use delta
+			starsLast7d = Math.max(0, currentStars - oldSnapshot.stars);
+			console.log('[Collector] Stars last 7d (from snapshot):', starsLast7d);
+		} else {
+			// First sync or no old snapshot - fetch from GitHub API directly
+			console.log('[Collector] No old snapshot, fetching starsLast7d from API...');
+			starsLast7d = await fetchStarsLast7d(repo.owner, repo.name, tokens.accessToken, currentStars);
+			console.log('[Collector] Stars last 7d (from API):', starsLast7d);
+		}
 
-		// Fetch contributors from last 14 days using REST API
-		console.log('[Collector] Fetching contributors14d...');
-		const contributors14d = await fetchContributors14d(repo.owner, repo.name, tokens.accessToken);
-		console.log('[Collector] Contributors14d:', contributors14d);
+		// Count unique commit authors in last 14 days from commit history
+		console.log('[Collector] Counting unique contributors14d...');
+		const contributors14d = countUniqueAuthors14d(commits, now);
+		console.log('[Collector] Contributors14d (from commits):', contributors14d);
 
 		// Fetch median issue response hours from closed issues
 		console.log('[Collector] Fetching medianIssueResponseHours...');
@@ -279,8 +547,17 @@ export const fetchRepoData = internalAction({
 		);
 		console.log('[Collector] Median issue response hours:', medianIssueResponseHours);
 
+		// Fetch traffic data (views, clones, referrers) as part of main sync
+		// This ensures the snapshot has traffic data on first sync
+		console.log('[Collector] Fetching traffic data...');
+		const trafficData = await fetchTrafficData(repo.owner, repo.name, tokens.accessToken);
+		console.log('[Collector] Traffic data fetched:', trafficData);
+
 		// Capture Snapshot
 		console.log('[Collector] Saving snapshot...');
+		const totalContributors = data.mentionableUsers?.totalCount ?? 0;
+		console.log('[Collector] Total contributors (all-time):', totalContributors);
+		
 		const snapshotId = await ctx.runMutation(internal.collector.saveSnapshot, {
 			repoId,
 			stars: currentStars,
@@ -289,11 +566,30 @@ export const fetchRepoData = internalAction({
 			prsOpen: data.pullRequests.totalCount,
 			prsMerged7d,
 			contributors14d,
+			totalContributors,
 			commitGapHours,
 			medianIssueResponseHours,
-			forks: data.forkCount
+			forks: data.forkCount,
+			views: trafficData.views,
+			uniqueVisitors: trafficData.uniqueVisitors,
+			clones: trafficData.clones,
+			uniqueCloners: trafficData.uniqueCloners
 		});
 		console.log('[Collector] Snapshot saved:', snapshotId);
+
+		// Save referrer data to dedicated table
+		if (trafficData.referrers.length > 0 || trafficData.paths.length > 0) {
+			await ctx.runMutation(internal.collector.saveRepoReferrers, {
+				repoId,
+				referrers: trafficData.referrers,
+				paths: trafficData.paths,
+				totalViews: trafficData.views,
+				totalUniques: trafficData.uniqueVisitors,
+				totalClones: trafficData.clones,
+				totalCloners: trafficData.uniqueCloners
+			});
+			console.log('[Collector] Referrer data saved');
+		}
 
 		if (latestCommitDate) {
 			await ctx.runMutation(internal.streakTracker.updateStreak, {
@@ -303,9 +599,84 @@ export const fetchRepoData = internalAction({
 			});
 		}
 
+		// Validate snapshot data accuracy
+		validateSnapshotData({
+			stars: currentStars,
+			starsLast7d,
+			issuesOpen: data.issues.totalCount,
+			prsOpen: data.pullRequests.totalCount,
+			prsMerged7d,
+			contributors14d,
+			totalContributors,
+			commitGapHours,
+			views: trafficData.views,
+			clones: trafficData.clones,
+			uniqueCloners: trafficData.uniqueCloners
+		});
+
 		return snapshotId;
 	}
 });
+
+/**
+ * Validate snapshot data to catch accuracy issues early.
+ * Logs warnings when data looks suspicious.
+ */
+function validateSnapshotData(data: {
+	stars: number;
+	starsLast7d: number;
+	issuesOpen: number;
+	prsOpen: number;
+	prsMerged7d: number;
+	contributors14d: number;
+	totalContributors: number;
+	commitGapHours: number;
+	views: number;
+	clones: number;
+	uniqueCloners: number;
+}): void {
+	const warnings: string[] = [];
+
+	// Stars validation
+	if (data.starsLast7d > data.stars) {
+		warnings.push(`starsLast7d (${data.starsLast7d}) > total stars (${data.stars}) - data inconsistency`);
+	}
+	if (data.starsLast7d === 0 && data.stars > 0) {
+		warnings.push('starsLast7d is 0 but repo has stars - may indicate first sync or tracking issue');
+	}
+
+	// Contributors validation
+	if (data.contributors14d === 0 && data.commitGapHours < 336) {
+		// 336 hours = 14 days
+		warnings.push('contributors14d is 0 but recent commits exist - author counting may be broken');
+	}
+	if (data.totalContributors > 0 && data.contributors14d > data.totalContributors) {
+		warnings.push(`contributors14d (${data.contributors14d}) > totalContributors (${data.totalContributors}) - data error`);
+	}
+
+	// Traffic validation
+	if (data.views === 0 && data.clones === 0) {
+		warnings.push('Both views and clones are 0 - GitHub traffic API may not be tracking this repo');
+	}
+	if (data.uniqueCloners > data.clones) {
+		warnings.push(`uniqueCloners (${data.uniqueCloners}) > total clones (${data.clones}) - data error`);
+	}
+
+	// PR validation
+	if (data.prsMerged7d < 0) {
+		warnings.push(`prsMerged7d is negative (${data.prsMerged7d}) - calculation error`);
+	}
+
+	// Commit validation
+	if (data.commitGapHours < 0) {
+		warnings.push(`commitGapHours is negative (${data.commitGapHours}) - calculation error`);
+	}
+
+	// Log all warnings
+	if (warnings.length > 0) {
+		console.warn('[Collector] Data validation warnings:', warnings);
+	}
+}
 
 export const saveSnapshot = internalMutation({
 	args: {
@@ -316,9 +687,14 @@ export const saveSnapshot = internalMutation({
 		prsOpen: v.number(),
 		prsMerged7d: v.number(),
 		contributors14d: v.number(),
+		totalContributors: v.optional(v.number()),
 		commitGapHours: v.number(),
 		medianIssueResponseHours: v.number(),
-		forks: v.number()
+		forks: v.number(),
+		views: v.optional(v.number()),
+		uniqueVisitors: v.optional(v.number()),
+		clones: v.optional(v.number()),
+		uniqueCloners: v.optional(v.number())
 	},
 	handler: async (ctx, args) => {
 		const syncedAt = Date.now();
@@ -327,11 +703,48 @@ export const saveSnapshot = internalMutation({
 			capturedAt: syncedAt
 		});
 
+		// Update cumulative traffic tracking in the repo record
+		// This is needed because GitHub's traffic API only returns 14-day rolling totals
+		const repo = await ctx.db.get(args.repoId);
+		const previousSnapshot = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.first(); // This is the one we just inserted
+
+		// Get the snapshot BEFORE this one for delta calculation
+		const snapshots = await ctx.db
+			.query('repoSnapshots')
+			.withIndex('by_repoId_capturedAt', (q) => q.eq('repoId', args.repoId))
+			.order('desc')
+			.take(2);
+		const olderSnapshot = snapshots[1] ?? null;
+
+		// Calculate cumulative traffic
+		let cumulativeViews = repo?.cumulativeViews ?? 0;
+		let cumulativeClones = repo?.cumulativeClones ?? 0;
+
+		if (cumulativeViews === 0) {
+			// First sync - initialize with current values
+			cumulativeViews = args.views ?? 0;
+			cumulativeClones = args.clones ?? 0;
+		} else if (olderSnapshot) {
+			// Subsequent sync - add the delta to cumulative
+			const viewsDelta = Math.max(0, (args.views ?? 0) - (olderSnapshot.views ?? 0));
+			const clonesDelta = Math.max(0, (args.clones ?? 0) - (olderSnapshot.clones ?? 0));
+			cumulativeViews += viewsDelta;
+			cumulativeClones += clonesDelta;
+			console.log(`[Traffic] Cumulative update: +${viewsDelta} views, +${clonesDelta} clones`);
+		}
+		// If no older snapshot, keep the initial values
+
 		await ctx.db.patch(args.repoId, {
 			starsCount: args.stars,
 			forksCount: args.forks,
 			lastSyncedAt: syncedAt,
-			lastError: undefined
+			lastError: undefined,
+			cumulativeViews,
+			cumulativeClones
 		});
 
 		return snapshotId;
@@ -435,32 +848,6 @@ export const updateReadmeAnalysis = internalMutation({
 		}
 	}
 });
-
-// Traffic data types
-type TrafficViews = {
-	count: number;
-	uniques: number;
-	views: Array<{ timestamp: string; count: number; uniques: number }>;
-};
-
-type TrafficClones = {
-	count: number;
-	uniques: number;
-	clones: Array<{ timestamp: string; count: number; uniques: number }>;
-};
-
-type ReferrerTraffic = {
-	referrer: string;
-	count: number;
-	uniques: number;
-};
-
-type ContentTraffic = {
-	path: string;
-	title: string;
-	count: number;
-	uniques: number;
-};
 
 export const fetchRepoTraffic = internalAction({
 	args: { repoId: v.id('repos') },

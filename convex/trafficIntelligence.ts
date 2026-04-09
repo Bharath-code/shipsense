@@ -1007,7 +1007,8 @@ function computeRiskStack(input: {
 }
 
 // ── Conversion Funnel Composite ──────────────────────────────────────────────
-// Views → Stars → Clones → Contributors with conversion rates + Momentum Vector
+// Two views of the same funnel: Cumulative (stock) + Weekly (flow)
+// Displayed side-by-side so users can see both the big picture and recent trends.
 
 export type FunnelStage = {
 	label: string;
@@ -1018,10 +1019,19 @@ export type FunnelStage = {
 	sentiment: 'excellent' | 'good' | 'weak' | 'none';
 };
 
+export type FunnelView = {
+	label: string; // 'Cumulative' or 'Weekly'
+	description: string;
+	stages: [FunnelStage, FunnelStage, FunnelStage, FunnelStage];
+};
+
 export type MomentumVector = 'accelerating' | 'coasting' | 'stalling';
 
 export type ConversionFunnelReport = {
-	stages: [FunnelStage, FunnelStage, FunnelStage, FunnelStage];
+	/** All-time funnel — shows overall conversion health */
+	cumulative: FunnelView;
+	/** Recent activity funnel — shows current momentum */
+	weekly: FunnelView;
 	momentumVector: MomentumVector;
 	momentumReason: string;
 	externalReach: ExternalReachScore | null;
@@ -1030,110 +1040,282 @@ export type ConversionFunnelReport = {
 	hasData: boolean;
 };
 
-function computeFunnelStages(input: {
-	views: number;
-	uniqueVisitors: number;
-	starsLast7d: number;
-	clones: number;
-	uniqueCloners: number;
-	contributors14d: number;
-}): [FunnelStage, FunnelStage, FunnelStage, FunnelStage] {
-	const { views, uniqueVisitors, starsLast7d, clones, uniqueCloners, contributors14d } = input;
+// ── Cumulative Funnel ────────────────────────────────────────────────────────
+
+function computeCumulativeFunnel(input: {
+	totalViews: number;
+	totalUniques: number;
+	totalStars: number;
+	totalClones: number;
+	totalUniqueCloners: number;
+	totalContributors: number;
+}): FunnelView {
+	const { totalViews, totalUniques, totalStars, totalClones, totalUniqueCloners, totalContributors } = input;
 
 	const stage1: FunnelStage = {
 		label: 'Views',
-		value: views,
-		subLabel: `${uniqueVisitors} unique visitors`,
+		value: totalViews,
+		subLabel: `${totalUniques} unique visitors`,
 		conversionRate: null,
-		conversionLabel: 'Traffic in',
-		sentiment: views > 100 ? 'excellent' : views > 20 ? 'good' : views > 0 ? 'weak' : 'none'
+		conversionLabel: 'All-time traffic',
+		sentiment: totalViews > 1000 ? 'excellent' : totalViews > 200 ? 'good' : totalViews > 0 ? 'weak' : 'none'
 	};
 
-	const viewsToStarsRate = views > 0 ? (starsLast7d / views) * 100 : null;
+	const viewsToStarsRate = totalStars > 0 && totalViews > 0
+		? (totalStars / totalViews) * 100
+		: null;
 	const stage2: FunnelStage = {
 		label: 'Stars',
-		value: starsLast7d,
-		subLabel: 'this week',
+		value: totalStars,
+		subLabel: 'total',
 		conversionRate: viewsToStarsRate,
-		conversionLabel:
-			viewsToStarsRate !== null
-				? viewsToStarsRate >= 5
-					? 'Exceptional'
-					: viewsToStarsRate >= 2
-						? 'Healthy'
-						: viewsToStarsRate >= 0.5
-							? 'Below avg'
-							: 'Very low'
-				: '—',
-		sentiment:
-			viewsToStarsRate === null
-				? 'none'
-				: viewsToStarsRate >= 5
-					? 'excellent'
-					: viewsToStarsRate >= 2
-						? 'good'
-						: 'weak'
+		conversionLabel: viewsToStarsRate !== null
+			? viewsToStarsRate >= 5
+				? 'Exceptional'
+				: viewsToStarsRate >= 2
+					? 'Healthy'
+					: viewsToStarsRate >= 0.5
+						? 'Below avg'
+						: 'Very low'
+			: '—',
+		sentiment: viewsToStarsRate === null
+			? 'none'
+			: viewsToStarsRate >= 5
+				? 'excellent'
+				: viewsToStarsRate >= 2
+					? 'good'
+					: 'weak'
 	};
 
-	const baseline = starsLast7d > 0 ? starsLast7d : uniqueVisitors;
-	const starsToCloneRate = baseline > 0 ? (uniqueCloners / baseline) * 100 : null;
+	const starsToCloneRate = totalStars > 0
+		? (totalUniqueCloners / totalStars) * 100
+		: null;
 	const stage3: FunnelStage = {
 		label: 'Clones',
-		value: clones,
-		subLabel: `${uniqueCloners} unique cloners`,
+		value: totalClones,
+		subLabel: `${totalUniqueCloners} unique cloners`,
 		conversionRate: starsToCloneRate,
-		conversionLabel:
-			starsToCloneRate !== null
-				? starsToCloneRate >= 50
-					? 'Developer-grade'
-					: starsToCloneRate >= 20
-						? 'Strong interest'
-						: starsToCloneRate >= 5
-							? 'Some adoption'
-							: 'Low intent'
+		conversionLabel: starsToCloneRate !== null
+			? starsToCloneRate >= 50
+				? 'Developer-grade'
+				: starsToCloneRate >= 20
+					? 'Strong interest'
+					: starsToCloneRate >= 5
+						? 'Some adoption'
+						: 'Low intent'
+			: '—',
+		sentiment: starsToCloneRate === null
+			? 'none'
+			: starsToCloneRate >= 50
+				? 'excellent'
+				: starsToCloneRate >= 20
+					? 'good'
+					: 'weak'
+	};
+
+	const clonerToContribRate = totalUniqueCloners > 0
+		? (totalContributors / totalUniqueCloners) * 100
+		: null;
+	const stage4: FunnelStage = {
+		label: 'Contributors',
+		value: totalContributors,
+		subLabel: 'all-time',
+		conversionRate: clonerToContribRate,
+		conversionLabel: clonerToContribRate !== null
+			? clonerToContribRate >= 20
+				? 'Elite activation'
+				: clonerToContribRate >= 10
+					? 'Good activation'
+					: clonerToContribRate >= 2
+						? 'Moderate'
+						: 'Low activation'
+			: totalContributors > 0
+				? `${totalContributors} total`
 				: '—',
-		sentiment:
-			starsToCloneRate === null
-				? 'none'
-				: starsToCloneRate >= 50
+		sentiment: totalContributors === 0
+			? 'none'
+			: clonerToContribRate === null
+				? 'good'
+				: clonerToContribRate >= 20
 					? 'excellent'
-					: starsToCloneRate >= 20
+					: clonerToContribRate >= 10
 						? 'good'
 						: 'weak'
 	};
 
-	const clonerToContribRate =
-		uniqueCloners > 0 ? (contributors14d / uniqueCloners) * 100 : null;
+	return {
+		label: 'Cumulative',
+		description: 'All-time conversion rates since you connected this repo',
+		stages: [stage1, stage2, stage3, stage4]
+	};
+}
+
+// ── Weekly Funnel ────────────────────────────────────────────────────────────
+
+function computeWeeklyFunnel(input: {
+	viewsThisPeriod: number;
+	uniquesThisPeriod: number;
+	starsThisPeriod: number;
+	clonesThisPeriod: number;
+	uniqueClonersThisPeriod: number;
+	contributors14d: number;
+}): FunnelView {
+	const { viewsThisPeriod, uniquesThisPeriod, starsThisPeriod, clonesThisPeriod, uniqueClonersThisPeriod, contributors14d } = input;
+
+	const stage1: FunnelStage = {
+		label: 'Views',
+		value: viewsThisPeriod,
+		subLabel: `${uniquesThisPeriod} unique visitors`,
+		conversionRate: null,
+		conversionLabel: 'Traffic this period',
+		sentiment: viewsThisPeriod > 100 ? 'excellent' : viewsThisPeriod > 20 ? 'good' : viewsThisPeriod > 0 ? 'weak' : 'none'
+	};
+
+	const viewsToStarsRate = viewsThisPeriod > 0
+		? (starsThisPeriod / viewsThisPeriod) * 100
+		: null;
+	const stage2: FunnelStage = {
+		label: 'Stars',
+		value: starsThisPeriod,
+		subLabel: 'this period',
+		conversionRate: viewsToStarsRate,
+		conversionLabel: viewsToStarsRate !== null
+			? viewsToStarsRate >= 5
+				? 'Exceptional'
+				: viewsToStarsRate >= 2
+					? 'Healthy'
+					: viewsToStarsRate >= 0.5
+						? 'Below avg'
+						: 'Very low'
+			: '—',
+		sentiment: viewsToStarsRate === null
+			? 'none'
+			: viewsToStarsRate >= 5
+				? 'excellent'
+				: viewsToStarsRate >= 2
+					? 'good'
+					: 'weak'
+	};
+
+	// Clone conversion: use stars as baseline (both are period metrics)
+	const starsToCloneRate = starsThisPeriod > 0
+		? (uniqueClonersThisPeriod / starsThisPeriod) * 100
+		: null;
+	const stage3: FunnelStage = {
+		label: 'Clones',
+		value: clonesThisPeriod,
+		subLabel: `${uniqueClonersThisPeriod} unique cloners`,
+		conversionRate: starsToCloneRate,
+		conversionLabel: starsToCloneRate !== null
+			? starsToCloneRate >= 50
+				? 'Developer-grade'
+				: starsToCloneRate >= 20
+					? 'Strong interest'
+					: starsToCloneRate >= 5
+						? 'Some adoption'
+						: 'Low intent'
+			: '—',
+		sentiment: starsToCloneRate === null
+			? 'none'
+			: starsToCloneRate >= 50
+				? 'excellent'
+				: starsToCloneRate >= 20
+					? 'good'
+					: 'weak'
+	};
+
+	// Contributor conversion: contributors14d is rolling 14-day, not strictly weekly
+	// but it's the best signal we have for "people who tried it and stayed"
+	const clonerToContribRate = uniqueClonersThisPeriod > 0
+		? (contributors14d / uniqueClonersThisPeriod) * 100
+		: null;
 	const stage4: FunnelStage = {
 		label: 'Contributors',
 		value: contributors14d,
 		subLabel: 'last 14 days',
 		conversionRate: clonerToContribRate,
-		conversionLabel:
-			clonerToContribRate !== null
-				? clonerToContribRate >= 40
-					? 'Elite activation'
+		conversionLabel: clonerToContribRate !== null
+			? clonerToContribRate >= 40
+				? 'Elite activation'
+				: clonerToContribRate >= 15
+					? 'Good activation'
+					: clonerToContribRate >= 5
+						? 'Moderate'
+						: 'Low activation'
+			: contributors14d > 0
+				? `${contributors14d} active`
+				: '—',
+		sentiment: contributors14d === 0
+			? 'none'
+			: clonerToContribRate === null
+				? 'good'
+				: clonerToContribRate >= 40
+					? 'excellent'
 					: clonerToContribRate >= 15
-						? 'Good activation'
-						: clonerToContribRate >= 5
-							? 'Moderate'
-							: 'Low activation'
-				: contributors14d > 0
-					? `${contributors14d} active`
-					: '—',
-		sentiment:
-			contributors14d === 0
-				? 'none'
-				: clonerToContribRate === null
-					? 'good'
-					: clonerToContribRate >= 40
-						? 'excellent'
-						: clonerToContribRate >= 15
-							? 'good'
-							: 'weak'
+						? 'good'
+						: 'weak'
 	};
 
-	return [stage1, stage2, stage3, stage4];
+	return {
+		label: 'Weekly',
+		description: 'Recent activity — shows your current momentum',
+		stages: [stage1, stage2, stage3, stage4]
+	};
+}
+
+/**
+ * Build both cumulative and weekly funnels from snapshot data.
+ *
+ * Cumulative: uses absolute values from the latest snapshot (all-time totals).
+ * Weekly: computes deltas between latest and previous snapshots for views/clones,
+ *         uses starsLast7d and contributors14d directly (already rolling metrics).
+ */
+function computeBothFunnels(latest: {
+	views: number;
+	uniqueVisitors: number;
+	stars: number;
+	starsLast7d: number;
+	clones: number;
+	uniqueCloners: number;
+	contributors14d: number;
+	totalContributors?: number;
+	cumulativeViews?: number;
+	cumulativeClones?: number;
+}, previous: {
+	views: number;
+	uniqueVisitors: number;
+	stars: number;
+	clones: number;
+	uniqueCloners: number;
+} | null): { cumulative: FunnelView; weekly: FunnelView } {
+	// Cumulative funnel: all-time totals (tracked from first sync forward)
+	// GitHub's traffic API only returns 14-day rolling totals, so we track our own cumulative
+	const cumulative = computeCumulativeFunnel({
+		totalViews: latest.cumulativeViews ?? latest.views,
+		totalUniques: latest.uniqueVisitors,
+		totalStars: latest.stars,
+		totalClones: latest.cumulativeClones ?? latest.clones,
+		totalUniqueCloners: latest.uniqueCloners,
+		totalContributors: latest.totalContributors ?? latest.contributors14d // Use all-time if available, fallback to 14d
+	});
+
+	// Weekly funnel:
+	// IMPORTANT: GitHub's traffic API returns 14-day CUMULATIVE totals, not daily increments.
+	// Using deltas between snapshots 2 hours apart gives 0 because both captured the same 14-day window.
+	// Solution: Use raw values directly - they already represent "recent activity" (last 14 days).
+	// For stars, use starsLast7d (already a 7-day rolling metric).
+	// For contributors, use contributors14d (already a 14-day rolling metric).
+	
+	const weekly = computeWeeklyFunnel({
+		viewsThisPeriod: latest.views, // 14-day rolling total from GitHub
+		uniquesThisPeriod: latest.uniqueVisitors,
+		starsThisPeriod: latest.starsLast7d, // 7-day rolling total
+		clonesThisPeriod: latest.clones, // 14-day rolling total from GitHub
+		uniqueClonersThisPeriod: latest.uniqueCloners,
+		contributors14d: latest.contributors14d // 14-day rolling total
+	});
+
+	return { cumulative, weekly };
 }
 
 export function computeMomentumVector(input: {
@@ -1246,22 +1428,35 @@ export const getConversionFunnel = query({
 
 		const views = latest?.views ?? 0;
 		const uniqueVisitors = latest?.uniqueVisitors ?? 0;
+		const stars = latest?.stars ?? repo.starsCount;
 		const starsLast7d = latest?.starsLast7d ?? 0;
 		const clones = latest?.clones ?? 0;
 		const uniqueCloners = latest?.uniqueCloners ?? 0;
 		const contributors14d = latest?.contributors14d ?? 0;
+		const totalContributors = latest?.totalContributors ?? 0;
 		const commitGapHours = latest?.commitGapHours ?? 999;
 		const prevStarsLast7d = previous?.starsLast7d ?? null;
 		const scoreTrend = latestScore?.trend ?? 'stable';
 
-		const stages = computeFunnelStages({
+		// Build both funnels side by side
+		const { cumulative, weekly } = computeBothFunnels({
 			views,
 			uniqueVisitors,
+			stars,
 			starsLast7d,
 			clones,
 			uniqueCloners,
-			contributors14d
-		});
+			contributors14d,
+			totalContributors,
+			cumulativeViews: repo.cumulativeViews,
+			cumulativeClones: repo.cumulativeClones
+		}, previous ? {
+			views: previous.views ?? 0,
+			uniqueVisitors: previous.uniqueVisitors ?? 0,
+			stars: previous.stars,
+			clones: previous.clones ?? 0,
+			uniqueCloners: previous.uniqueCloners ?? 0
+		} : null);
 
 		const { vector, reason } = computeMomentumVector({
 			scoreTrend,
@@ -1270,7 +1465,7 @@ export const getConversionFunnel = query({
 			commitGapHours
 		});
 
-		const oneThing = computeFunnelOneThing(stages, vector);
+		const oneThing = computeFunnelOneThing(weekly.stages, vector);
 
 		// External Reach Score
 		let externalReach: ExternalReachScore | null = null;
@@ -1358,7 +1553,8 @@ export const getConversionFunnel = query({
 		});
 
 		return {
-			stages,
+			cumulative,
+			weekly,
 			momentumVector: vector,
 			momentumReason: reason,
 			externalReach,

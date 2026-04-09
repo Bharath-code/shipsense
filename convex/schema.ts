@@ -40,7 +40,10 @@ export default defineSchema({
 		lastSyncedAt: v.optional(v.number()),
 		lastError: v.optional(v.string()),
 		isActive: v.boolean(),
-		slug: v.optional(v.string()) // e.g. "bharath-code-shipsense" for public URLs
+		slug: v.optional(v.string()), // e.g. "bharath-code-shipsense" for public URLs
+		// Cumulative traffic tracking (starts from first sync, grows over time)
+		cumulativeViews: v.optional(v.number()),
+		cumulativeClones: v.optional(v.number())
 	})
 		.index('by_userId', ['userId'])
 		.index('by_userId_isActive', ['userId', 'isActive'])
@@ -57,6 +60,7 @@ export default defineSchema({
 		prsOpen: v.number(),
 		prsMerged7d: v.number(),
 		contributors14d: v.number(),
+		totalContributors: v.optional(v.number()), // All-time contributors (for cumulative funnel)
 		commitGapHours: v.float64(),
 		medianIssueResponseHours: v.float64(),
 		forks: v.number(),

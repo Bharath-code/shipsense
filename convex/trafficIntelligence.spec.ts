@@ -15,7 +15,86 @@ import {
 	formatRatio
 } from './trafficIntelligence';
 
-// ── classifyReferrer ──────────────────────────────────────────────────────────
+// Import funnel computation functions (they're not exported, so we'll test via the module)
+// For now, we'll test the helper functions and add integration-style tests
+
+// ── Funnel Computation Tests ──────────────────────────────────────────────────
+
+describe('funnel sentiment thresholds', () => {
+	describe('views to stars conversion', () => {
+		it('marks ≤5 views/star as exceptional', () => {
+			const result = analyzeConversion(25, 5, null, null); // 5 views/star
+			expect(result.conversionLabel).toContain('20.0%');
+			expect(result.analysis).toContain('Exceptional');
+		});
+
+		it('marks 5-20 views/star as healthy', () => {
+			const result = analyzeConversion(50, 5, null, null); // 10 views/star
+			expect(result.conversionLabel).toContain('10.0%');
+			expect(result.analysis).toContain('Healthy');
+		});
+
+		it('marks 20-50 views/star as lower than average', () => {
+			const result = analyzeConversion(100, 3, null, null); // 33 views/star
+			expect(result.conversionLabel).toContain('3.0%');
+			expect(result.analysis).toContain('Lower than average');
+		});
+
+		it('marks >50 views/star as very low', () => {
+			const result = analyzeConversion(200, 2, null, null); // 100 views/star
+			expect(result.conversionLabel).toContain('1.0%');
+			expect(result.analysis).toContain('Very few stars');
+		});
+
+		it('handles zero views gracefully', () => {
+			const result = analyzeConversion(0, 0, null, null);
+			expect(result.conversionLabel).toBe('No data');
+		});
+	});
+
+	describe('cloning analysis', () => {
+		it('marks high clone interest as developer-grade', () => {
+			const result = analyzeCloning(50, 10, 5);
+			expect(result.label).toContain('developers cloning');
+			expect(result.analysis).toContain('Strong developer interest');
+		});
+
+		it('marks zero clones correctly', () => {
+			const result = analyzeCloning(0, 0, 10);
+			expect(result.label).toBe('No data');
+		});
+
+		it('handles clones without stars', () => {
+			const result = analyzeCloning(10, 3, 0);
+			expect(result.clones).toBe(10);
+			expect(result.uniqueCloners).toBe(3);
+		});
+	});
+
+	describe('velocity analysis', () => {
+		it('marks >30% growth as accelerating', () => {
+			const result = analyzeVelocity(150, 100);
+			expect(result.velocity).toBe('accelerating');
+			expect(result.changePercent).toBe(50);
+		});
+
+		it('marks stable traffic correctly', () => {
+			const result = analyzeVelocity(105, 100);
+			expect(result.velocity).toBe('steady');
+		});
+
+		it('marks decline correctly', () => {
+			const result = analyzeVelocity(70, 100);
+			expect(result.velocity).toBe('declining');
+			expect(result.changePercent).toBe(-30);
+		});
+
+		it('handles zero current views', () => {
+			const result = analyzeVelocity(0, 100);
+			expect(result.velocity).toBe('declining');
+		});
+	});
+});
 
 describe('classifyReferrer', () => {
 	it('classifies known platforms', () => {

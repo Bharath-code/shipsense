@@ -753,8 +753,8 @@
 				<!-- Conversion Funnel + External Reach (blurred for free) -->
 				<PaywallBlur plan={userPlan} feature="Growth Intelligence">
 					<div class="space-y-6">
-						<!-- Mini funnel -->
-						{#if funnel && funnel.stages && funnel.stages.length > 0}
+						<!-- Mini funnel (weekly view) -->
+						{#if funnel && funnel.weekly.stages.length > 0}
 							<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
 								<div class="mb-4 flex items-center justify-between">
 									<div class="flex items-center gap-2">
@@ -770,7 +770,7 @@
 									</button>
 								</div>
 								<div class="flex items-stretch gap-2 overflow-x-auto pb-2">
-									{#each funnel.stages as stage, i}
+									{#each funnel.weekly.stages as stage, i}
 										{@const StageIcon = funnelStageIcon(stage.label)}
 										<div class="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
 											<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 {funnelValueColor(stage.sentiment)}">
@@ -784,7 +784,7 @@
 												</span>
 											{/if}
 										</div>
-										{#if i < funnel.stages.length - 1}
+										{#if i < funnel.weekly.stages.length - 1}
 											<div class="flex items-center text-white/15">
 												<ArrowRight class="h-4 w-4" />
 											</div>

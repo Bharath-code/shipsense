@@ -163,9 +163,8 @@ export const syncRepoNow = internalAction({
 				}
 			}
 
-			// Collect traffic data (GitHub REST API - views, clones, referrers)
-			await ctx.runAction(internal.collector.fetchRepoTraffic, { repoId });
-			console.log('[Orchestrator] Traffic data collected');
+			// Traffic data (views, clones, referrers) is now fetched as part of fetchRepoData
+			// No need to call fetchRepoTraffic separately - it's already in the snapshot
 
 			await ctx.runAction(internal.insightGenerator.generateInsights, { repoId });
 			console.log('[Orchestrator] Insights generated');

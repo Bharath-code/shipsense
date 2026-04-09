@@ -16,6 +16,7 @@ import type * as crons from "../crons.js";
 import type * as dailyDigests from "../dailyDigests.js";
 import type * as dashboard from "../dashboard.js";
 import type * as dependencies from "../dependencies.js";
+import type * as diagnostics from "../diagnostics.js";
 import type * as email from "../email.js";
 import type * as foundingMembers from "../foundingMembers.js";
 import type * as github from "../github.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   dailyDigests: typeof dailyDigests;
   dashboard: typeof dashboard;
   dependencies: typeof dependencies;
+  diagnostics: typeof diagnostics;
   email: typeof email;
   foundingMembers: typeof foundingMembers;
   github: typeof github;
