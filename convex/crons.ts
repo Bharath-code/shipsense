@@ -34,4 +34,11 @@ crons.daily(
 	internal.orchestrator.sendDailyDigests
 );
 
+// Housekeeping: delete expired notifications (30-day TTL)
+crons.daily(
+	'cleanup-expired-notifications',
+	{ hourUTC: 3, minuteUTC: 0 },
+	internal.notifications.cleanupExpiredNotifications
+);
+
 export default crons;

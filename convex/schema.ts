@@ -261,7 +261,9 @@ export default defineSchema({
 			v.literal('issue'),
 			v.literal('pr'),
 			v.literal('general'),
-			v.literal('anomaly')
+			v.literal('anomaly'),
+			v.literal('dependency'),
+			v.literal('readme')
 		),
 		priority: v.number(),
 		taskSource: v.optional(
@@ -275,6 +277,7 @@ export default defineSchema({
 		),
 		expectedImpact: v.optional(v.string()),
 		impactScore: v.optional(v.number()),
+		staleKey: v.optional(v.string()),
 		isCompleted: v.boolean(),
 		createdAt: v.number(),
 		completedAt: v.optional(v.number())

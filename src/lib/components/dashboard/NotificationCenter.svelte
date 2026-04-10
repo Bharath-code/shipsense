@@ -14,7 +14,8 @@
 		Siren,
 		X,
 		RefreshCw,
-		PartyPopper
+		PartyPopper,
+		Zap
 	} from 'lucide-svelte';
 
 	const client = useConvexClient();
@@ -37,6 +38,7 @@
 		dependency_alert: PackageSearch,
 		anomaly_alert: Siren,
 		traffic_alert: Siren,
+		stagnation_nudge: Zap,
 		win: PartyPopper
 	};
 
@@ -50,6 +52,7 @@
 		dependency_alert: 'text-warning',
 		anomaly_alert: 'text-destructive',
 		traffic_alert: 'text-orange-500',
+		stagnation_nudge: 'text-amber-400',
 		win: 'text-success'
 	};
 
@@ -126,12 +129,19 @@
 	}
 </script>
 
-<div bind:this={dropdownRef} class="relative" onkeydown={handleDropdownKeydown}>
+<div
+	bind:this={dropdownRef}
+	class="relative"
+	role="region"
+	aria-label="Notification center"
+	onkeydown={handleDropdownKeydown}
+>
 	<button
 		type="button"
 		onclick={toggleDropdown}
 		class="relative flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 		aria-label="Notifications"
+		aria-haspopup="dialog"
 		aria-expanded={isOpen}
 	>
 		<Bell class="h-5 w-5" aria-hidden="true" />
@@ -157,7 +167,7 @@
 					<button
 						type="button"
 						onclick={markAllAsRead}
-						class="flex items-center gap-1 text-xs text-primary hover:text-primary/80"
+						class="flex cursor-pointer items-center gap-1 text-xs text-primary hover:text-primary/80"
 					>
 						<CheckCheck class="h-3 w-3" />
 						Mark all read
@@ -166,16 +176,16 @@
 			</div>
 
 			<!-- List -->
-			<div class="max-h-80 overflow-y-auto">
+			<ul class="max-h-80 overflow-y-auto" role="list">
 				{#if notifications.length === 0}
-					<div class="flex flex-col items-center py-8 text-center">
+					<li class="flex flex-col items-center py-8 text-center">
 						<Bell class="h-8 w-8 text-muted-foreground/40" />
 						<p class="mt-2 text-sm text-muted-foreground">No notifications yet</p>
-					</div>
+					</li>
 				{:else}
 					{#each notifications as notification}
 						{@const Icon = typeIcons[notification.type]}
-						<div
+						<li
 							class="relative flex items-start gap-3 border-b border-border/50 px-4 py-3 transition-colors hover:bg-muted/50 {notification.read
 								? 'opacity-60'
 								: ''}"
@@ -218,15 +228,15 @@
 							<button
 								type="button"
 								onclick={(e) => dismissNotification(e, notification._id)}
-								class="absolute top-3 right-3 shrink-0 text-muted-foreground hover:text-foreground"
+								class="absolute top-3 right-3 shrink-0 cursor-pointer text-muted-foreground hover:text-foreground"
 								aria-label="Dismiss notification"
 							>
 								<X class="h-3.5 w-3.5" />
 							</button>
-						</div>
+						</li>
 					{/each}
 				{/if}
-			</div>
+			</ul>
 		</div>
 	{/if}
 </div>

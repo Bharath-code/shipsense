@@ -147,7 +147,11 @@
 												? 'border-blue-500/20 bg-blue-500/10 text-blue-400'
 												: task.taskType === 'anomaly'
 													? 'border-destructive/20 bg-destructive/10 text-destructive'
-													: 'border-border bg-muted text-muted-foreground'
+													: task.taskType === 'dependency'
+														? 'border-orange-500/20 bg-orange-500/10 text-orange-400'
+														: task.taskType === 'readme'
+															? 'border-violet-500/20 bg-violet-500/10 text-violet-400'
+															: 'border-border bg-muted text-muted-foreground'
 									}`}
 								>
 									{task.taskType}

@@ -158,6 +158,13 @@ export const getRepoDetails = query({
 		const momentumResult = computeMomentumWithTime(scoreHistory);
 		const momentum = momentumResult.delta;
 
+		// Delta since last sync — immediate feedback for shipping
+		// scoreHistory is DESC (newest first), so [0] = current, [1] = previous
+		const lastScore = scoreHistory.length > 1 ? scoreHistory[1].healthScore : null;
+		const scoreDelta = lastScore !== null && latestScore
+			? latestScore.healthScore - lastScore
+			: null;
+
 		return {
 			...repo,
 			starsCount: latestSnapshot?.stars ?? repo.starsCount,
@@ -165,6 +172,7 @@ export const getRepoDetails = query({
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			healthScore: latestScore?.healthScore ?? null,
 			momentum,
+			scoreDelta,
 			trend: momentumResult.trend,
 			hasScore: !!latestScore,
 			hasTrend: momentumResult.hasRecentActivity
@@ -1003,8 +1011,10 @@ function staticPercentile(score: number): number {
 	return 5;
 }
 
-function starCohort(stars: number): { label: string; min: number; max: number } {
-	if (stars < 50) return { label: 'repos with < 50 stars', min: 0, max: 49 };
+function starCohort(stars: number): { label: string; min: number; max: number } | null {
+	// 0-star repos have no meaningful cohort — they haven't gained traction yet
+	if (stars === 0) return null;
+	if (stars < 50) return { label: 'repos with < 50 stars', min: 1, max: 49 };
 	if (stars < 200) return { label: 'repos with 50–200 stars', min: 50, max: 199 };
 	if (stars < 500) return { label: 'repos with 200–500 stars', min: 200, max: 499 };
 	if (stars < 1000) return { label: 'repos with 500–1k stars', min: 500, max: 999 };
@@ -1041,6 +1051,20 @@ export const getRepoBenchmark = query({
 
 		const myStars = mySnapshot?.stars ?? repo.starsCount;
 		const cohort = starCohort(myStars);
+
+		// 0-star repos have no meaningful benchmark — they haven't gained any traction yet
+		if (!cohort) {
+			return {
+				healthScore,
+				percentile: 0,
+				cohortLabel: 'getting started',
+				cohortSize: 0,
+				tier: 'developing' as const,
+				tierLabel: 'Getting Started',
+				narrative: 'No stars yet — focus on distribution and making your repo discoverable.',
+				usedStaticFallback: true
+			};
+		}
 
 		// Gather all active repos in the network (+ their latest scores for network-wide comparison)
 		const allRepos = await ctx.db

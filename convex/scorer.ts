@@ -238,7 +238,9 @@ export function computeMomentumWithTime(
 
 	// No prior window — compare recent avg to the oldest known score
 	if (prior.length === 0) {
-		const oldestScore = scores.length > 0 ? scores[0].healthScore : recentAvg;
+		// Sort ascending to get oldest reliably (query may return DESC)
+		const sorted = [...scores].sort((a, b) => a.calculatedAt - b.calculatedAt);
+		const oldestScore = sorted.length > 0 ? sorted[0].healthScore : recentAvg;
 		const delta = recentAvg - oldestScore;
 		return {
 			delta,

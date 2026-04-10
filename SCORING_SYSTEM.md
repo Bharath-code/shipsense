@@ -511,3 +511,107 @@ Invalid outputs trigger a retry or fallback — they are never saved to the data
 - **Retries:** Up to 2 retries with exponential backoff (1s, 2s) for 429 and 5xx errors
 - **Fallback:** When Gemini fails completely, a deterministic insight is generated from real metric values (commit gap, open issues, score trend) so the user always sees something useful
 - **Defensive parsing:** Safe path traversal (`json?.candidates?.[0]?.content?.parts?.[0]?.text`) with graceful error handling at every step
+
+---
+
+## 9. Task Engine (Deterministic)
+
+> Documented: 2026-04-09. All priority levels, stale-key logic, and task types.
+
+**File:** `convex/taskGenerator.ts` — `determineTasks()`, `reconcileTasks()`
+
+### Design Principles
+
+1. **Tasks persist across syncs** — A task is only auto-completed when its underlying condition no longer exists (stale). It is NOT wiped on every sync.
+2. **Score drop always outranks everything** — A health regression is more urgent than a missed commit day.
+3. **Each task has a `staleKey`** — A stable string key that identifies the condition. If the key is absent on the next sync, the task is auto-completed.
+4. **No duplicate tasks** — `createTask` checks for existing open tasks with the same `staleKey` before inserting.
+
+### Priority Levels (0–9)
+
+Tasks are sorted by `priority` ascending (0 = most urgent). The first task becomes "Today's Focus."
+
+| Priority | Condition | Task Type | Task Source | Stale Key |
+|----------|-----------|-----------|-------------|-----------|
+| **0** | Score dropped ≥ 15 points | `anomaly` | `anomaly` | `score_drop_15` |
+| **1** | Score dropped 10–14 points | `anomaly` | `anomaly` | `score_drop_10` |
+| **2** | Star spike (high severity) | `anomaly` | `anomaly` | `anomaly_star_spike_high` |
+| **2** | Contributor spike (high severity) | `anomaly` | `anomaly` | `anomaly_contributor_spike_high` |
+| **2** | ≥ 3 vulnerable dependencies | `dependency` | `dependency` | `dep_vuln` |
+| **2** | Commit gap ≥ 48h | `commit` | `hygiene` | `commit_gap_48` |
+| **3** | Momentum drop (medium severity) | `anomaly` | `anomaly` | `anomaly_momentum_drop_medium` |
+| **3** | Commit gap 24–48h | `commit` | `hygiene` | `commit_gap_24` |
+| **4** | > 10 open issues | `issue` | `trend` | `issues_high` |
+| **4** | Deprecated dependencies | `dependency` | `dependency` | `dep_deprecated` |
+| **5** | Open PRs with 0 merges this week | `pr` | `trend` | `prs_stale` |
+| **6** | 1–10 open issues (triage) | `issue` | `trend` | `issues_triage` |
+| **7** | Major-version-outdated dependencies | `dependency` | `dependency` | `dep_major_outdated` |
+| **8** | README score < 60 | `readme` | `readme` | `readme_low_XX` |
+| **9** | ≥ 3 new contributors (welcome) | `general` | `trend` | `contributors_growth` |
+
+### Stale-Key System
+
+Each condition generates a stable key. On every sync:
+
+```
+1. Compute all tasks that SHOULD exist given current conditions
+2. Collect their staleKeys into a set
+3. For each existing open task:
+   - If its staleKey is NOT in the current set → auto-complete it
+   - If its staleKey IS in the current set → keep it
+4. Only create tasks that don't already exist (by staleKey)
+```
+
+**Example:**
+```
+Sync 1:  commit_gap_48, issues_high → tasks created
+Sync 2:  commit_gap_48 (issues now < 10) → issues_high task auto-completed
+Sync 3:  (commit gap resolved) → commit_gap_48 task auto-completed
+```
+
+### Legacy Task Migration
+
+Tasks created before the staleKey system exist without a `staleKey`. The `legacyStaleKey()` fallback maps them:
+
+| Legacy taskType | Fallback staleKey |
+|-----------------|-------------------|
+| `commit` | `commit_gap_24` |
+| `issue` (text includes "open issues") | `issues_high` |
+| `issue` (triage text) | `issues_triage` |
+| `pr` | `prs_stale` |
+| `anomaly` (text includes "15") | `score_drop_15` |
+| `anomaly` (text includes "10") | `score_drop_10` |
+| anything else | `''` (never stale — kept forever) |
+
+After one sync cycle, all new tasks will have proper staleKeys.
+
+### Task Types and Sources
+
+| taskType | Meaning | Examples |
+|----------|---------|----------|
+| `commit` | Push a commit to maintain activity | Streak maintenance |
+| `issue` | Triage, close, or respond to issues | Backlog management |
+| `pr` | Review or merge open PRs | Review flow unblocking |
+| `anomaly` | React to detected signals | Score drops, spikes |
+| `dependency` | Update or replace packages | Security, deprecation |
+| `readme` | Improve documentation quality | Adding sections, badges |
+| `general` | Growth-oriented actions | Welcoming contributors |
+
+| taskSource | Meaning |
+|------------|---------|
+| `anomaly` | Triggered by anomaly detection |
+| `trend` | Triggered by metric thresholds |
+| `dependency` | Triggered by dependency scanner |
+| `readme` | Triggered by README analyzer |
+| `hygiene` | Triggered by activity maintenance |
+
+### Task Reconciliation (What Gets Auto-Completed)
+
+| Scenario | Result |
+|----------|--------|
+| Issues dropped from 15 → 8 | `issues_high` task auto-completed, `issues_triage` created |
+| PRs merged this week | `prs_stale` task auto-completed |
+| Score recovered | `score_drop_XX` task auto-completed |
+| User marks task done manually | `isCompleted = true`, persists |
+| Next sync, same conditions | Existing tasks survive, no duplicates created |
+

@@ -151,6 +151,8 @@
 		if (taskType === 'issue') return 'Issue';
 		if (taskType === 'commit') return 'Commit';
 		if (taskType === 'anomaly') return 'Signal';
+		if (taskType === 'dependency') return 'Dependency';
+		if (taskType === 'readme') return 'README';
 		return 'General';
 	}
 
@@ -226,8 +228,34 @@
 	let userPlan = $derived(planQuery.data ?? 'free');
 	let primaryTask = $derived(tasks[0] ?? null);
 	let groupedTasks = $derived.by(() => {
-		const grouped = new Map<string, typeof tasks>();
-		for (const task of tasks.slice(1)) {
+		const secondary = tasks.slice(1);
+		if (secondary.length === 0) return [];
+
+		// Check if all tasks come from the same source
+		const sources = new Set(secondary.map((t) => sourceLabel(t.taskSource)));
+		const singleSource = sources.size === 1;
+
+		if (singleSource) {
+			// Group by priority tier instead of source
+			const tiers = new Map<string, typeof secondary>();
+			for (const task of secondary) {
+				const tier = task.priority <= 1 ? 'urgent' : task.priority <= 4 ? 'important' : 'routine';
+				const label = tier === 'urgent' ? 'Urgent' : tier === 'important' ? 'Important' : 'Routine';
+				tiers.set(label, [...(tiers.get(label) ?? []), task]);
+			}
+
+			// If everything falls in the same tier, just show as one list
+			if (tiers.size === 1) {
+				const [label, items] = tiers.entries().next().value as [string, typeof secondary];
+				return [{ label, items }];
+			}
+
+			return Array.from(tiers.entries()).map(([label, items]) => ({ label, items }));
+		}
+
+		// Multiple sources — group by source
+		const grouped = new Map<string, typeof secondary>();
+		for (const task of secondary) {
 			const key = sourceLabel(task.taskSource);
 			grouped.set(key, [...(grouped.get(key) ?? []), task]);
 		}
@@ -553,14 +581,28 @@
 						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
 							Trend
 						</p>
-						<p class="mt-3 text-2xl font-black {trendTone(repo.trend, repo.hasTrend)}">
-							{trendLabel(repo.trend, repo.hasTrend)}
-						</p>
-						<p class="mt-2 text-sm text-muted-foreground">
-							{repo.hasTrend
-								? `Score delta ${formatMomentum(repo.momentum)}`
-								: 'No recent activity'}
-						</p>
+						{#if repo.scoreDelta !== null && repo.scoreDelta !== undefined}
+							<p class="mt-3 text-2xl font-black {repo.scoreDelta >= 0 ? 'text-success' : 'text-destructive'}">
+								{repo.scoreDelta >= 0 ? '+' : ''}{repo.scoreDelta}
+							</p>
+							<p class="mt-2 text-sm text-muted-foreground">
+								Score change since last sync
+							</p>
+						{:else}
+							<p class="mt-3 text-2xl font-black {trendTone(repo.trend, repo.hasTrend)}">
+								{trendLabel(repo.trend, repo.hasTrend)}
+							</p>
+							<p class="mt-2 text-sm text-muted-foreground">
+								{repo.hasTrend
+									? `Trend ${formatMomentum(repo.momentum)} vs last week`
+									: 'No recent activity'}
+							</p>
+						{/if}
+						{#if repo.hasTrend && repo.momentum !== null && repo.momentum !== undefined}
+							<p class="mt-1 text-xs text-muted-foreground/60">
+								{repo.trend === 'up' ? '▲' : repo.trend === 'down' ? '▼' : '→'} {Math.abs(Math.round(repo.momentum * 10) / 10)} vs prior week
+							</p>
+						{/if}
 					</div>
 
 					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">

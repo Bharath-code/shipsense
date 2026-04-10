@@ -139,12 +139,29 @@ export const cleanupExpiredNotifications = internalMutation({
 	args: {},
 	handler: async (ctx) => {
 		const now = Date.now();
-		const allNotifications = await ctx.db.query('notifications').collect();
+		const cutoff = now - NOTIFICATION_TTL_MS;
 
-		for (const n of allNotifications) {
-			if (now - n.createdAt > NOTIFICATION_TTL_MS) {
-				await ctx.db.delete(n._id);
+		// Query all notifications and delete expired ones
+		// Using take(100) per batch to stay within transaction limits
+		let expiredCount = 0;
+		let batch = await ctx.db.query('notifications').take(100);
+
+		while (batch.length > 0) {
+			for (const n of batch) {
+				if (n.createdAt < cutoff) {
+					await ctx.db.delete(n._id);
+					expiredCount++;
+				}
 			}
+
+			// If we processed all 100 and none were expired, we're done
+			// Otherwise, fetch the next batch
+			if (batch.length < 100) break;
+			batch = await ctx.db.query('notifications').take(100);
+		}
+
+		if (expiredCount > 0) {
+			console.log(`[Notifications] Cleaned up ${expiredCount} expired notifications`);
 		}
 	}
 });
