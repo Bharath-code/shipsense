@@ -19,6 +19,12 @@ function buildReportHtml(
 		openPRs: number;
 		insight?: string;
 		tasks: Array<{ taskText: string; priority: number }>;
+	}>,
+	competitors?: Array<{
+		fullName: string;
+		stars: number;
+		starsLast7d: number;
+		contributors14d: number;
 	}>
 ): string {
 	const repoRows = repos
@@ -126,6 +132,48 @@ function buildReportHtml(
 				: ''
 		}
 
+		<!-- Competitor Watch -->
+		${
+			competitors && competitors.length > 0
+				? `
+		<div style="background: #1a1a2e; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #333;">
+			<h3 style="color: #fff; margin: 0 0 16px 0; font-size: 16px;">👀 Competitor Watch</h3>
+			<table style="width: 100%; border-collapse: collapse;">
+				<thead>
+					<tr>
+						<th style="text-align: left; color: #888; font-size: 11px; padding: 8px 0; border-bottom: 1px solid #333; text-transform: uppercase; letter-spacing: 0.05em;">Repo</th>
+						<th style="text-align: center; color: #888; font-size: 11px; padding: 8px 0; border-bottom: 1px solid #333; text-transform: uppercase; letter-spacing: 0.05em;">Stars</th>
+						<th style="text-align: center; color: #888; font-size: 11px; padding: 8px 0; border-bottom: 1px solid #333; text-transform: uppercase; letter-spacing: 0.05em;">This Week</th>
+						<th style="text-align: center; color: #888; font-size: 11px; padding: 8px 0; border-bottom: 1px solid #333; text-transform: uppercase; letter-spacing: 0.05em;">Active</th>
+					</tr>
+				</thead>
+				<tbody>
+					${competitors
+						.map(
+							(c) => `
+					<tr>
+						<td style="padding: 10px 0; border-bottom: 1px solid #222;">
+							<span style="color: #ccc; font-size: 13px;">${c.fullName}</span>
+						</td>
+						<td style="padding: 10px 0; text-align: center; border-bottom: 1px solid #222;">
+							<span style="color: #fbbf24; font-weight: 600;">${c.stars.toLocaleString()}</span>
+						</td>
+						<td style="padding: 10px 0; text-align: center; border-bottom: 1px solid #222;">
+							<span style="color: ${c.starsLast7d > 0 ? '#22c55e' : '#888'}; font-weight: 600;">${c.starsLast7d > 0 ? '+' : ''}${c.starsLast7d}</span>
+						</td>
+						<td style="padding: 10px 0; text-align: center; border-bottom: 1px solid #222;">
+							<span style="color: #888; font-size: 13px;">${c.contributors14d || '—'}</span>
+						</td>
+					</tr>`
+						)
+						.join('')}
+				</tbody>
+			</table>
+		</div>
+		`
+				: ''
+		}
+
 		<!-- Footer -->
 		<div style="text-align: center; padding: 20px;">
 			<p style="color: #666; font-size: 12px; margin: 0;">
@@ -200,7 +248,20 @@ export const sendWeeklyReport = internalAction({
 			})
 		);
 
-		const html = buildReportHtml(profile.githubUsername || 'Developer', repoData);
+		// Fetch competitor watchlist data
+		const watchlist = await ctx.runQuery((internal as any).watchlist.getWatchlistForUser, { userId });
+		const competitorData = (watchlist as any[]).map((w: any) => ({
+			fullName: w.fullName,
+			stars: w.starsCount ?? 0,
+			starsLast7d: w.starsLast7d ?? 0,
+			contributors14d: w.contributors14d ?? 0
+		}));
+
+		const htmlWithCompetitors = buildReportHtml(
+			profile.githubUsername || 'Developer',
+			repoData,
+			competitorData.length > 0 ? competitorData : undefined
+		);
 
 		const response = await fetch('https://api.resend.com/emails', {
 			method: 'POST',
@@ -212,7 +273,7 @@ export const sendWeeklyReport = internalAction({
 				from: 'ShipSense <reports@shipsense.app>',
 				to: email,
 				subject: `🚀 Your Weekly ShipSense Report — ${repoData.length} repos tracked`,
-				html
+				html: htmlWithCompetitors
 			})
 		});
 

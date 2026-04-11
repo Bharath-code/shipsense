@@ -18,6 +18,8 @@ export default defineSchema({
 		emailReportsEnabled: v.boolean(),
 		lastReportSentAt: v.optional(v.number()),
 		lastDailyDigestSentAt: v.optional(v.number()),
+		investorReportsUsedThisMonth: v.optional(v.number()),
+		lastInvestorReportResetAt: v.optional(v.number()),
 		createdAt: v.number()
 	})
 		.index('by_userId', ['userId'])
@@ -277,6 +279,7 @@ export default defineSchema({
 		),
 		expectedImpact: v.optional(v.string()),
 		impactScore: v.optional(v.number()),
+		issueNumber: v.optional(v.number()), // For issue tasks that support AI reply drafts
 		staleKey: v.optional(v.string()),
 		isCompleted: v.boolean(),
 		createdAt: v.number(),

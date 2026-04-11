@@ -287,6 +287,55 @@
 	// Investor report state
 	let isGeneratingReport = $state(false);
 
+	// Issue reply draft state
+	let draftForTaskId = $state<string | null>(null);
+	let draftText = $state('');
+	let draftLoading = $state(false);
+	let draftError = $state('');
+
+	async function generateDraft(task: any) {
+		if (!task || task.taskType !== 'issue' || !task.issueNumber) {
+			draftError = 'Drafts are only available for specific issue tasks.';
+			return;
+		}
+
+		draftLoading = true;
+		draftError = '';
+		draftText = '';
+		draftForTaskId = task._id;
+
+		try {
+			const result = await client.action(api.issueReplyDraft.generateIssueReplyDraft, {
+				repoId: repoId as any,
+				issueNumber: task.issueNumber
+			});
+
+			draftText = result.draft;
+
+			// Store the draft in the task for persistence
+			await client.mutation(api.issueReplyDraft.storeIssueDraft, {
+				taskId: task._id as any,
+				draft: result.draft,
+				issueTitle: result.issueTitle,
+				issueNumber: task.issueNumber
+			});
+		} catch (err: any) {
+			draftError = err.message || 'Failed to generate draft.';
+			draftForTaskId = null;
+		} finally {
+			draftLoading = false;
+		}
+	}
+
+	async function copyDraft() {
+		if (!draftText || !browser) return;
+		try {
+			await navigator.clipboard.writeText(draftText);
+			draftError = 'Copied to clipboard!';
+			setTimeout(() => { draftError = ''; }, 2000);
+		} catch { /* silent */ }
+	}
+
 	async function generateAndDownloadReport() {
 		if (isGeneratingReport || !repo) return;
 		isGeneratingReport = true;
@@ -1019,6 +1068,35 @@
 										Expected impact: {primaryTask.expectedImpact}
 									</p>
 								{/if}
+
+							<!-- Issue Reply Draft -->
+							{#if primaryTask.taskType === 'issue'}
+								<div class="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<Sparkles class="h-4 w-4 text-primary" />
+											<span class="text-xs font-bold tracking-widest text-primary uppercase">AI Reply Draft</span>
+										</div>
+										{#if draftForTaskId === primaryTask._id && draftText}
+											<div class="flex gap-2">
+												<button type="button" onclick={copyDraft} class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20">📋 Copy</button>
+												<a href={`https://github.com/${repo?.owner}/${repo?.name}/issues/${primaryTask.issueNumber}`} target="_blank" rel="noreferrer" class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20">↗ Open on GitHub</a>
+											</div>
+										{:else}
+											<button type="button" onclick={() => generateDraft(primaryTask)} disabled={draftLoading} class="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+												{draftLoading ? 'Generating...' : '✨ Generate Draft'}
+											</button>
+										{/if}
+									</div>
+									{#if draftLoading}
+										<div class="mt-3 animate-pulse rounded-xl bg-white/5 p-3 text-sm text-muted-foreground">Reading issue context and drafting a reply...</div>
+									{:else if draftError}
+										<p class="mt-3 text-sm {draftError.includes('Copied') ? 'text-success' : 'text-destructive'}">{draftError}</p>
+									{:else if draftText}
+										<div class="mt-3 rounded-xl bg-white/5 p-3 text-sm leading-relaxed text-foreground whitespace-pre-wrap">{draftText}</div>
+									{/if}
+								</div>
+							{/if}
 							{:else}
 								<h2 class="mt-2 text-2xl font-black text-foreground">Nothing urgent is open</h2>
 								<p class="mt-3 text-sm leading-relaxed text-muted-foreground">

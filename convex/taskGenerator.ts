@@ -13,6 +13,7 @@ export interface GeneratedTask {
 	taskSource: TaskSource;
 	expectedImpact: string;
 	impactScore?: number;
+	issueNumber?: number | null; // For issue tasks with AI reply drafts
 	/**
 	 * A stable key used to determine whether an existing task is still relevant.
 	 * If the condition that produced the task no longer exists, the task is auto-completed.
@@ -203,7 +204,8 @@ export function determineTasks(
 			expectedImpact:
 				'Improves responsiveness and makes the project feel easier to join and trust.',
 			impactScore: Math.min(Math.round(snapshot.issuesOpen / 5), 8),
-			staleKey: issuesKey(snapshot.issuesOpen)
+			issueNumber: null,
+			staleKey: commitGapKey(commitGapHours)
 		});
 	} else if (!isPrivate && snapshot.issuesOpen > 0) {
 		tasks.push({
@@ -214,6 +216,7 @@ export function determineTasks(
 			expectedImpact:
 				'Prevents support debt from building up and keeps community questions from going cold.',
 			impactScore: 1,
+			issueNumber: null,
 			staleKey: issuesKey(snapshot.issuesOpen)
 		});
 	}

@@ -33,6 +33,19 @@ export const getMyWatchlist = query({
 	}
 });
 
+/** Get watchlist for a specific user (used by weekly report action) */
+export const getWatchlistForUser = query({
+	args: { userId: v.id('users') },
+	handler: async (ctx, args) => {
+		const watchlist = await ctx.db
+			.query('watchlistRepos')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.collect();
+
+		return watchlist;
+	}
+});
+
 /** Get watch limit for current plan */
 export const getWatchlistLimit = query({
 	args: {},
