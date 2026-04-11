@@ -41,4 +41,11 @@ crons.daily(
 	internal.notifications.cleanupExpiredNotifications
 );
 
+// Watchlist: sync watched repos daily at 11am UTC
+crons.daily(
+	'sync-watchlist-repos',
+	{ hourUTC: 11, minuteUTC: 0 },
+	internal.watchlist.syncAllActiveUsers
+);
+
 export default crons;

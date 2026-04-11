@@ -18,10 +18,12 @@ import type * as dashboard from "../dashboard.js";
 import type * as dependencies from "../dependencies.js";
 import type * as diagnostics from "../diagnostics.js";
 import type * as email from "../email.js";
+import type * as emailLeads from "../emailLeads.js";
 import type * as foundingMembers from "../foundingMembers.js";
 import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as insightGenerator from "../insightGenerator.js";
+import type * as investorReport from "../investorReport.js";
 import type * as migrations from "../migrations.js";
 import type * as notifications from "../notifications.js";
 import type * as npmRegistry from "../npmRegistry.js";
@@ -36,6 +38,7 @@ import type * as streakTracker from "../streakTracker.js";
 import type * as taskGenerator from "../taskGenerator.js";
 import type * as trafficIntelligence from "../trafficIntelligence.js";
 import type * as users from "../users.js";
+import type * as watchlist from "../watchlist.js";
 
 import type {
   ApiFromModules,
@@ -54,10 +57,12 @@ declare const fullApi: ApiFromModules<{
   dependencies: typeof dependencies;
   diagnostics: typeof diagnostics;
   email: typeof email;
+  emailLeads: typeof emailLeads;
   foundingMembers: typeof foundingMembers;
   github: typeof github;
   http: typeof http;
   insightGenerator: typeof insightGenerator;
+  investorReport: typeof investorReport;
   migrations: typeof migrations;
   notifications: typeof notifications;
   npmRegistry: typeof npmRegistry;
@@ -72,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   taskGenerator: typeof taskGenerator;
   trafficIntelligence: typeof trafficIntelligence;
   users: typeof users;
+  watchlist: typeof watchlist;
 }>;
 
 /**

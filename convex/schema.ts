@@ -327,5 +327,35 @@ export default defineSchema({
 		claimedAt: v.number(),
 		subscriptionId: v.optional(v.string())
 	})
+		.index('by_userId', ['userId']),
+
+	// Watched repos for competitive intelligence (any public repo, not just owned)
+	watchlistRepos: defineTable({
+		userId: v.id('users'),
+		owner: v.string(),
+		name: v.string(),
+		fullName: v.string(), // "owner/name"
+		watchedAt: v.number(),
+		// Cached metrics (updated daily)
+		starsCount: v.optional(v.number()),
+		starsLast7d: v.optional(v.number()),
+		prsMerged7d: v.optional(v.number()),
+		contributors14d: v.optional(v.number()),
+		lastSyncedAt: v.optional(v.number())
+	})
 		.index('by_userId', ['userId'])
+		.index('by_userId_fullName', ['userId', 'fullName'])
+		.index('by_fullName', ['fullName']),
+
+	// Email leads from landing page (pre-auth, for nurture sequence)
+	emailLeads: defineTable({
+		email: v.string(),
+		repoUrl: v.string(), // Full GitHub URL they submitted
+		reportGenerated: v.boolean(), // Whether we've generated + sent their free report
+		reportUrl: v.optional(v.string()), // URL to their one-time health report
+		createdAt: v.number(),
+		convertedToUser: v.optional(v.boolean()) // Whether they later signed up via OAuth
+	})
+		.index('by_email', ['email'])
+		.index('by_repoUrl', ['repoUrl'])
 });

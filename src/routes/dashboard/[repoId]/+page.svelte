@@ -47,6 +47,9 @@
 	import ExternalReachCard from '$lib/components/dashboard/ExternalReachCard.svelte';
 	import RiskStackCard from '$lib/components/dashboard/RiskStackCard.svelte';
 	import PaywallBlur from '$lib/components/ui/PaywallBlur.svelte';
+	import WatchlistCard from '$lib/components/dashboard/WatchlistCard.svelte';
+	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
+	import { FileText as FileTextIcon, Download } from 'lucide-svelte';
 	import {
 		SunMedium,
 		Zap,
@@ -270,6 +273,7 @@
 	let isSyncing = $state(false);
 	let showBadgeModal = $state(false);
 	let badgeCopied = $state(false);
+	let growthSubTab = $state('funnel');
 	let publicLinkCopied = $state(false);
 
 	let showFirstSyncToast = $state(false);
@@ -279,6 +283,33 @@
 		typeof import('$lib/components/dashboard/GrowthCardModal.svelte').default | null
 	>(null);
 	let showGrowthCard = $state(false);
+
+	// Investor report state
+	let isGeneratingReport = $state(false);
+
+	async function generateAndDownloadReport() {
+		if (isGeneratingReport || !repo) return;
+		isGeneratingReport = true;
+		try {
+			const html = await client.action(api.investorReport.generateInvestorReport, {
+				repoId: repoId as any
+			});
+
+			// Open in new window for print-to-PDF
+			const blob = new Blob([html], { type: 'text/html' });
+			const url = URL.createObjectURL(blob);
+			const win = window.open(url, '_blank');
+			if (win) {
+				win.onload = () => {
+					URL.revokeObjectURL(url);
+				};
+			}
+		} catch (err) {
+			console.error('Failed to generate investor report:', err);
+		} finally {
+			isGeneratingReport = false;
+		}
+	}
 
 	$effect(() => {
 		if (showGrowthCard && !GrowthCardModal) {
@@ -848,6 +879,7 @@
 			</div>
 		{:else if activeTab === 'growth'}
 			<div role="tabpanel" id="panel-growth" aria-labelledby="tab-growth" class="space-y-6">
+				<!-- Growth header -->
 				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
 					<h2 class="text-2xl font-black text-foreground">Growth Intelligence</h2>
 					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
@@ -856,32 +888,28 @@
 					</p>
 				</div>
 
-				<PaywallBlur plan={userPlan} feature="Conversion Funnel">
-					<ConversionFunnel repoId={repoId as string} />
-				</PaywallBlur>
+				<!-- Growth sub-tabs -->
+				<Tabs bind:value={growthSubTab}>
+					<TabsList>
+						<TabsTrigger value="funnel">Funnel</TabsTrigger>
+						<TabsTrigger value="traffic">Traffic</TabsTrigger>
+						<TabsTrigger value="signals">Signals</TabsTrigger>
+						<TabsTrigger value="competitors">Competitors</TabsTrigger>
+					</TabsList>
 
-				<div class="grid gap-6 xl:grid-cols-2">
-					<ErrorBoundary>
-						<StarForecast repoId={repoId as string} />
-					</ErrorBoundary>
+					<TabsContent value="funnel" class="space-y-6">
+						<PaywallBlur plan={userPlan} feature="Conversion Funnel">
+							<ConversionFunnel repoId={repoId as string} />
+						</PaywallBlur>
+						<ErrorBoundary>
+							<StarForecast repoId={repoId as string} />
+						</ErrorBoundary>
+					</TabsContent>
 
-					<ErrorBoundary>
-						<AnomalyAlerts repoId={repoId as string} />
-					</ErrorBoundary>
-				</div>
-
-				<div class="grid gap-6 xl:grid-cols-2">
-					<ErrorBoundary>
-						<MomentumGraph repoId={repoId as string} />
-					</ErrorBoundary>
-				</div>
-
-				<PaywallBlur plan={userPlan} feature="AI Traffic Intelligence">
-					<TrafficIntelligence repoId={repoId as string} />
-				</PaywallBlur>
-
-				<div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.9fr)]">
-					<div class="space-y-6">
+					<TabsContent value="traffic" class="space-y-6">
+						<PaywallBlur plan={userPlan} feature="AI Traffic Intelligence">
+							<TrafficIntelligence repoId={repoId as string} />
+						</PaywallBlur>
 						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
 							<h3 class="mb-4 text-lg font-bold text-foreground">Views &amp; Clones (14 days)</h3>
 							{#if snapshot}
@@ -905,7 +933,6 @@
 								<p class="text-sm text-muted-foreground">No traffic data available yet.</p>
 							{/if}
 						</div>
-
 						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
 							<h3 class="mb-4 text-lg font-bold text-foreground">Top Referrers</h3>
 							{#if referrers && referrers.referrers && referrers.referrers.length > 0}
@@ -932,17 +959,33 @@
 								</p>
 							{/if}
 						</div>
-					</div>
+					</TabsContent>
 
-					<div class="space-y-6">
+					<TabsContent value="signals" class="space-y-6">
+						<div class="grid gap-6 xl:grid-cols-2">
+							<ErrorBoundary>
+								<MomentumGraph repoId={repoId as string} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<AnomalyAlerts repoId={repoId as string} />
+							</ErrorBoundary>
+						</div>
+						<div class="grid gap-6 xl:grid-cols-2">
+							<ErrorBoundary>
+								<ShipStreak repoId={repoId as string} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<InsightCard repoId={repoId as string} />
+							</ErrorBoundary>
+						</div>
+					</TabsContent>
+
+					<TabsContent value="competitors" class="space-y-6">
 						<ErrorBoundary>
-							<ShipStreak repoId={repoId as string} />
+							<WatchlistCard />
 						</ErrorBoundary>
-						<ErrorBoundary>
-							<InsightCard repoId={repoId as string} />
-						</ErrorBoundary>
-					</div>
-				</div>
+					</TabsContent>
+				</Tabs>
 			</div>
 		{:else if activeTab === 'tasks'}
 			<div role="tabpanel" id="panel-tasks" aria-labelledby="tab-tasks" class="space-y-6">
@@ -1181,6 +1224,36 @@
 								onclick={() => copyText(publicUrl, 'public')}
 							>
 								{publicLinkCopied ? 'Copied' : 'Copy link'}
+							</Button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Investor Report -->
+				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+					<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+						<div class="flex items-start gap-4">
+							<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-success/10 text-success">
+								<FileTextIcon class="h-5 w-5" />
+							</div>
+							<div>
+								<h3 class="text-lg font-bold text-foreground">Investor Report</h3>
+								<p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+									Fundraising-ready PDF
+								</p>
+								<p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+									Generate a polished, investor-ready report with health trends, milestones, and growth metrics. Perfect for showing traction.
+								</p>
+							</div>
+						</div>
+						<div class="shrink-0">
+							<Button
+								class="rounded-full"
+								disabled={isGeneratingReport}
+								onclick={generateAndDownloadReport}
+							>
+								<Download class="mr-2 h-4 w-4 {isGeneratingReport ? 'animate-spin' : ''}" />
+								{isGeneratingReport ? 'Generating...' : 'Generate Report'}
 							</Button>
 						</div>
 					</div>

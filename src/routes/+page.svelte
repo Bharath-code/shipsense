@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import { ConvexHttpClient } from 'convex/browser';
+	import { api } from '$convex/_generated/api';
+	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 	import { Button } from '$lib/components/ui/button';
 	import ThemeToggle from '$lib/components/dashboard/ThemeToggle.svelte';
 	import {
@@ -60,6 +63,40 @@
 
 	const foundingMemberSpots = 50;
 	const foundingMemberClaimed = $derived(data?.foundingMemberCount ?? 0);
+	const stats = $derived(data?.stats ?? { totalUsers: 0, totalRepos: 0, totalLeads: 0, totalTracked: 0 });
+
+	// Email capture form state
+	let emailInput = $state('');
+	let repoUrlInput = $state('');
+	let emailFormStatus = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
+	let emailFormMessage = $state('');
+
+	async function submitEmailCapture(e: Event) {
+		e.preventDefault();
+		emailFormStatus = 'loading';
+		emailFormMessage = '';
+
+		try {
+			const client = new ConvexHttpClient(PUBLIC_CONVEX_URL);
+			const result = await client.mutation(api.emailLeads.captureLead, {
+				email: emailInput.trim(),
+				repoUrl: repoUrlInput.trim()
+			});
+
+			if (result.success) {
+				emailFormStatus = 'success';
+				emailFormMessage = result.message;
+				emailInput = '';
+				repoUrlInput = '';
+			} else {
+				emailFormStatus = 'error';
+				emailFormMessage = result.message;
+			}
+		} catch (err: any) {
+			emailFormStatus = 'error';
+			emailFormMessage = err.message || 'Something went wrong. Try again.';
+		}
+	}
 
 	// Pricing toggle
 	let annual = $state(false);
@@ -401,6 +438,80 @@
 						</div>
 					</div>
 				</div>
+			</div>
+		</section>
+
+		<!-- Social Proof Section -->
+		{#if stats.totalTracked > 0}
+			<section class="container mx-auto max-w-6xl px-6 py-12" style="content-visibility: auto;">
+				<div class="flex flex-col items-center justify-center gap-6 sm:flex-row sm:gap-12">
+					<div class="text-center">
+						<p class="text-3xl font-black text-primary">{stats.totalRepos}</p>
+						<p class="mt-1 text-sm text-muted-foreground">repos tracked</p>
+					</div>
+					<div class="hidden h-10 w-px bg-border sm:block" aria-hidden="true"></div>
+					<div class="text-center">
+						<p class="text-3xl font-black text-success">{stats.totalUsers}</p>
+						<p class="mt-1 text-sm text-muted-foreground">builders tracking</p>
+					</div>
+					<div class="hidden h-10 w-px bg-border sm:block" aria-hidden="true"></div>
+					<div class="text-center">
+						<p class="text-3xl font-black text-warning">{foundingMemberClaimed}/{foundingMemberSpots}</p>
+						<p class="mt-1 text-sm text-muted-foreground">founding spots claimed</p>
+					</div>
+				</div>
+			</section>
+		{/if}
+
+		<!-- Free Health Report (Email Capture) -->
+		<section class="container mx-auto max-w-6xl px-6 py-16" style="content-visibility: auto;">
+			<div class="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-primary/20 bg-primary/5 p-8 text-center sm:p-10">
+				<div class="mb-4 flex items-center justify-center gap-2">
+					<Sparkles size={16} class="text-primary" />
+					<span class="text-xs font-bold tracking-widest text-primary uppercase">Free — no sign-up needed</span>
+				</div>
+				<h2 class="mb-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+					Get a free health report for any repo
+				</h2>
+				<p class="mb-6 text-muted-foreground">
+					Enter a GitHub repo URL and your email. We'll send you a one-time health breakdown with quick wins — no account needed.
+				</p>
+
+				{#if emailFormStatus === 'success'}
+					<div class="rounded-xl bg-success/10 p-4 text-sm text-success">
+						<p class="font-semibold">{emailFormMessage}</p>
+					</div>
+				{:else if emailFormStatus === 'error'}
+					<div class="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
+						<p class="font-semibold">{emailFormMessage}</p>
+					</div>
+				{:else}
+					<form onsubmit={submitEmailCapture} class="flex flex-col gap-3 sm:flex-row">
+						<input
+							type="email"
+							placeholder="you@example.com"
+							bind:value={emailInput}
+							required
+							aria-label="Email address"
+							class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+						/>
+						<input
+							type="text"
+							placeholder="https://github.com/owner/repo"
+							bind:value={repoUrlInput}
+							required
+							aria-label="GitHub repository URL"
+							class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+						/>
+						<button
+							type="submit"
+							disabled={emailFormStatus === 'loading'}
+							class="h-12 shrink-0 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+						>
+							{emailFormStatus === 'loading' ? 'Generating...' : 'Get Report'}
+						</button>
+					</form>
+				{/if}
 			</div>
 		</section>
 

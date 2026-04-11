@@ -7,24 +7,24 @@ export const GET: RequestHandler = async ({ params, fetch }) => {
 	const identifier = params.repoId as string;
 
 	try {
-		// Try querying by repoId first
+		// Try querying by slug first (most common case for badge URLs)
 		let res = await fetch(`${CONVEX_URL}/api/query`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
-				path: 'dashboard:getPublicRepoHealthById',
-				args: { repoId: identifier }
+				path: 'dashboard:getPublicRepoHealth',
+				args: { slug: identifier }
 			})
 		});
 
-		// If not found, try querying by slug
-		if (!res.ok) {
+		// If not found and identifier looks like a Convex ID, try by repoId
+		if (!res.ok && identifier.includes('_')) {
 			res = await fetch(`${CONVEX_URL}/api/query`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					path: 'dashboard:getPublicRepoHealth',
-					args: { slug: identifier }
+					path: 'dashboard:getPublicRepoHealthById',
+					args: { repoId: identifier }
 				})
 			});
 		}

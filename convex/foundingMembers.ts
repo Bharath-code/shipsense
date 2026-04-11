@@ -17,6 +17,27 @@ export const getFoundingMemberCount = query({
 });
 
 /**
+ * Public query — returns platform-wide stats for the landing page.
+ */
+export const getPlatformStats = query({
+	args: {},
+	handler: async (ctx) => {
+		const [userCount, repoCount, leadCount] = await Promise.all([
+			ctx.db.query('userProfiles').collect().then((rows) => rows.length),
+			ctx.db.query('repos').collect().then((rows) => rows.length),
+			ctx.db.query('emailLeads').collect().then((rows) => rows.length)
+		]);
+
+		return {
+			totalUsers: userCount,
+			totalRepos: repoCount,
+			totalLeads: leadCount,
+			totalTracked: userCount + leadCount // Combined reach
+		};
+	}
+});
+
+/**
  * Public query — checks if the current user has already claimed a founding member spot.
  */
 export const isFoundingMember = query({
