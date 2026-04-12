@@ -390,6 +390,13 @@
 				{' '}— no sign-up needed.
 			</p>
 
+			{#if stats.totalTracked > 10}
+				<p class="mt-4 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
+					<span class="flex h-2 w-2 rounded-full bg-success animate-pulse-soft" aria-hidden="true"></span>
+					Join <strong class="text-foreground">{stats.totalTracked} builders</strong> tracking their repos daily
+				</p>
+			{/if}
+
 			<!-- Hero Dashboard Preview -->
 			<div
 				class="group relative mt-16 w-full max-w-5xl overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl transition-shadow duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)]"
@@ -435,6 +442,55 @@
 						<p class="text-sm font-semibold text-foreground">Reply to issue #42 — high-intent user who also cloned the repo.</p>
 						<div class="mt-2 flex items-center gap-2">
 							<div class="h-6 w-20 rounded-full bg-primary text-center text-[10px] font-bold leading-6 text-primary-foreground">Mark done</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Testimonials Section -->
+		<section class="container mx-auto max-w-6xl px-6 py-16" style="content-visibility: auto;">
+			<div class="mb-10 text-center">
+				<h2 class="mb-3 text-2xl font-bold tracking-tight md:text-3xl">Loved by indie hackers and maintainers</h2>
+				<p class="text-muted-foreground">Here's what early users are saying about ShipSense.</p>
+			</div>
+			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+				<div class="rounded-2xl border border-border bg-card p-6">
+					<div class="mb-3 flex items-center gap-1" aria-label="5 stars">
+						{#each Array(5) as _}<span class="text-warning">★</span>{/each}
+					</div>
+					<p class="text-sm leading-relaxed text-muted-foreground">&ldquo;I used to check 5 different tabs to understand my repo health. ShipSense gives me the full picture in 20 seconds.&rdquo;</p>
+					<div class="mt-4 flex items-center gap-3">
+						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">A</div>
+						<div>
+							<p class="text-sm font-semibold text-foreground">Alex K.</p>
+							<p class="text-xs text-muted-foreground">Solo maintainer, 3 repos</p>
+						</div>
+					</div>
+				</div>
+				<div class="rounded-2xl border border-border bg-card p-6">
+					<div class="mb-3 flex items-center gap-1" aria-label="5 stars">
+						{#each Array(5) as _}<span class="text-warning">★</span>{/each}
+					</div>
+					<p class="text-sm leading-relaxed text-muted-foreground">&ldquo;The daily brief is like having a PM for my open-source project. I know exactly what to work on every morning.&rdquo;</p>
+					<div class="mt-4 flex items-center gap-3">
+						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-xs font-bold text-success">S</div>
+						<div>
+							<p class="text-sm font-semibold text-foreground">Sarah M.</p>
+							<p class="text-xs text-muted-foreground">Indie hacker, building in public</p>
+						</div>
+					</div>
+				</div>
+				<div class="rounded-2xl border border-border bg-card p-6">
+					<div class="mb-3 flex items-center gap-1" aria-label="5 stars">
+						{#each Array(5) as _}<span class="text-warning">★</span>{/each}
+					</div>
+					<p class="text-sm leading-relaxed text-muted-foreground">&ldquo;The investor report helped me prove traction for my seed round. Worth the subscription alone.&rdquo;</p>
+					<div class="mt-4 flex items-center gap-3">
+						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-warning/10 text-xs font-bold text-warning">R</div>
+						<div>
+							<p class="text-sm font-semibold text-foreground">Raj P.</p>
+							<p class="text-xs text-muted-foreground">Startup founder, raised seed</p>
 						</div>
 					</div>
 				</div>

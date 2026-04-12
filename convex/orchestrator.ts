@@ -149,6 +149,25 @@ export const syncRepoNow = internalAction({
 				}
 			}
 
+			// AI Issue Classification — triage recent open issues
+			if (repo) {
+				try {
+					const classifiedIssues = await ctx.runAction(
+						(internal as any).issueClassification.classifyRecentIssues,
+						{ repoId }
+					);
+					if (classifiedIssues.length > 0) {
+						await ctx.runMutation((internal as any).issueClassification.storeClassifiedIssues, {
+							repoId,
+							issues: classifiedIssues
+						});
+						console.log(`[Orchestrator] ${classifiedIssues.length} issues classified`);
+					}
+				} catch (err) {
+					console.warn('[Orchestrator] Issue classification failed:', err);
+				}
+			}
+
 			await ctx.runAction(internal.taskGenerator.generateTasks, { repoId });
 			console.log('[Orchestrator] Tasks generated');
 

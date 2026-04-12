@@ -100,7 +100,7 @@ Do NOT include any text outside the JSON object.
 </output_format>`;
 }
 
-const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+const OPENROUTER_API_BASE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 /** Maximum number of retry attempts for transient API errors */
 const MAX_RETRIES = 2;
@@ -254,9 +254,9 @@ export const generateInsights = internalAction({
 
 		const prompt = buildInsightPrompt(repo.name, repo.description || 'No description', metrics);
 
-		const apiKey = process.env.GEMINI_API_KEY;
+		const apiKey = process.env.OPENROUTER_API_KEY;
 		if (!apiKey) {
-			console.warn('[InsightGenerator] GEMINI_API_KEY not set, saving fallback insight');
+			console.warn('[InsightGenerator] OPENROUTER_API_KEY not set, saving fallback insight');
 			const fallback = generateFallbackInsight(metrics, 'none');
 			await ctx.runMutation(internal.insightGenerator.saveInsight, {
 				repoId,
@@ -281,31 +281,31 @@ export const generateInsights = internalAction({
 			}
 
 			try {
-				const response = await fetch(
-					`${GEMINI_API_BASE_URL}/${model}:generateContent?key=${apiKey}`,
-					{
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							contents: [{ role: 'user', parts: [{ text: prompt }] }],
-							generationConfig: {
-								responseMimeType: 'application/json',
-								responseSchema: INSIGHT_RESPONSE_SCHEMA,
-								temperature: 0.1,
-								maxOutputTokens: 1024,
-								topP: 0.9,
-								candidateCount: 1
-							}
-						})
-					}
-				);
+				const response = await fetch(OPENROUTER_API_BASE_URL, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${apiKey}`,
+						'HTTP-Referer': 'https://shipsense.app',
+						'X-Title': 'ShipSense'
+					},
+					body: JSON.stringify({
+						model: 'openrouter/free',
+						messages: [
+							{ role: 'system', content: 'You are a repository health analyst. Return ONLY valid JSON matching the requested schema. No markdown, no explanation.' },
+							{ role: 'user', content: prompt }
+						],
+						temperature: 0.1,
+						max_tokens: 1024
+					})
+				});
 
 				if (!response.ok) {
 					const errorText = await response.text();
-					console.error('[InsightGenerator] Gemini API error', response.status, errorText);
+					console.error('[InsightGenerator] OpenRouter API error', response.status, errorText);
 
 					if (isRetryableError(response.status) && attempt < MAX_RETRIES) {
-						lastError = new Error(`Gemini API ${response.status}: ${errorText}`);
+						lastError = new Error(`OpenRouter API ${response.status}: ${errorText}`);
 						continue;
 					}
 
@@ -324,19 +324,21 @@ export const generateInsights = internalAction({
 
 				const json = await response.json();
 
-				// Defensive path traversal into Gemini response structure
-				const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+				// OpenRouter returns OpenAI format: { choices: [{ message: { content: "..." } }] }
+				const rawText = json?.choices?.[0]?.message?.content;
 				if (!rawText) {
-					console.error('[InsightGenerator] Unexpected Gemini response structure:', JSON.stringify(json).slice(0, 200));
-					lastError = new Error('Missing response text in Gemini output');
+					console.error('[InsightGenerator] Unexpected OpenRouter response structure:', JSON.stringify(json).slice(0, 200));
+					lastError = new Error('Missing response text in OpenRouter output');
 					continue;
 				}
 
 				let output: unknown;
 				try {
-					output = JSON.parse(rawText);
+					// Strip markdown code blocks if present
+					const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+					output = JSON.parse(cleaned);
 				} catch (parseError) {
-					console.error('[InsightGenerator] Failed to parse Gemini response as JSON:', rawText.slice(0, 300));
+					console.error('[InsightGenerator] Failed to parse OpenRouter response as JSON:', rawText.slice(0, 300));
 					lastError = parseError instanceof Error ? parseError : new Error(String(parseError));
 					continue;
 				}

@@ -24,6 +24,7 @@ import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as insightGenerator from "../insightGenerator.js";
 import type * as investorReport from "../investorReport.js";
+import type * as issueClassification from "../issueClassification.js";
 import type * as issueReplyDraft from "../issueReplyDraft.js";
 import type * as migrations from "../migrations.js";
 import type * as notifications from "../notifications.js";
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   insightGenerator: typeof insightGenerator;
   investorReport: typeof investorReport;
+  issueClassification: typeof issueClassification;
   issueReplyDraft: typeof issueReplyDraft;
   migrations: typeof migrations;
   notifications: typeof notifications;

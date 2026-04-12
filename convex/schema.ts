@@ -280,6 +280,7 @@ export default defineSchema({
 		expectedImpact: v.optional(v.string()),
 		impactScore: v.optional(v.number()),
 		issueNumber: v.optional(v.number()), // For issue tasks that support AI reply drafts
+		urgency: v.optional(v.union(v.literal('critical'), v.literal('high'), v.literal('medium'), v.literal('low'))),
 		staleKey: v.optional(v.string()),
 		isCompleted: v.boolean(),
 		createdAt: v.number(),

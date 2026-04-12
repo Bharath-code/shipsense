@@ -13,7 +13,7 @@ import { internal } from './_generated/api';
 import type { Id } from './_generated/dataModel';
 import { getAuthUserId } from '@convex-dev/auth/server';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 /**
  * Fetch a specific issue's content from GitHub and generate a draft reply.
@@ -24,8 +24,8 @@ export const generateIssueReplyDraft = action({
 		issueNumber: v.number()
 	},
 	handler: async (ctx, args): Promise<{ draft: string; issueTitle: string; issueBody: string }> => {
-		if (!GEMINI_API_KEY) {
-			throw new Error('GEMINI_API_KEY not configured.');
+		if (!OPENROUTER_API_KEY) {
+			throw new Error('OPENROUTER_API_KEY not configured.');
 		}
 
 		// Verify ownership and get repo details via query
@@ -124,37 +124,36 @@ ${commentsContext ? `**Recent comments:**\n${commentsContext.substring(0, 1000)}
 
 **Draft reply:**`;
 
-		// Call Gemini
-		const geminiResponse = await fetch(
-			`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					contents: [
-						{
-							role: 'user',
-							parts: [{ text: prompt }]
-						}
-					],
-					generationConfig: {
-						temperature: 0.7,
-						maxOutputTokens: 500
-					}
-				})
-			}
-		);
+		// Call OpenRouter (openrouter/free auto-routes across available models)
+		const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+				'HTTP-Referer': 'https://shipsense.app',
+				'X-Title': 'ShipSense'
+			},
+			body: JSON.stringify({
+				model: 'openrouter/free',
+				messages: [
+					{ role: 'system', content: 'You are a helpful, professional open-source maintainer. Draft a reply to a GitHub issue. Keep it concise and friendly. Use markdown formatting.' },
+					{ role: 'user', content: prompt }
+				],
+				temperature: 0.7,
+				max_tokens: 500
+			})
+		});
 
-		if (!geminiResponse.ok) {
-			const errorText = await geminiResponse.text();
-			throw new Error(`Gemini API error: ${errorText}`);
+		if (!response.ok) {
+			const errorText = await response.text();
+			throw new Error(`OpenRouter API error: ${errorText}`);
 		}
 
-		const geminiData = await geminiResponse.json();
-		const draft = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+		const data = await response.json();
+		const draft = data?.choices?.[0]?.message?.content ?? '';
 
 		if (!draft) {
-			throw new Error('Gemini returned an empty draft.');
+			throw new Error('OpenRouter returned an empty draft.');
 		}
 
 		return {

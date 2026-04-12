@@ -149,6 +149,17 @@
 		return 'Streak paused';
 	}
 
+	function urgencyBadge(urgency: string | null | undefined): { emoji: string; label: string; cls: string } {
+		if (!urgency) return { emoji: '', label: '', cls: '' };
+		const map: Record<string, { emoji: string; label: string; cls: string }> = {
+			critical: { emoji: '🔴', label: 'Critical', cls: 'text-red-400 bg-red-400/10 border-red-400/20' },
+			high: { emoji: '🟡', label: 'High', cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+			medium: { emoji: '⚪', label: 'Medium', cls: 'text-muted-foreground bg-white/5 border-white/10' },
+			low: { emoji: '💬', label: 'Low', cls: 'text-blue-400 bg-blue-400/10 border-blue-400/20' }
+		};
+		return map[urgency] ?? { emoji: '', label: '', cls: '' };
+	}
+
 	function taskTypeLabel(taskType: string): string {
 		if (taskType === 'pr') return 'PR';
 		if (taskType === 'issue') return 'Issue';
@@ -294,15 +305,22 @@
 	let draftError = $state('');
 
 	async function generateDraft(task: any) {
-		if (!task || task.taskType !== 'issue' || !task.issueNumber) {
-			draftError = 'Drafts are only available for specific issue tasks.';
+		draftForTaskId = task._id;
+		draftError = '';
+		draftText = '';
+
+		if (!task || task.taskType !== 'issue') {
+			draftError = 'Drafts are only available for issue tasks.';
+			draftForTaskId = null;
+			return;
+		}
+
+		if (!task.issueNumber) {
+			draftError = 'This task needs a specific issue number to generate a draft. Run a sync to classify issues.';
 			return;
 		}
 
 		draftLoading = true;
-		draftError = '';
-		draftText = '';
-		draftForTaskId = task._id;
 
 		try {
 			const result = await client.action(api.issueReplyDraft.generateIssueReplyDraft, {
@@ -321,7 +339,6 @@
 			});
 		} catch (err: any) {
 			draftError = err.message || 'Failed to generate draft.';
-			draftForTaskId = null;
 		} finally {
 			draftLoading = false;
 		}
@@ -794,6 +811,31 @@
 				</div>
 
 				<!-- 2. ONE THING TO DO (prominent, actionable) -->
+
+				<!-- Critical Issue Alert (if any) -->
+				{#if tasks.some((t) => t.urgency === 'critical')}
+					<div class="rounded-[1.5rem] border border-red-500/20 bg-red-500/5 p-5">
+						<div class="flex items-start gap-3">
+							<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
+								<AlertTriangle class="h-5 w-5" />
+							</div>
+							<div class="flex-1">
+								<h3 class="text-sm font-bold text-red-400">Critical issue needs attention</h3>
+								<p class="mt-1 text-sm text-muted-foreground">
+									{tasks.filter((t) => t.urgency === 'critical').length} issue{tasks.filter((t) => t.urgency === 'critical').length > 1 ? 's' : ''} marked as critical.
+								</p>
+								<button
+									type="button"
+									class="mt-2 min-h-[44px] inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-red-400 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-red-400/50 focus-visible:outline-none"
+									onclick={() => switchTab('tasks')}
+								>
+									View critical tasks <ChevronRight class="h-3 w-3" />
+								</button>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{#if primaryTask}
 					<div class="rounded-[1.5rem] border border-primary/20 bg-primary/5 p-6">
 						<div class="mb-4 flex items-center gap-3">
@@ -1145,6 +1187,12 @@
 												<div>
 													<p class="text-sm font-medium text-foreground">{task.taskText}</p>
 													<div class="mt-3 flex flex-wrap items-center gap-2">
+														{#if task.urgency}
+															{@const uBadge = urgencyBadge(task.urgency)}
+															<span class="rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase {uBadge.cls}">
+																{uBadge.emoji} {uBadge.label}
+															</span>
+														{/if}
 														<span
 															class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
 														>
@@ -1160,6 +1208,48 @@
 														<p class="mt-3 text-xs leading-relaxed text-muted-foreground">
 															{task.expectedImpact}
 														</p>
+													{/if}
+
+													<!-- Draft button for issue tasks -->
+													{#if task.taskType === 'issue'}
+														<div class="mt-3 flex flex-col gap-2">
+															<div class="flex items-center gap-2">
+																{#if task.issueNumber}
+																	{#if draftForTaskId === task._id && draftText}
+																		<button type="button" onclick={copyDraft} class="min-h-[32px] flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20">
+																			📋 Copy Draft
+																		</button>
+																		<a
+																			href={`https://github.com/${repo?.owner}/${repo?.name}/issues/${task.issueNumber}`}
+																			target="_blank"
+																			rel="noreferrer"
+																			class="min-h-[32px] flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs text-muted-foreground hover:bg-white/10"
+																		>
+																			↗ Open on GitHub
+																		</a>
+																	{:else}
+																		<button
+																			type="button"
+																			onclick={() => generateDraft(task)}
+																			disabled={draftLoading}
+																			class="min-h-[32px] flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20 disabled:opacity-50"
+																		>
+																			{draftLoading && draftForTaskId === task._id ? '⏳ Generating...' : '✨ Generate Draft'}
+																		</button>
+																	{/if}
+																{:else}
+																	<span class="text-xs text-muted-foreground/60 italic">
+																		AI drafts require a specific issue number
+																	</span>
+																{/if}
+															</div>
+															{#if draftForTaskId === task._id && draftText}
+																<div class="rounded-xl bg-white/5 p-3 text-xs leading-relaxed text-foreground whitespace-pre-wrap border border-white/5">{draftText}</div>
+															{/if}
+															{#if draftForTaskId === task._id && draftError && !draftError.includes('Copied')}
+																<p class="text-xs text-destructive">{draftError}</p>
+															{/if}
+														</div>
 													{/if}
 												</div>
 												<Button
