@@ -48,4 +48,18 @@ crons.daily(
 	internal.watchlist.syncAllActiveUsers
 );
 
+// Nurture: send Day 2 quick wins email daily at 9am UTC
+crons.daily(
+	'nurture-day2',
+	{ hourUTC: 9, minuteUTC: 0 },
+	internal.emailNurture.runDay2Nurture
+);
+
+// Nurture: send Day 5 social proof email daily at 9am UTC
+crons.daily(
+	'nurture-day5',
+	{ hourUTC: 9, minuteUTC: 30 },
+	internal.emailNurture.runDay5Nurture
+);
+
 export default crons;

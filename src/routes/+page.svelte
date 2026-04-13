@@ -23,7 +23,8 @@
 		Menu,
 		X,
 		ChevronDown,
-		ChevronUp
+		ChevronUp,
+		ClipboardCheck
 	} from 'lucide-svelte';
 
 	let mobileMenuOpen = $state(false);
@@ -71,6 +72,32 @@
 	let emailFormStatus = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
 	let emailFormMessage = $state('');
 
+	// Checklist capture form state
+	let checklistEmail = $state('');
+	let checklistStatus = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
+	let checklistMessage = $state('');
+
+	async function submitChecklistCapture(e: Event) {
+		e.preventDefault();
+		checklistStatus = 'loading';
+		checklistMessage = '';
+
+		try {
+			const client = new ConvexHttpClient(PUBLIC_CONVEX_URL);
+			await client.mutation(api.emailLeads.captureLead, {
+				email: checklistEmail.trim(),
+				repoUrl: 'example/repo', // Placeholder — checklist doesn't need a repo
+				source: 'checklist'
+			});
+
+			checklistStatus = 'success';
+			checklistEmail = '';
+		} catch (err: any) {
+			checklistStatus = 'error';
+			checklistMessage = err.message || 'Something went wrong. Try again.';
+		}
+	}
+
 	async function submitEmailCapture(e: Event) {
 		e.preventDefault();
 		emailFormStatus = 'loading';
@@ -84,10 +111,10 @@
 			});
 
 			if (result.success) {
-				emailFormStatus = 'success';
-				emailFormMessage = result.message;
-				emailInput = '';
-				repoUrlInput = '';
+				// Redirect to thank-you page
+				if (typeof window !== 'undefined') {
+					window.location.href = `/report?email=${encodeURIComponent(emailInput.trim())}&repo=${encodeURIComponent(repoUrlInput.trim())}`;
+				}
 			} else {
 				emailFormStatus = 'error';
 				emailFormMessage = result.message;
@@ -527,47 +554,114 @@
 					<span class="text-xs font-bold tracking-widest text-primary uppercase">Free — no sign-up needed</span>
 				</div>
 				<h2 class="mb-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-					Get a free health report for any repo
+					What grade does your repo get?
 				</h2>
-				<p class="mb-6 text-muted-foreground">
+				<p class="mb-4 text-muted-foreground">
 					Enter a GitHub repo URL and your email. We'll send you a one-time health breakdown with quick wins — no account needed.
 				</p>
 
-				{#if emailFormStatus === 'success'}
-					<div class="rounded-xl bg-success/10 p-4 text-sm text-success">
+				<!-- Report Preview -->
+				<div class="mx-auto mb-6 w-full max-w-sm overflow-hidden rounded-xl border border-white/10 bg-white/5 p-3 opacity-80 shadow-lg">
+					<div class="rounded-lg bg-card p-4 text-center">
+						<p class="mb-1 text-xs font-semibold tracking-widest text-primary uppercase">Preview</p>
+						<div class="text-4xl font-black text-success">B+</div>
+						<div class="text-lg font-bold text-muted-foreground">72/100</div>
+						<p class="mt-1 text-xs text-muted-foreground">✅ Very Good — Healthier than 58% of similar repos</p>
+						<div class="mt-3 space-y-1 text-left">
+							<p class="text-xs font-medium text-foreground">🎯 Quick Wins:</p>
+							<p class="text-xs text-muted-foreground">1. Add a LICENSE file — <span class="text-success">+10 pts</span></p>
+							<p class="text-xs text-muted-foreground">2. Ship a quick commit — <span class="text-success">+15 pts</span></p>
+							<p class="text-xs text-muted-foreground">3. Triage open issues — <span class="text-success">+5 pts</span></p>
+						</div>
+					</div>
+				</div>
+
+				{#if emailFormStatus === 'error'}
+					<div class="mb-4 rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
 						<p class="font-semibold">{emailFormMessage}</p>
 					</div>
-				{:else if emailFormStatus === 'error'}
-					<div class="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
-						<p class="font-semibold">{emailFormMessage}</p>
-					</div>
-				{:else}
-					<form onsubmit={submitEmailCapture} class="flex flex-col gap-3 sm:flex-row">
-						<input
-							type="email"
-							placeholder="you@example.com"
-							bind:value={emailInput}
-							required
-							aria-label="Email address"
-							class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
-						/>
-						<input
-							type="text"
-							placeholder="https://github.com/owner/repo"
-							bind:value={repoUrlInput}
-							required
-							aria-label="GitHub repository URL"
-							class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
-						/>
-						<button
-							type="submit"
-							disabled={emailFormStatus === 'loading'}
-							class="h-12 shrink-0 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-						>
-							{emailFormStatus === 'loading' ? 'Generating...' : 'Get Report'}
-						</button>
-					</form>
 				{/if}
+				<form onsubmit={submitEmailCapture} class="flex flex-col gap-3 sm:flex-row">
+					<input
+						type="email"
+						placeholder="you@example.com"
+						bind:value={emailInput}
+						required
+						aria-label="Email address"
+						class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+					/>
+					<input
+						type="text"
+						placeholder="https://github.com/owner/repo"
+						bind:value={repoUrlInput}
+						required
+						aria-label="GitHub repository URL"
+						class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+					/>
+					<button
+						type="submit"
+						disabled={emailFormStatus === 'loading'}
+						class="h-12 shrink-0 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+					>
+						{emailFormStatus === 'loading' ? 'Generating...' : 'Score My Repo'}
+					</button>
+				</form>
+				<p class="mt-3 text-center text-xs text-muted-foreground">
+					{stats.totalLeads > 0 ? `${stats.totalLeads}+ reports sent this month. ` : ''}No spam. Unsubscribe anytime. We never share your data.
+				</p>
+			</div>
+		</section>
+
+		<!-- Maintainer's Weekly Checklist (Secondary Lead Magnet) -->
+		<section class="relative container mx-auto max-w-6xl px-6 py-16" style="content-visibility: auto;">
+			<div class="mx-auto max-w-4xl rounded-3xl border border-border bg-gradient-to-br from-card to-background/50 p-8 md:p-12">
+				<div class="grid gap-8 md:grid-cols-2 md:gap-12">
+					<div>
+						<div class="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-widest text-primary uppercase">
+							<ClipboardCheck size={14} />
+							Free Download
+						</div>
+						<h2 class="mb-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+							The Maintainer's Weekly Checklist
+						</h2>
+						<p class="mb-4 text-muted-foreground">
+							A battle-tested weekly routine used by 2,400+ open-source maintainers. Never wonder "what should I do today?" again.
+						</p>
+						<ul class="space-y-2 text-sm text-muted-foreground">
+							<li class="flex items-start gap-2"><span class="mt-0.5 text-success">✓</span> Monday: Triage issues, label new ones</li>
+							<li class="flex items-start gap-2"><span class="mt-0.5 text-success">✓</span> Wednesday: Unblock stalled PRs</li>
+							<li class="flex items-start gap-2"><span class="mt-0.5 text-success">✓</span> Friday: Update docs, tweet a win</li>
+							<li class="flex items-start gap-2"><span class="mt-0.5 text-success">✓</span> Monthly: Audit dependencies</li>
+						</ul>
+					</div>
+					<div class="flex flex-col items-center justify-center gap-4">
+						<p class="text-center text-sm text-muted-foreground">
+							ShipSense automates 80% of this checklist.<br />Get the template free — or try the product.
+						</p>
+						<form onsubmit={submitChecklistCapture} class="w-full space-y-3">
+							<input
+								type="email"
+								placeholder="you@example.com"
+								bind:value={checklistEmail}
+								required
+								aria-label="Email address for checklist download"
+								class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+							/>
+							<button
+								type="submit"
+								disabled={checklistStatus === 'loading'}
+								class="w-full rounded-xl border border-primary/30 bg-primary/10 px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+							>
+								{checklistStatus === 'loading' ? 'Sending...' : '📋 Download Free Checklist'}
+							</button>
+						</form>
+						{#if checklistStatus === 'success'}
+							<p class="text-center text-sm text-success">Checklist sent! Check your inbox.</p>
+						{:else if checklistStatus === 'error'}
+							<p class="text-center text-sm text-destructive">{checklistMessage}</p>
+						{/if}
+					</div>
+				</div>
 			</div>
 		</section>
 

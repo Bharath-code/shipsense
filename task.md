@@ -754,3 +754,62 @@ Current Gemini prompting has 4 critical reliability gaps:
 - [ ] **Discord Integration** — same as Slack but for Discord
 - [ ] **Referral Program** — invite 3 friends → get 1 month free
 - [ ] **Content Marketing Engine** — 1 SEO blog post/week, 3 tweets/week, 1 Indie Hackers post/week
+
+---
+
+## Phase 35 — Lead Magnet Optimization (April 2026)
+
+> Goal: turn the existing email capture into a high-converting lead magnet engine.
+> Based on the lead-magnets skill framework — sharpen what exists before building new formats.
+
+### Health Scorecard Upgrade (P0 — sharpen existing flow)
+
+- [x] Add letter grade (A/B/C/D/F) to generated report — instant gratification, shareable
+- [x] Add "Your repo is healthier than X% of similar repos" benchmark line
+- [x] Show 3 specific "quick wins" with exact steps instead of generic advice
+- [x] Add grade to email subject line: "Your repo scored: B+ (72/100)"
+- [x] Add "📊 See your full report" CTA button in email → thank-you page with full breakdown
+- [x] Add "Track this daily — free" CTA on thank-you page → /auth/login redirect
+- [x] Check for README and CONTRIBUTING during report generation for better scoring
+
+### Landing Page Form Optimization (P0 — conversion lift)
+
+- [x] A/B test headline: "Get a free health report" → "What grade does your repo get?"
+- [x] A/B test CTA button: "Get My Report" → "Score My Repo"
+- [x] Add social proof under form: "X+ reports sent this month"
+- [x] Add trust micro-copy: "No spam. Unsubscribe anytime. We never share your data."
+- [x] Add preview/mockup of what the report looks like (blurred screenshot of real report)
+
+### Maintainer's Weekly Checklist (P1 — new lead magnet)
+
+- [x] Create secondary capture section on landing page with checklist preview
+- [x] Gate behind email capture — "Download Free Checklist" button
+- [x] Add "ShipSense automates 80% of this checklist" CTA
+- [x] Track source field (`scorecard` vs `checklist`) for conversion attribution
+
+### Email Nurture Sequence (P1 — post-capture conversion)
+
+- [x] Create `convex/emailNurture.ts` — Day 2 + Day 5 automated emails
+- [x] Day 0 — Report delivery (already exists via emailLeads.ts)
+- [x] Day 2 — "3 quick wins to boost your score" with specific steps
+- [x] Day 5 — Social proof: "How a founder grew their repo from 20 to 200 stars"
+- [x] Add cron jobs for Day 2 (9am UTC) and Day 5 (9:30am UTC) daily
+- [x] Add nurtureDay2Sent and nurtureDay5Sent tracking fields
+- [x] Add unsubscribe link to all nurture emails
+
+### Thank-You Page Optimization (P1 — post-conversion)
+
+- [x] Create `/report` thank-you page after email capture
+- [x] "Check your inbox — your report is on the way!" confirmation
+- [x] "While you wait..." → link to live demo repo (/p/example)
+- [x] "Want daily tracking? Connect your GitHub — it's free" CTA
+- [x] Pre-written tweet: "Just scored my repo health with @shipsense 🚀"
+
+### Measurement & Tracking (P2)
+
+- [x] Add `emailLeads.source` field to track which lead magnet they came from
+- [x] Add `emailLeads.nurtureDay2Sent` and `nurtureDay5Sent` tracking
+- [x] Add `by_createdAt` index for time-based queries
+- [ ] Track landing page → email capture conversion rate (target: 25-35%)
+- [ ] Track email → signup conversion rate (target: 5-10%)
+- [ ] Build simple dashboard view: total leads this month, conversion rate by source

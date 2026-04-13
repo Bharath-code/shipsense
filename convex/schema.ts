@@ -357,9 +357,13 @@ export default defineSchema({
 		repoUrl: v.string(), // Full GitHub URL they submitted
 		reportGenerated: v.boolean(), // Whether we've generated + sent their free report
 		reportUrl: v.optional(v.string()), // URL to their one-time health report
+		source: v.optional(v.union(v.literal('scorecard'), v.literal('checklist'))), // Which lead magnet they came from
+		nurtureDay2Sent: v.optional(v.boolean()), // Whether Day 2 nurture email was sent
+		nurtureDay5Sent: v.optional(v.boolean()), // Whether Day 5 nurture email was sent
 		createdAt: v.number(),
 		convertedToUser: v.optional(v.boolean()) // Whether they later signed up via OAuth
 	})
 		.index('by_email', ['email'])
 		.index('by_repoUrl', ['repoUrl'])
+		.index('by_createdAt', ['createdAt'])
 });

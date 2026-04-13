@@ -8,7 +8,7 @@
  */
 
 import { v } from 'convex/values';
-import { query, action, internalMutation } from './_generated/server';
+import { query, mutation, action, internalMutation } from './_generated/server';
 import { internal } from './_generated/api';
 import type { Id } from './_generated/dataModel';
 import { getAuthUserId } from '@convex-dev/auth/server';
@@ -168,7 +168,7 @@ ${commentsContext ? `**Recent comments:**\n${commentsContext.substring(0, 1000)}
  * Store a generated draft for an issue task.
  * Attaches the draft text to the task so it shows in the UI.
  */
-export const storeIssueDraft = internalMutation({
+export const storeIssueDraft = mutation({
 	args: {
 		taskId: v.id('repoTasks'),
 		draft: v.string(),
