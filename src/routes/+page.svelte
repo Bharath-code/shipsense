@@ -379,15 +379,15 @@
 			<h1
 				class="mb-6 max-w-5xl text-4xl leading-[1.05] font-bold tracking-tight md:text-6xl lg:text-6xl"
 			>
-				Daily health briefs for your
+				Know your repo's health in
 				<br class="hidden md:block" />
-				<span class="text-primary">GitHub repositories.</span>
+				<span class="text-primary">20 seconds.</span>
 			</h1>
 
 			<p
 				class="mb-12 max-w-2xl text-lg leading-relaxed font-normal tracking-normal text-muted-foreground md:text-xl"
 			>
-				Connect your repos. Get one daily page that tells you what changed, what matters, and what to do next. No tab-hopping.
+				Connect any GitHub repo. Every morning, get a clear snapshot of what changed, what's at risk, and the one thing you should do today.
 			</p>
 
 			<div
@@ -398,7 +398,7 @@
 					size="xl"
 					class="w-full rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition-all duration-300 hover:bg-primary/90 sm:w-auto"
 				>
-					Check My Repo Health
+					Get Started Free — 30 seconds
 					<ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
 				</Button>
 				<a
@@ -475,72 +475,23 @@
 			</div>
 		</section>
 
-		<!-- Testimonials Section -->
-		<section class="container mx-auto max-w-6xl px-6 py-16" style="content-visibility: auto;">
-			<div class="mb-10 text-center">
-				<h2 class="mb-3 text-2xl font-bold tracking-tight md:text-3xl">Loved by indie hackers and maintainers</h2>
-				<p class="text-muted-foreground">Here's what early users are saying about ShipSense.</p>
-			</div>
-			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-				<div class="rounded-2xl border border-border bg-card p-6">
-					<div class="mb-3 flex items-center gap-1" aria-label="5 stars">
-						{#each Array(5) as _}<span class="text-warning">★</span>{/each}
-					</div>
-					<p class="text-sm leading-relaxed text-muted-foreground">&ldquo;I used to check 5 different tabs to understand my repo health. ShipSense gives me the full picture in 20 seconds.&rdquo;</p>
-					<div class="mt-4 flex items-center gap-3">
-						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">A</div>
-						<div>
-							<p class="text-sm font-semibold text-foreground">Alex K.</p>
-							<p class="text-xs text-muted-foreground">Solo maintainer, 3 repos</p>
-						</div>
-					</div>
-				</div>
-				<div class="rounded-2xl border border-border bg-card p-6">
-					<div class="mb-3 flex items-center gap-1" aria-label="5 stars">
-						{#each Array(5) as _}<span class="text-warning">★</span>{/each}
-					</div>
-					<p class="text-sm leading-relaxed text-muted-foreground">&ldquo;The daily brief is like having a PM for my open-source project. I know exactly what to work on every morning.&rdquo;</p>
-					<div class="mt-4 flex items-center gap-3">
-						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-xs font-bold text-success">S</div>
-						<div>
-							<p class="text-sm font-semibold text-foreground">Sarah M.</p>
-							<p class="text-xs text-muted-foreground">Indie hacker, building in public</p>
-						</div>
-					</div>
-				</div>
-				<div class="rounded-2xl border border-border bg-card p-6">
-					<div class="mb-3 flex items-center gap-1" aria-label="5 stars">
-						{#each Array(5) as _}<span class="text-warning">★</span>{/each}
-					</div>
-					<p class="text-sm leading-relaxed text-muted-foreground">&ldquo;The investor report helped me prove traction for my seed round. Worth the subscription alone.&rdquo;</p>
-					<div class="mt-4 flex items-center gap-3">
-						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-warning/10 text-xs font-bold text-warning">R</div>
-						<div>
-							<p class="text-sm font-semibold text-foreground">Raj P.</p>
-							<p class="text-xs text-muted-foreground">Startup founder, raised seed</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Social Proof Section -->
+		<!-- Social Proof Stats -->
 		{#if stats.totalTracked > 0}
 			<section class="container mx-auto max-w-6xl px-6 py-12" style="content-visibility: auto;">
-				<div class="flex flex-col items-center justify-center gap-6 sm:flex-row sm:gap-12">
+				<div class="flex flex-col items-center justify-center gap-8 sm:flex-row sm:gap-16">
 					<div class="text-center">
-						<p class="text-3xl font-black text-primary">{stats.totalRepos}</p>
-						<p class="mt-1 text-sm text-muted-foreground">repos tracked</p>
+						<p class="text-4xl font-black text-primary">{stats.totalRepos}</p>
+						<p class="mt-2 text-sm text-muted-foreground">repos tracked</p>
 					</div>
-					<div class="hidden h-10 w-px bg-border sm:block" aria-hidden="true"></div>
+					<div class="hidden h-12 w-px bg-border sm:block" aria-hidden="true"></div>
 					<div class="text-center">
-						<p class="text-3xl font-black text-success">{stats.totalUsers}</p>
-						<p class="mt-1 text-sm text-muted-foreground">builders tracking</p>
+						<p class="text-4xl font-black text-success">{stats.totalUsers}</p>
+						<p class="mt-2 text-sm text-muted-foreground">builders tracking daily</p>
 					</div>
-					<div class="hidden h-10 w-px bg-border sm:block" aria-hidden="true"></div>
+					<div class="hidden h-12 w-px bg-border sm:block" aria-hidden="true"></div>
 					<div class="text-center">
-						<p class="text-3xl font-black text-warning">{foundingMemberClaimed}/{foundingMemberSpots}</p>
-						<p class="mt-1 text-sm text-muted-foreground">founding spots claimed</p>
+						<p class="text-4xl font-black text-warning">{foundingMemberClaimed}/{foundingMemberSpots}</p>
+						<p class="mt-2 text-sm text-muted-foreground">founding spots claimed</p>
 					</div>
 				</div>
 			</section>
@@ -554,10 +505,10 @@
 					<span class="text-xs font-bold tracking-widest text-primary uppercase">Free — no sign-up needed</span>
 				</div>
 				<h2 class="mb-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-					What grade does your repo get?
+					Get a free health score for any repo.
 				</h2>
 				<p class="mb-4 text-muted-foreground">
-					Enter a GitHub repo URL and your email. We'll send you a one-time health breakdown with quick wins — no account needed.
+					Paste a GitHub URL. We'll scan it and email you a breakdown with a score out of 100, plus 3 quick wins — no account needed.
 				</p>
 
 				<!-- Report Preview -->
@@ -669,7 +620,7 @@
 		<section id="capabilities" class="relative container mx-auto max-w-6xl px-6 py-24" style="content-visibility: auto;">
 			<div class="mb-16 text-center">
 				<h2 class="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
-					Stay on top of your repos without the noise.
+					Six signals. One page. Zero guesswork.
 				</h2>
 				<p class="mx-auto max-w-2xl text-lg tracking-normal text-muted-foreground">
 					One dashboard. Daily clarity on what changed, what matters, and what to do next.
@@ -686,9 +637,9 @@
 					>
 						<BarChart3 size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-2 text-lg font-bold tracking-tight">Health Score</h3>
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Health Score (0–100)</h3>
 					<p class="text-sm leading-relaxed text-muted-foreground">
-						One number that combines stars, commits, PRs, issues, and contributors into a score you can trust. See trends across multiple repos at a glance.
+						Stars, commits, PRs, issues, and contributors combined into one number you can trust. See trends across all your repos at a glance.
 					</p>
 				</div>
 
@@ -701,9 +652,9 @@
 					>
 						<Cpu size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-2 text-lg font-bold tracking-tight">Daily Brief</h3>
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Morning Brief</h3>
 					<p class="text-sm leading-relaxed text-muted-foreground">
-						Open one page every morning. See what changed overnight, your top action item, and whether momentum is accelerating or stalling.
+						What changed overnight, your one top action, and whether momentum is accelerating or stalling — before your coffee cools.
 					</p>
 				</div>
 
@@ -716,7 +667,7 @@
 					>
 						<LineChart size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-2 text-lg font-bold tracking-tight">Tasks & Streaks</h3>
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Action Engine</h3>
 					<p class="text-sm leading-relaxed text-muted-foreground">
 						Signals become tasks. Mark them done and watch your shipping streak grow. Consistency becomes visible.
 					</p>
@@ -731,9 +682,9 @@
 					>
 						<Shield size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-2 text-lg font-bold tracking-tight">Risk Stack</h3>
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Risk Alerts</h3>
 					<p class="text-sm leading-relaxed text-muted-foreground">
-						Vulnerabilities, outdated dependencies, anomalies, and README gaps combined into a single priority list. Fix what matters first.
+						Vulnerabilities, outdated dependencies, anomalies, and README gaps — prioritized so you fix what hurts first.
 					</p>
 				</div>
 
@@ -746,9 +697,9 @@
 					>
 						<FileText size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-2 text-lg font-bold tracking-tight">Growth Intelligence</h3>
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Traffic & Growth</h3>
 					<p class="text-sm leading-relaxed text-muted-foreground">
-						Conversion funnel from views to contributors. Star velocity forecasts. External reach scores showing where your traffic actually comes from.
+						Conversion funnel from views to contributors. Star velocity forecasts. Referrer data showing where your traffic actually comes from.
 					</p>
 				</div>
 
@@ -761,9 +712,9 @@
 					>
 						<Share2 size={22} strokeWidth={1.5} />
 					</div>
-					<h3 class="mb-2 text-lg font-bold tracking-tight">Share & Alerts</h3>
+					<h3 class="mb-2 text-lg font-bold tracking-tight">Shareable Proof</h3>
 					<p class="text-sm leading-relaxed text-muted-foreground">
-						Public health pages and repo badges to share momentum. Anomaly alerts when something spikes or drops. Weekly email digests.
+						Public health pages and badges for your README. Anomaly alerts when something spikes or drops. Weekly email digests.
 					</p>
 				</div>
 			</div>
@@ -777,7 +728,7 @@
 		>
 			<div class="mx-auto max-w-3xl text-center">
 				<h2 class="mb-6 text-3xl font-bold tracking-tight md:text-5xl">
-					GitHub has everything. Context has nowhere to live.
+					Your GitHub has all the data. None of the answers.
 				</h2>
 				<p class="mb-10 text-lg leading-relaxed text-muted-foreground">
 					You check PRs. Then issues. Then Insights. Then traffic. Then dependencies. Five tabs to understand one repo.
@@ -808,7 +759,7 @@
 		>
 			<div class="mb-16 text-center">
 				<h2 class="mb-6 text-3xl font-bold tracking-tight md:text-5xl">
-					Start free. Scale when you need intelligence.
+					Free for your first repo. Powerful when you need more.
 				</h2>
 				<p class="mx-auto max-w-2xl text-lg text-muted-foreground">
 					Every plan includes a real health score and daily brief. Higher tiers unlock predictive signals, traffic intelligence, and portfolio management.
@@ -843,7 +794,7 @@
 					<span class="text-sm font-bold tracking-widest text-warning uppercase">Founding Member — 50% Off Forever</span>
 				</div>
 				<p class="text-sm text-muted-foreground mb-3">
-					Be one of the first {foundingMemberSpots} users and lock in <span class="font-semibold text-foreground">Indie for ${foundingMemberPrice}/mo — forever.</span> Price goes up to ${monthlyIndie}/mo after spots fill.
+					Be one of the first {foundingMemberSpots} users and lock in <span class="font-semibold text-foreground">Indie for ${foundingMemberPrice}/mo — forever.</span> After spots fill, price goes to ${monthlyIndie}/mo.
 				</p>
 				<div class="flex items-center justify-center gap-3">
 					<div class="flex gap-1">
@@ -864,7 +815,7 @@
 						<span class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 							>Free</span
 						>
-						<h3 class="mt-1 text-xl font-bold tracking-tight">Health Clarity</h3>
+						<h3 class="mt-1 text-xl font-bold tracking-tight">Everything you need to start</h3>
 						<div class="mt-4 flex items-end gap-1">
 							<span class="text-4xl font-bold">$0</span>
 							<span class="mb-1 text-sm text-muted-foreground">/mo</span>
@@ -915,7 +866,7 @@
 					</div>
 					<div class="mb-2">
 						<span class="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Indie</span>
-						<h3 class="mt-1 text-xl font-bold tracking-tight">Growth Intelligence</h3>
+						<h3 class="mt-1 text-xl font-bold tracking-tight">For builders ready to grow</h3>
 						<div class="mt-4 flex items-end gap-1.5">
 							<span class="text-4xl font-bold">${annual ? annualTotalIndie : monthlyIndie}</span>
 							<span class="mb-1 text-sm text-muted-foreground">/{annual ? 'yr' : 'mo'}</span>
@@ -983,7 +934,7 @@
 						<span class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase"
 							>Builder</span
 						>
-						<h3 class="mt-1 text-xl font-bold tracking-tight">Portfolio Ops</h3>
+						<h3 class="mt-1 text-xl font-bold tracking-tight">For teams shipping at scale</h3>
 						<div class="mt-4 flex items-end gap-1.5">
 							<span class="text-4xl font-bold">${annual ? annualTotalBuilder : monthlyBuilder}</span>
 							<span class="mb-1 text-sm text-muted-foreground">/{annual ? 'yr' : 'mo'}</span>
@@ -1178,10 +1129,10 @@
 				></div>
 				<div class="relative z-10">
 					<h2 class="mb-4 max-w-3xl text-3xl leading-tight font-bold tracking-tight md:text-5xl">
-						One dashboard. Daily clarity.
+						Your repo won't grow itself. But it can grow faster.
 					</h2>
 					<p class="mx-auto mb-10 max-w-xl text-lg text-background/60">
-						Stop checking five tabs to understand one repo. Connect GitHub, get your first brief in 30 seconds.
+						Connect GitHub. Get your first health brief in 30 seconds. It's free.
 					</p>
 					<Button
 						href="/auth/login"

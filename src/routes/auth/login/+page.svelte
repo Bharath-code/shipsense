@@ -107,10 +107,10 @@
 							For maintainers and builders
 						</p>
 						<h1 class="text-4xl leading-[1.05] font-black tracking-tight text-foreground">
-							Daily health briefs for your GitHub repos.
+							30 seconds. That's all it takes.
 						</h1>
 						<p class="max-w-lg text-base leading-7 text-muted-foreground">
-							Connect your repos and get one page every morning that tells you what changed, what matters, and what to do next.
+							Sign in with GitHub. Connect your first repo. Get a health score, an action plan, and a shipping streak — all before your coffee cools.
 						</p>
 					</div>
 				</div>
@@ -236,7 +236,7 @@
 						>
 							<p class="text-xs font-semibold text-foreground">Why sign in?</p>
 							<p class="mt-1 leading-6">
-								We use your GitHub data to analyze repo health, generate daily briefs, and surface the next best action — so you spend less time investigating and more time shipping.
+								We analyze your repo's public data to generate a health score, daily briefs, and your next best action — so you spend less time investigating and more time shipping.
 							</p>
 						</div>
 					</CardContent>
