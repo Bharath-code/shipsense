@@ -38,6 +38,7 @@ import type * as repos from "../repos.js";
 import type * as scorer from "../scorer.js";
 import type * as settings from "../settings.js";
 import type * as sharePrompts from "../sharePrompts.js";
+import type * as slack from "../slack.js";
 import type * as streakTracker from "../streakTracker.js";
 import type * as taskGenerator from "../taskGenerator.js";
 import type * as todayView from "../todayView.js";
@@ -82,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   scorer: typeof scorer;
   settings: typeof settings;
   sharePrompts: typeof sharePrompts;
+  slack: typeof slack;
   streakTracker: typeof streakTracker;
   taskGenerator: typeof taskGenerator;
   todayView: typeof todayView;

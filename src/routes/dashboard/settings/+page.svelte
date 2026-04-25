@@ -23,7 +23,10 @@
 		Zap,
 		Rocket,
 		Eye,
-		LayoutDashboard
+		LayoutDashboard,
+		Hash,
+		Link as LinkIcon,
+		Unlink as UnlinkIcon
 	} from 'lucide-svelte';
 
 	const client = useConvexClient();
@@ -35,6 +38,22 @@
 	let upgrading = $state<string | null>(null);
 	let showPlanPicker = $state(false);
 	let dashboardViewLoading = $state(false);
+
+	// Slack state
+	const slackStatusQuery = useQuery(api.slack.getSlackStatus, () => ({}));
+	let slackConnecting = $state(false);
+	let slackDisconnecting = $state(false);
+	let slackBriefingLoading = $state(false);
+
+	// Check for Slack OAuth callback params
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const params = new URLSearchParams(window.location.search);
+		const slackResult = params.get('slack');
+		if (slackResult) {
+			window.history.replaceState({}, '', '/dashboard/settings');
+		}
+	});
 
 	// Debug: log what we actually get
 	$effect(() => {
@@ -88,6 +107,40 @@
 			console.error('Failed to update dashboard view preference:', err);
 		} finally {
 			dashboardViewLoading = false;
+		}
+	}
+
+	async function handleConnectSlack() {
+		slackConnecting = true;
+		try {
+			const { url } = await client.mutation(api.slack.getSlackOAuthUrl, {});
+			window.location.href = url;
+		} catch (err) {
+			console.error('Failed to connect Slack:', err);
+			slackConnecting = false;
+		}
+	}
+
+	async function handleDisconnectSlack() {
+		slackDisconnecting = true;
+		try {
+			await client.mutation(api.slack.disconnectSlack, {});
+		} catch (err) {
+			console.error('Failed to disconnect Slack:', err);
+		} finally {
+			slackDisconnecting = false;
+		}
+	}
+
+	async function handleSlackBriefToggle(checked: boolean | string) {
+		const enabled = Boolean(checked);
+		slackBriefingLoading = true;
+		try {
+			await client.mutation(api.slack.toggleSlackBrief, { enabled });
+		} catch (err) {
+			console.error('Failed to toggle Slack brief:', err);
+		} finally {
+			slackBriefingLoading = false;
 		}
 	}
 
@@ -389,6 +442,105 @@
 		</CardContent>
 	</Card>
 
+	<!-- Slack Integration -->
+	<Card class="border-white/10 bg-white/5">
+		<CardHeader>
+			<div class="flex items-center gap-3">
+		<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20">
+			<Hash class="h-5 w-5 text-emerald-500" />
+		</div>
+		<div>
+			<CardTitle>Slack</CardTitle>
+					<CardDescription>Get your daily brief delivered to Slack</CardDescription>
+				</div>
+			</div>
+		</CardHeader>
+		<CardContent class="space-y-6">
+			{#if slackStatusQuery.isLoading}
+				<div class="flex items-center gap-2 text-sm text-muted-foreground">
+					<Loader2 class="h-4 w-4 animate-spin" />
+					Checking connection status...
+				</div>
+			{:else if slackStatusQuery.data?.connected}
+				<div class="space-y-4">
+					<div class="flex items-center gap-3 rounded-xl bg-emerald-500/10 p-4">
+						<Check size={16} class="text-emerald-500 shrink-0" />
+						<div>
+							<p class="text-sm font-semibold text-emerald-500">Connected to Slack</p>
+							<p class="text-xs text-muted-foreground">
+								Workspace: {slackStatusQuery.data.workspaceName ?? 'Unknown'}
+								{#if slackStatusQuery.data.channelName}
+								· Channel: #{slackStatusQuery.data.channelName}
+								{/if}
+							</p>
+						</div>
+					</div>
+
+					<div class="flex items-center justify-between">
+						<div class="space-y-1">
+							<p class="text-sm font-medium">Daily Brief</p>
+							<p class="text-xs text-muted-foreground">
+								Receive your ShipSense brief in Slack every morning at 7:15am UTC
+							</p>
+						</div>
+						<div class="flex items-center gap-3">
+							{#if slackBriefingLoading}
+								<Loader2 class="h-4 w-4 animate-spin text-muted-foreground" />
+							{:else}
+								<div class="flex items-center gap-2">
+									<Checkbox
+										id="slack-brief"
+										checked={slackStatusQuery.data.briefEnabled}
+										onCheckedChange={handleSlackBriefToggle}
+									/>
+									<label for="slack-brief" class="cursor-pointer text-sm font-normal">Enabled</label>
+								</div>
+							{/if}
+						</div>
+					</div>
+
+					<Button
+						variant="outline"
+						size="default"
+						class="rounded-full border-destructive/30 text-destructive hover:bg-destructive/10"
+						onclick={handleDisconnectSlack}
+						disabled={slackDisconnecting}
+					>
+						{#if slackDisconnecting}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+							Disconnecting...
+						{:else}
+							<UnlinkIcon class="mr-2 h-4 w-4" />
+							Disconnect Slack
+						{/if}
+					</Button>
+				</div>
+			{:else}
+				<div class="space-y-4">
+					<p class="text-sm text-muted-foreground">
+						Send your daily repo health brief to a Slack channel every morning. Get your score, top tasks, and momentum update where your team already works.
+					</p>
+					<Button
+						class="rounded-full"
+						onclick={handleConnectSlack}
+						disabled={slackConnecting}
+					>
+						{#if slackConnecting}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+							Connecting...
+						{:else}
+							<LinkIcon class="mr-2 h-4 w-4" />
+							Connect Slack
+						{/if}
+					</Button>
+					<p class="text-xs text-muted-foreground">
+						We'll ask for permission to post to a channel. You can disconnect anytime.
+					</p>
+				</div>
+			{/if}
+		</CardContent>
+	</Card>
+
 	<!-- Notifications -->
 	<Card class="border-white/10 bg-white/5">
 		<CardHeader>
@@ -404,8 +556,7 @@
 		</CardHeader>
 		<CardContent>
 			<p class="text-sm text-muted-foreground">
-				More notification options coming soon — including Slack integration and webhook
-				notifications.
+				Configure Slack above to receive daily briefs. More delivery options (Discord, webhooks) coming soon.
 			</p>
 		</CardContent>
 	</Card>

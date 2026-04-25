@@ -63,4 +63,34 @@ http.route({
 	})
 });
 
+// Slack interactive actions webhook endpoint
+http.route({
+	path: '/webhooks/slack',
+	method: 'POST',
+	handler: httpAction(async (ctx, request) => {
+		const body = await request.text();
+
+		let payload: Record<string, unknown>;
+		try {
+			// Slack sends form-encoded payload when using interactive actions
+			const params = new URLSearchParams(body);
+			const payloadStr = params.get('payload');
+			if (!payloadStr) return new Response('Missing payload', { status: 400 });
+			payload = JSON.parse(payloadStr);
+		} catch {
+			return new Response('Invalid payload', { status: 400 });
+		}
+
+		try {
+			await ctx.runMutation(internal.slack.processSlackAction, {
+				payload: JSON.stringify(payload)
+			});
+		} catch (err) {
+			console.error('[slack] Webhook error:', err);
+		}
+
+		return new Response('OK', { status: 200 });
+	})
+});
+
 export default http;

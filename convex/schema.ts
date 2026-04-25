@@ -21,6 +21,15 @@ export default defineSchema({
 		lastDailyDigestSentAt: v.optional(v.number()),
 		investorReportsUsedThisMonth: v.optional(v.number()),
 		lastInvestorReportResetAt: v.optional(v.number()),
+
+		// Slack integration
+		slackWorkspaceId: v.optional(v.string()),
+		slackWorkspaceName: v.optional(v.string()),
+		slackChannelId: v.optional(v.string()),
+		slackChannelName: v.optional(v.string()),
+		slackAccessToken: v.optional(v.string()),
+		slackBriefEnabled: v.optional(v.boolean()),
+
 		createdAt: v.number()
 	})
 		.index('by_userId', ['userId'])

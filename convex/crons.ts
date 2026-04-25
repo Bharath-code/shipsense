@@ -34,6 +34,13 @@ crons.daily(
 	internal.orchestrator.sendDailyDigests
 );
 
+// Slack: send daily briefs to Slack-connected users at 7:15am UTC
+crons.daily(
+	'send-slack-briefs',
+	{ hourUTC: 7, minuteUTC: 15 },
+	internal.slack.sendAllSlackBriefs
+);
+
 // Housekeeping: delete expired notifications (30-day TTL)
 crons.daily(
 	'cleanup-expired-notifications',
