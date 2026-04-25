@@ -30,6 +30,9 @@ export default defineSchema({
 		slackAccessToken: v.optional(v.string()),
 		slackBriefEnabled: v.optional(v.boolean()),
 
+		// Benchmark privacy
+		benchmarkOptOut: v.optional(v.boolean()),
+
 		createdAt: v.number()
 	})
 		.index('by_userId', ['userId'])
@@ -363,6 +366,46 @@ export default defineSchema({
 		.index('by_fullName', ['fullName']),
 
 	// Email leads from landing page (pre-auth, for nurture sequence)
+	// Cohort benchmark aggregates (computed daily)
+	repoBenchmarks: defineTable({
+		cohortKey: v.string(), // e.g. "typescript|200-500"
+		language: v.string(),
+		starRange: v.string(), // "0-50", "50-200", "200-500", "500-1000", "1000-5000", "5000+"
+		repoCount: v.number(),
+		// Health score percentiles
+		healthP25: v.number(),
+		healthP50: v.number(),
+		healthP75: v.number(),
+		healthP90: v.number(),
+		// Star score percentiles
+		starP25: v.number(),
+		starP50: v.number(),
+		starP75: v.number(),
+		starP90: v.number(),
+		// Commit score percentiles
+		commitP25: v.number(),
+		commitP50: v.number(),
+		commitP75: v.number(),
+		commitP90: v.number(),
+		// Issue score percentiles
+		issueP25: v.number(),
+		issueP50: v.number(),
+		issueP75: v.number(),
+		issueP90: v.number(),
+		// PR score percentiles
+		prP25: v.number(),
+		prP50: v.number(),
+		prP75: v.number(),
+		prP90: v.number(),
+		// Contributor score percentiles
+		contributorP25: v.number(),
+		contributorP50: v.number(),
+		contributorP75: v.number(),
+		contributorP90: v.number(),
+		updatedAt: v.number()
+	})
+		.index('by_cohortKey', ['cohortKey']),
+
 	emailLeads: defineTable({
 		email: v.string(),
 		repoUrl: v.string(), // Full GitHub URL they submitted

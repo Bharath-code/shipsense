@@ -5,7 +5,7 @@
 
 	let { repoId }: { repoId: string } = $props();
 
-	const benchmarkQuery = useQuery(api.dashboard.getRepoBenchmark, () => ({
+	const benchmarkQuery = useQuery(api.benchmarks.getRepoBenchmark, () => ({
 		repoId: repoId as any
 	}));
 

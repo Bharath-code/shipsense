@@ -34,6 +34,7 @@ export const getMyProfile = query({
 			dodoSubscriptionId: profile.dodoSubscriptionId ?? null,
 			emailReportsEnabled: profile.emailReportsEnabled,
 			showFullDashboard: profile.showFullDashboard ?? false,
+			benchmarkOptOut: profile.benchmarkOptOut ?? false,
 			githubUsername: profile.githubUsername,
 			activeRepoCount: repoCount.length
 		};

@@ -65,6 +65,7 @@
 	import { onMount } from 'svelte';
 	import TodayView from '$lib/components/dashboard/TodayView.svelte';
 	import QuickScanResult from '$lib/components/dashboard/QuickScanResult.svelte';
+	import BenchmarkComparison from '$lib/components/dashboard/BenchmarkComparison.svelte';
 
 	const repoTabs = [
 		{ value: 'overview', label: 'Brief' },
@@ -460,6 +461,21 @@
 
 	async function completeTask(taskId: string) {
 		await client.mutation(api.dashboard.completeTask, { taskId: taskId as any });
+	}
+
+	let githubActionLoading = $state(false);
+	let githubActionError = $state('');
+
+	async function completeTaskOnGitHub(taskId: string) {
+		githubActionError = '';
+		githubActionLoading = true;
+		try {
+			await client.action(api.githubActions.completeTaskOnGitHub, { taskId: taskId as any });
+		} catch (err: any) {
+			githubActionError = err.message || 'Failed to close issue on GitHub.';
+		} finally {
+			githubActionLoading = false;
+		}
 	}
 
 	async function copyText(value: string, kind: 'badge' | 'public') {
@@ -880,6 +896,16 @@
 							</p>
 						{/if}
 						<div class="mt-4 flex flex-wrap gap-2">
+							{#if primaryTask.taskType === 'issue' && primaryTask.issueNumber}
+								<Button
+									size="default"
+									class="rounded-full"
+									disabled={githubActionLoading}
+									onclick={() => completeTaskOnGitHub(primaryTask._id)}
+								>
+									{githubActionLoading ? 'Closing…' : 'Close on GitHub'}
+								</Button>
+							{/if}
 							<Button
 								size="default"
 								class="rounded-full"
@@ -1103,6 +1129,11 @@
 			</div>
 		{:else if activeTab === 'tasks'}
 			<div role="tabpanel" id="panel-tasks" aria-labelledby="tab-tasks" class="space-y-6">
+				{#if githubActionError}
+					<div class="rounded-2xl border border-red-400/20 bg-red-400/5 p-4">
+						<p class="text-sm text-red-400">{githubActionError}</p>
+					</div>
+				{/if}
 				<div class="rounded-[2rem] border border-primary/15 bg-primary/5 p-6 shadow-2xl">
 					<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 						<div class="max-w-2xl">
@@ -1172,10 +1203,21 @@
 						</div>
 
 						{#if primaryTask}
-							<Button class="rounded-full" onclick={() => completeTask(primaryTask._id)}>
-								<CheckCircle2 class="mr-2 h-4 w-4" />
-								Mark today&apos;s focus complete
-							</Button>
+							<div class="flex flex-col gap-2">
+								{#if primaryTask.taskType === 'issue' && primaryTask.issueNumber}
+									<Button
+										class="rounded-full"
+										disabled={githubActionLoading}
+										onclick={() => completeTaskOnGitHub(primaryTask._id)}
+									>
+										{githubActionLoading ? 'Closing…' : 'Close on GitHub'}
+									</Button>
+								{/if}
+								<Button class="rounded-full" onclick={() => completeTask(primaryTask._id)}>
+									<CheckCircle2 class="mr-2 h-4 w-4" />
+									Mark today&apos;s focus complete
+								</Button>
+							</div>
 						{/if}
 					</div>
 				</div>
@@ -1275,14 +1317,26 @@
 														</div>
 													{/if}
 												</div>
+										<div class="flex flex-col gap-2">
+											{#if task.taskType === 'issue' && task.issueNumber}
 												<Button
 													size="default"
-													variant="outline"
 													class="rounded-full"
-													onclick={() => completeTask(task._id)}
+													disabled={githubActionLoading}
+													onclick={() => completeTaskOnGitHub(task._id)}
 												>
-													Done
+													{githubActionLoading ? 'Closing…' : 'Close'}
 												</Button>
+											{/if}
+											<Button
+												size="default"
+												variant="outline"
+												class="rounded-full"
+												onclick={() => completeTask(task._id)}
+											>
+												Done
+											</Button>
+										</div>
 											</div>
 										</div>
 									{/each}
@@ -1319,6 +1373,11 @@
 						<DependencyList repoId={repoId as string} />
 					</ErrorBoundary>
 				</div>
+
+				<!-- Cohort Benchmark Comparison -->
+				<ErrorBoundary>
+					<BenchmarkComparison repoId={repoId as string} />
+				</ErrorBoundary>
 			</div>
 		{:else if activeTab === 'share'}
 			<div role="tabpanel" id="panel-share" aria-labelledby="tab-share" class="space-y-6">

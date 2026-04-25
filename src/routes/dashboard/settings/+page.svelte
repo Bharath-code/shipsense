@@ -26,7 +26,8 @@
 		LayoutDashboard,
 		Hash,
 		Link as LinkIcon,
-		Unlink as UnlinkIcon
+		Unlink as UnlinkIcon,
+		BarChart3
 	} from 'lucide-svelte';
 
 	const client = useConvexClient();
@@ -38,6 +39,9 @@
 	let upgrading = $state<string | null>(null);
 	let showPlanPicker = $state(false);
 	let dashboardViewLoading = $state(false);
+
+	// Benchmark privacy state
+	let benchmarkOptOutLoading = $state(false);
 
 	// Slack state
 	const slackStatusQuery = useQuery(api.slack.getSlackStatus, () => ({}));
@@ -107,6 +111,18 @@
 			console.error('Failed to update dashboard view preference:', err);
 		} finally {
 			dashboardViewLoading = false;
+		}
+	}
+
+	async function handleBenchmarkOptOutToggle(checked: boolean | string) {
+		const optOut = Boolean(checked);
+		benchmarkOptOutLoading = true;
+		try {
+			await client.mutation(api.benchmarks.updateBenchmarkOptOut, { optOut });
+		} catch (err) {
+			console.error('Failed to update benchmark privacy preference:', err);
+		} finally {
+			benchmarkOptOutLoading = false;
 		}
 	}
 
@@ -435,6 +451,45 @@
 								onCheckedChange={handleDashboardViewToggle}
 							/>
 							<label for="full-dashboard" class="cursor-pointer text-sm font-normal">Enabled</label>
+						</div>
+					{/if}
+				</div>
+			</div>
+		</CardContent>
+	</Card>
+
+	<!-- Benchmark Privacy -->
+	<Card class="border-white/10 bg-white/5">
+		<CardHeader>
+			<div class="flex items-center gap-3">
+				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
+					<BarChart3 class="h-5 w-5 text-blue-500" />
+				</div>
+				<div>
+					<CardTitle>Benchmark Privacy</CardTitle>
+					<CardDescription>Control whether your repo data contributes to cohort benchmarks</CardDescription>
+				</div>
+			</div>
+		</CardHeader>
+		<CardContent class="space-y-6">
+			<div class="flex items-center justify-between">
+				<div class="space-y-1">
+					<p class="text-sm font-medium">Exclude from Benchmarks</p>
+					<p class="text-xs text-muted-foreground">
+						When enabled, your anonymized repo scores won't be included in cohort comparisons. You can still see benchmarks for other repos.
+					</p>
+				</div>
+				<div class="flex items-center gap-3">
+					{#if benchmarkOptOutLoading || profileQuery.isLoading}
+						<Loader2 class="h-4 w-4 animate-spin text-muted-foreground" />
+					{:else}
+						<div class="flex items-center gap-2">
+							<Checkbox
+								id="benchmark-opt-out"
+								checked={profileQuery.data?.benchmarkOptOut ?? false}
+								onCheckedChange={handleBenchmarkOptOutToggle}
+							/>
+							<label for="benchmark-opt-out" class="cursor-pointer text-sm font-normal">Opt out</label>
 						</div>
 					{/if}
 				</div>

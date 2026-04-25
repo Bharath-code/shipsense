@@ -64,6 +64,21 @@
 		await client.mutation(api.dashboard.completeTask, { taskId: taskId as any });
 	}
 
+	let githubActionLoading = $state(false);
+	let githubActionError = $state('');
+
+	async function handleCompleteTaskOnGitHub(taskId: string) {
+		githubActionError = '';
+		githubActionLoading = true;
+		try {
+			await client.action(api.githubActions.completeTaskOnGitHub, { taskId: taskId as any });
+		} catch (err: any) {
+			githubActionError = err.message || 'Failed to close issue on GitHub.';
+		} finally {
+			githubActionLoading = false;
+		}
+	}
+
 	async function handleSync() {
 		await client.action(api.repos.syncConnectedRepo, { repoId: repoId as any });
 	}
@@ -176,6 +191,16 @@
 				{/if}
 
 				<div class="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row">
+					{#if data.topTask.type === 'issue' && data.topTask.issueNumber}
+						<Button
+							size="default"
+							class="w-full rounded-full sm:w-auto"
+							disabled={githubActionLoading}
+							onclick={() => data.topTask && handleCompleteTaskOnGitHub(data.topTask.id)}
+						>
+							{githubActionLoading ? 'Closing…' : 'Close on GitHub'}
+						</Button>
+					{/if}
 					<Button size="default" class="w-full rounded-full sm:w-auto" onclick={() => data.topTask && handleCompleteTask(data.topTask.id)}>
 						<CheckCircle2 class="mr-2 h-4 w-4" />
 						Mark done
@@ -185,6 +210,9 @@
 						<ExternalLink class="ml-2 h-3 w-3" />
 					</Button>
 				</div>
+				{#if githubActionError}
+					<p class="mt-2 text-xs text-red-400">{githubActionError}</p>
+				{/if}
 			</div>
 		{:else}
 			<div class="rounded-2xl border border-emerald-400/15 bg-emerald-400/5 p-4 text-center sm:rounded-[1.5rem] sm:p-5">

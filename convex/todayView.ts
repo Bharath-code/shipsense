@@ -95,7 +95,8 @@ export const getTodayView = query({
 						priority: topTask.priority,
 						source: topTask.taskSource ?? null,
 						impact: topTask.expectedImpact ?? null,
-						urgency: topTask.urgency ?? null
+						urgency: topTask.urgency ?? null,
+						issueNumber: topTask.issueNumber ?? null
 					}
 				: null,
 			streak: streak

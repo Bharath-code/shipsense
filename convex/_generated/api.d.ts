@@ -10,6 +10,7 @@
 
 import type * as anomalies from "../anomalies.js";
 import type * as auth from "../auth.js";
+import type * as benchmarks from "../benchmarks.js";
 import type * as billing from "../billing.js";
 import type * as collector from "../collector.js";
 import type * as crons from "../crons.js";
@@ -22,6 +23,7 @@ import type * as emailLeads from "../emailLeads.js";
 import type * as emailNurture from "../emailNurture.js";
 import type * as foundingMembers from "../foundingMembers.js";
 import type * as github from "../github.js";
+import type * as githubActions from "../githubActions.js";
 import type * as healthGrade from "../healthGrade.js";
 import type * as http from "../http.js";
 import type * as insightGenerator from "../insightGenerator.js";
@@ -56,6 +58,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   anomalies: typeof anomalies;
   auth: typeof auth;
+  benchmarks: typeof benchmarks;
   billing: typeof billing;
   collector: typeof collector;
   crons: typeof crons;
@@ -68,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   emailNurture: typeof emailNurture;
   foundingMembers: typeof foundingMembers;
   github: typeof github;
+  githubActions: typeof githubActions;
   healthGrade: typeof healthGrade;
   http: typeof http;
   insightGenerator: typeof insightGenerator;

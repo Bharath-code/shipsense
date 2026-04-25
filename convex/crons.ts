@@ -69,4 +69,12 @@ crons.daily(
 	internal.emailNurture.runDay5Nurture
 );
 
+// Benchmarks: compute cohort percentiles daily at 6am UTC
+// Runs before digest generation so benchmarks are fresh for daily briefs
+crons.daily(
+	'compute-cohort-benchmarks',
+	{ hourUTC: 6, minuteUTC: 0 },
+	internal.benchmarks.computeCohortBenchmarks
+);
+
 export default crons;
