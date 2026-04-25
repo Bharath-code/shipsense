@@ -112,7 +112,7 @@
 		<div class="-mx-0 flex gap-1.5 overflow-x-auto pb-1 text-xs sm:flex-wrap sm:gap-2 sm:overflow-visible sm:pb-0">
 			{#if data.score != null}
 				<span class="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 font-semibold {scoreTone(data.score)} sm:px-3">
-					Score {data.score}
+					{data.isEstimated ? 'Estimate' : 'Score'} {data.score}
 				</span>
 			{/if}
 			{#if data.starsLast7d > 0}

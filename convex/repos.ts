@@ -1,4 +1,4 @@
-import { mutation, query, internalQuery, action } from './_generated/server';
+import { mutation, query, internalQuery, internalMutation, action } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { getPlanConfig, type PlanType } from './plan';
@@ -132,6 +132,9 @@ export const connectRepo = mutation({
 			slug: `${args.owner.toLowerCase()}-${args.name.toLowerCase()}`
 		});
 
+		// Instant health estimate (lightweight) before full sync
+		await ctx.scheduler.runAfter(0, internal.quickScan.runQuickScan, { repoId });
+		// Full background sync
 		await ctx.scheduler.runAfter(0, internal.orchestrator.syncRepoNow, { repoId });
 		return repoId;
 	}
@@ -178,6 +181,27 @@ export const batchGetLatestScores = internalQuery({
 			}
 		}
 		return scoreMap;
+	}
+});
+
+export const insertEstimatedScore = internalMutation({
+	args: {
+		repoId: v.id('repos'),
+		healthScore: v.number(),
+		starScore: v.number(),
+		commitScore: v.number(),
+		issueScore: v.number(),
+		prScore: v.number(),
+		contributorScore: v.number(),
+		scoreExplanation: v.string(),
+		trend: v.union(v.literal('up'), v.literal('down'), v.literal('stable'))
+	},
+	handler: async (ctx, args) => {
+		await ctx.db.insert('repoScores', {
+			...args,
+			calculatedAt: Date.now(),
+			isEstimated: true
+		});
 	}
 });
 

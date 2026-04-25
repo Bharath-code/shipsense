@@ -80,6 +80,7 @@ export const getTodayView = query({
 				lastSyncedAt: repo.lastSyncedAt ?? latestSnapshot?.capturedAt ?? null
 			},
 			score: latestScore?.healthScore ?? null,
+			isEstimated: latestScore?.isEstimated ?? false,
 			trend: latestScore?.trend ?? null,
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			contributors14d: latestSnapshot?.contributors14d ?? 0,

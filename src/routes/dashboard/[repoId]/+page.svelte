@@ -64,6 +64,7 @@
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import TodayView from '$lib/components/dashboard/TodayView.svelte';
+	import QuickScanResult from '$lib/components/dashboard/QuickScanResult.svelte';
 
 	const repoTabs = [
 		{ value: 'overview', label: 'Brief' },
@@ -415,7 +416,13 @@
 	let publicUrl = $derived(`/p/${repo?.slug || repoId}`);
 	let badgeMarkdown = $derived(`![ShipSense Health](https://shipsense.app${badgeUrl})`);
 	let healthSummary = $derived(
-		repo?.hasScore ? `${repo.healthScore}/100` : repo?.lastSyncedAt ? 'Calculating' : 'Pending'
+		repo?.isEstimated
+			? `${repo.healthScore}/100`
+			: repo?.hasScore
+				? `${repo.healthScore}/100`
+				: repo?.lastSyncedAt
+					? 'Calculating'
+					: 'Pending'
 	);
 
 	function dismissToast() {
@@ -673,11 +680,13 @@
 						</p>
 						<p class="mt-3 text-3xl font-black {scoreTone(repo.healthScore)}">{healthSummary}</p>
 						<p class="mt-2 text-sm text-muted-foreground">
-							{repo.hasScore
-								? 'Current repo health score'
-								: repo.lastSyncedAt
-									? 'Score is being calculated'
-									: 'Run the first sync to score this repo'}
+							{repo.isEstimated
+								? 'Estimated score from quick scan'
+								: repo.hasScore
+									? 'Current repo health score'
+									: repo.lastSyncedAt
+										? 'Score is being calculated'
+										: 'Run the first sync to score this repo'}
 						</p>
 					</div>
 
@@ -753,6 +762,9 @@
 
 		{#if activeTab === 'overview'}
 			<div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" class="space-y-6">
+				{#if repo?.isEstimated && repo.healthScore !== null}
+					<QuickScanResult healthScore={repo.healthScore} repoName={repo.name} />
+				{/if}
 				<!-- ═══════════════════════════════════════════════════════════ -->
 				<!-- THE BRIEF: single narrative, 20-second scan               -->
 				<!-- ═══════════════════════════════════════════════════════════ -->

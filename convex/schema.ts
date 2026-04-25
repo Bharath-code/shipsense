@@ -126,7 +126,8 @@ export default defineSchema({
 		contributorScore: v.number(),
 		scoreExplanation: v.string(),
 		trend: v.union(v.literal('up'), v.literal('down'), v.literal('stable')),
-		previousScore: v.optional(v.number())
+		previousScore: v.optional(v.number()),
+		isEstimated: v.optional(v.boolean())
 	})
 		.index('by_repoId', ['repoId'])
 		.index('by_repoId_calculatedAt', ['repoId', 'calculatedAt']),

@@ -171,6 +171,7 @@ export const getRepoDetails = query({
 			forksCount: latestSnapshot?.forks ?? repo.forksCount,
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			healthScore: latestScore?.healthScore ?? null,
+			isEstimated: latestScore?.isEstimated ?? false,
 			momentum,
 			scoreDelta,
 			trend: momentumResult.trend,
@@ -297,6 +298,7 @@ export const getRepoDailyBrief = query({
 		return {
 			repoName: repo.name,
 			healthScore: latestScore?.healthScore ?? null,
+			isEstimated: latestScore?.isEstimated ?? false,
 			starsLast7d: latestSnapshot?.starsLast7d ?? 0,
 			contributors14d: latestSnapshot?.contributors14d ?? 0,
 			lastSyncedAt: repo.lastSyncedAt ?? latestSnapshot?.capturedAt ?? null,

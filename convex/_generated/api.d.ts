@@ -33,6 +33,7 @@ import type * as notifications from "../notifications.js";
 import type * as npmRegistry from "../npmRegistry.js";
 import type * as orchestrator from "../orchestrator.js";
 import type * as plan from "../plan.js";
+import type * as quickScan from "../quickScan.js";
 import type * as readmeAnalyzer from "../readmeAnalyzer.js";
 import type * as repos from "../repos.js";
 import type * as scorer from "../scorer.js";
@@ -78,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   npmRegistry: typeof npmRegistry;
   orchestrator: typeof orchestrator;
   plan: typeof plan;
+  quickScan: typeof quickScan;
   readmeAnalyzer: typeof readmeAnalyzer;
   repos: typeof repos;
   scorer: typeof scorer;
