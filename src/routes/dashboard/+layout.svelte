@@ -115,55 +115,55 @@
 
 	<!-- Floating Glass Header -->
 	<div
-		class="fixed top-4 right-4 left-4 z-50 lg:top-6 lg:left-1/2 lg:w-full lg:max-w-5xl lg:-translate-x-1/2 lg:px-4"
+		class="fixed top-2 right-2 left-2 z-50 sm:top-3 sm:right-3 sm:left-3 lg:top-6 lg:left-1/2 lg:w-full lg:max-w-5xl lg:-translate-x-1/2 lg:px-4"
 	>
 		<header
-			class="flex h-14 items-center justify-between rounded-2xl border border-border bg-background/80 px-4 shadow-2xl backdrop-blur-xl lg:h-16 lg:rounded-full lg:px-8"
+			class="flex h-12 items-center justify-between rounded-xl border border-border bg-background/80 px-3 shadow-2xl backdrop-blur-xl sm:h-14 sm:rounded-2xl sm:px-4 lg:h-16 lg:rounded-full lg:px-8"
 		>
 			<a
 				href="/"
-				class="flex cursor-pointer items-center gap-2 font-mono font-bold tracking-tighter transition-opacity hover:opacity-80"
+				class="flex cursor-pointer items-center gap-1.5 font-mono font-bold tracking-tighter transition-opacity hover:opacity-80 sm:gap-2"
 			>
 				<div
-					class="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] lg:h-8 lg:w-8 lg:rounded-lg"
+					class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] sm:h-7 sm:w-7 lg:h-8 lg:w-8 lg:rounded-lg"
 				>
 					S
 				</div>
 				<span class="hidden sm:inline">ShipSense</span>
 			</a>
 
-			<nav class="flex items-center space-x-0.5 text-xs font-medium lg:space-x-1 lg:text-sm">
+			<nav class="flex items-center gap-0 text-[10px] font-medium sm:gap-0.5 sm:text-xs lg:gap-1 lg:text-sm">
 				<a
 					href="/dashboard"
-					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-muted {$page
+					class="cursor-pointer rounded-full px-1.5 py-1 transition-colors hover:bg-muted sm:px-2 sm:py-1.5 {$page
 						.url.pathname === '/dashboard'
 						? 'bg-muted text-foreground'
 						: 'text-muted-foreground hover:text-foreground'}"
 				>
 					<span class="hidden lg:inline">Overview</span>
-					<span class="lg:hidden">Ovr</span>
+					<span class="lg:hidden">{' '}</span>
 				</a>
 				<a
 					href="/dashboard/connect"
-					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-muted {$page.url.pathname.includes(
+					class="cursor-pointer rounded-full px-1.5 py-1 transition-colors hover:bg-muted sm:px-2 sm:py-1.5 {$page.url.pathname.includes(
 						'/connect'
 					)
 						? 'bg-muted text-foreground'
 						: 'text-muted-foreground hover:text-foreground'}"
 				>
 					<span class="hidden lg:inline">Connect</span>
-					<span class="lg:hidden">Con</span>
+					<span class="lg:hidden">+</span>
 				</a>
 				<a
 					href="/dashboard/settings"
-					class="cursor-pointer rounded-full px-2 py-1.5 transition-colors hover:bg-muted {$page.url.pathname.includes(
+					class="cursor-pointer rounded-full px-1.5 py-1 transition-colors hover:bg-muted sm:px-2 sm:py-1.5 {$page.url.pathname.includes(
 						'/settings'
 					)
 						? 'bg-muted text-foreground'
 						: 'text-muted-foreground hover:text-foreground'}"
 				>
 					<span class="hidden lg:inline">Settings</span>
-					<span class="lg:hidden">Set</span>
+					<span class="lg:hidden">⚙</span>
 				</a>
 			</nav>
 

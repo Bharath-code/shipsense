@@ -373,37 +373,37 @@
 		</div>
 	{/if}
 
-	<main class="relative z-10 pt-24 pb-24">
+	<main class="relative z-10 pt-20 pb-16 sm:pt-24 sm:pb-24">
 		<!-- Hero Area -->
 		<section
 			id="hero-area"
-			class="container mx-auto flex max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-24"
+			class="container mx-auto flex max-w-6xl flex-col items-center px-4 py-12 text-center sm:px-6 sm:py-16 lg:py-24"
 		>
 			<div
-				class="mb-8 inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 px-4 py-1.5"
+				class="mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 sm:mb-8 sm:px-4 sm:py-1.5"
 			>
-				<Sparkles size={14} class="text-primary" />
-				<span class="text-xs font-semibold tracking-wide text-foreground/80 lowercase"
+				<Sparkles size={12} class="text-primary sm:size-[14px]" />
+				<span class="text-[11px] font-semibold tracking-wide text-foreground/80 lowercase sm:text-xs"
 				>Beta for maintainers, indie builders, and open-source teams</span
 				>
 			</div>
 
 			<h1
-				class="mb-6 max-w-5xl text-4xl leading-[1.05] font-bold tracking-tight md:text-6xl lg:text-6xl"
+				class="mb-4 max-w-5xl text-3xl leading-[1.05] font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-6xl"
 			>
 				Know your repo's health in
-				<br class="hidden md:block" />
+				<br class="hidden sm:block" />
 				<span class="text-primary">20 seconds.</span>
 			</h1>
 
 			<p
-				class="mb-12 max-w-2xl text-lg leading-relaxed font-normal tracking-normal text-muted-foreground md:text-xl"
+				class="mb-8 max-w-2xl text-base leading-relaxed font-normal tracking-normal text-muted-foreground sm:mb-12 sm:text-lg md:text-xl"
 			>
 				Connect any GitHub repo. Every morning, get a clear snapshot of what changed, what's at risk, and the one thing you should do today.
 			</p>
 
 			<div
-				class="mx-auto flex w-full max-w-md flex-col items-center gap-4 sm:w-auto sm:max-w-none sm:flex-row sm:gap-3"
+				class="mx-auto flex w-full max-w-md flex-col items-center gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:gap-3"
 			>
 				<Button
 					href="/auth/login"
@@ -447,10 +447,10 @@
 
 			<!-- Hero Dashboard Preview -->
 			<div
-				class="group relative mt-16 w-full max-w-5xl overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl transition-shadow duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)]"
+				class="group relative mt-12 w-full max-w-5xl overflow-hidden rounded-[1.5rem] border border-border bg-card shadow-2xl transition-shadow duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)] sm:mt-16 sm:rounded-[2rem]"
 			>
 				<!-- Mini mock of the actual Brief tab -->
-				<div class="p-6 sm:p-8">
+				<div class="p-4 sm:p-6 md:p-8">
 					<!-- Mock Brief header -->
 					<div class="mb-6 flex items-center justify-between">
 						<div class="flex items-center gap-3">

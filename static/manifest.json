@@ -1,0 +1,23 @@
+{
+	"name": "ShipSense — Daily Repo Health Intelligence",
+	"short_name": "ShipSense",
+	"description": "Get your daily GitHub repo health brief in 20 seconds. Health scores, anomaly detection, shipping streaks, and AI-powered tasks.",
+	"start_url": "/dashboard",
+	"display": "standalone",
+	"background_color": "#0a0a0a",
+	"theme_color": "#0a0a0a",
+	"orientation": "portrait-primary",
+	"icons": [
+		{
+			"src": "/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	]
+}
