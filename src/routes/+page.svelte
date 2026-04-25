@@ -24,10 +24,22 @@
 		X,
 		ChevronDown,
 		ChevronUp,
-		ClipboardCheck
+		ClipboardCheck,
+		Info
 	} from 'lucide-svelte';
+	import ScoreExplainerModal from '$lib/components/ScoreExplainerModal.svelte';
 
 	let mobileMenuOpen = $state(false);
+	let scoreExplainerOpen = $state(false);
+
+	// Testimonials — replace with real quotes as users sign up
+	const testimonials = [
+		{
+			quote: "Finally, something that tells me what to work on instead of just showing me charts.",
+			author: "Coming soon — be the first testimonial",
+			role: "Open-source maintainer"
+		}
+	];
 
 	function closeMobileMenu() {
 		mobileMenuOpen = false;
@@ -64,7 +76,7 @@
 
 	const foundingMemberSpots = 50;
 	const foundingMemberClaimed = $derived(data?.foundingMemberCount ?? 0);
-	const stats = $derived(data?.stats ?? { totalUsers: 0, totalRepos: 0, totalLeads: 0, totalTracked: 0 });
+	const stats = $derived(data?.stats ?? { totalUsers: 0, totalRepos: 0, totalLeads: 0, totalInsights: 0, totalTracked: 0 });
 
 	// Email capture form state
 	let emailInput = $state('');
@@ -417,12 +429,21 @@
 				{' '}— no sign-up needed.
 			</p>
 
-			{#if stats.totalTracked > 10}
-				<p class="mt-4 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
-					<span class="flex h-2 w-2 rounded-full bg-success animate-pulse-soft" aria-hidden="true"></span>
-					Join <strong class="text-foreground">{stats.totalTracked} builders</strong> tracking their repos daily
-				</p>
-			{/if}
+			<!-- Social proof counter - always visible -->
+			<p class="mt-4 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
+				<span class="flex h-2 w-2 rounded-full bg-success animate-pulse-soft" aria-hidden="true"></span>
+				Join <strong class="text-foreground">{stats.totalTracked > 0 ? stats.totalTracked : 'builders'}</strong> {stats.totalTracked > 10 ? 'tracking their repos daily' : 'already exploring ShipSense'}
+			</p>
+
+			<!-- How scoring works link -->
+			<button
+				type="button"
+				onclick={() => scoreExplainerOpen = true}
+				class="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-primary"
+			>
+				<Info size={12} />
+				How is the health score calculated?
+			</button>
 
 			<!-- Hero Dashboard Preview -->
 			<div
@@ -476,26 +497,29 @@
 		</section>
 
 		<!-- Social Proof Stats -->
-		{#if stats.totalTracked > 0}
-			<section class="container mx-auto max-w-6xl px-6 py-12" style="content-visibility: auto;">
-				<div class="flex flex-col items-center justify-center gap-8 sm:flex-row sm:gap-16">
-					<div class="text-center">
-						<p class="text-4xl font-black text-primary">{stats.totalRepos}</p>
-						<p class="mt-2 text-sm text-muted-foreground">repos tracked</p>
-					</div>
-					<div class="hidden h-12 w-px bg-border sm:block" aria-hidden="true"></div>
-					<div class="text-center">
-						<p class="text-4xl font-black text-success">{stats.totalUsers}</p>
-						<p class="mt-2 text-sm text-muted-foreground">builders tracking daily</p>
-					</div>
-					<div class="hidden h-12 w-px bg-border sm:block" aria-hidden="true"></div>
-					<div class="text-center">
-						<p class="text-4xl font-black text-warning">{foundingMemberClaimed}/{foundingMemberSpots}</p>
-						<p class="mt-2 text-sm text-muted-foreground">founding spots claimed</p>
-					</div>
+		<section class="container mx-auto max-w-6xl px-6 py-12" style="content-visibility: auto;">
+			<div class="flex flex-col items-center justify-center gap-8 sm:flex-row sm:gap-12">
+				<div class="text-center">
+					<p class="text-4xl font-black text-primary">{stats.totalRepos}</p>
+					<p class="mt-2 text-sm text-muted-foreground">repos tracked</p>
 				</div>
-			</section>
-		{/if}
+				<div class="hidden h-12 w-px bg-border sm:block" aria-hidden="true"></div>
+				<div class="text-center">
+					<p class="text-4xl font-black text-success">{stats.totalUsers}</p>
+					<p class="mt-2 text-sm text-muted-foreground">builders</p>
+				</div>
+				<div class="hidden h-12 w-px bg-border sm:block" aria-hidden="true"></div>
+				<div class="text-center">
+					<p class="text-4xl font-black text-warning">{stats.totalInsights}</p>
+					<p class="mt-2 text-sm text-muted-foreground">insights generated</p>
+				</div>
+				<div class="hidden h-12 w-px bg-border sm:block" aria-hidden="true"></div>
+				<div class="text-center">
+					<p class="text-4xl font-black text-primary">{stats.totalLeads > 0 ? stats.totalLeads : 0}</p>
+					<p class="mt-2 text-sm text-muted-foreground">reports sent</p>
+				</div>
+			</div>
+		</section>
 
 		<!-- Free Health Report (Email Capture) -->
 		<section class="container mx-auto max-w-6xl px-6 py-16" style="content-visibility: auto;">
@@ -720,6 +744,46 @@
 			</div>
 		</section>
 
+		<!-- Testimonials / Social Proof -->
+		<section class="container mx-auto max-w-6xl px-6 py-24" style="content-visibility: auto;">
+			<div class="mb-12 text-center">
+				<h2 class="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
+					Built for people who ship
+				</h2>
+				<p class="mx-auto max-w-2xl text-lg text-muted-foreground">
+					Early feedback from maintainers and indie builders.
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+				{#each testimonials as t}
+					<div class="rounded-2xl border border-border bg-card p-6">
+						<p class="mb-4 text-sm leading-relaxed text-foreground">"{t.quote}"</p>
+						<div class="flex items-center gap-3">
+							<div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+								{t.author.charAt(0)}
+							</div>
+							<div>
+								<p class="text-sm font-semibold text-foreground">{t.author}</p>
+								<p class="text-xs text-muted-foreground">{t.role}</p>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
+
+			<!-- CTA for testimonials -->
+			<div class="mt-8 text-center">
+				<p class="text-sm text-muted-foreground">
+					Using ShipSense?{' '}
+					<a href="mailto:hello@shipsense.ai?subject=ShipSense Testimonial" class="text-primary underline decoration-primary/30 transition-colors hover:decoration-primary">
+						Share your experience
+					</a>
+					{' '}— get 1 month free.
+				</p>
+			</div>
+		</section>
+
 		<!-- Vision Section -->
 		<section
 			id="vision"
@@ -802,7 +866,7 @@
 							<div class="h-1.5 w-3 rounded-full {i < foundingMemberClaimed ? 'bg-warning' : 'bg-muted'}"></div>
 						{/each}
 					</div>
-					<span class="text-xs font-semibold text-warning">{foundingMemberClaimed}/{foundingMemberSpots} claimed</span>
+					<span class="text-xs font-semibold text-warning">{foundingMemberSpots - foundingMemberClaimed} spots left</span>
 				</div>
 			</div>
 
@@ -1176,5 +1240,8 @@
 				</Button>
 			</div>
 		{/if}
+
+		<!-- Score Explainer Modal -->
+		<ScoreExplainerModal open={scoreExplainerOpen} />
 	</main>
 </div>

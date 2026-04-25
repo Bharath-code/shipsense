@@ -63,6 +63,7 @@
 		BadgeCheck
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import TodayView from '$lib/components/dashboard/TodayView.svelte';
 
 	const repoTabs = [
 		{ value: 'overview', label: 'Brief' },
@@ -230,6 +231,7 @@
 		repoId: repoId as any
 	}));
 	const planQuery = useQuery(api.billing.getUserPlan, () => ({}));
+	const profileQuery = useQuery(api.users.getMyProfile, () => ({}));
 
 	let repo = $derived(repoQuery.data);
 	let isLoading = $derived(repoQuery.isLoading);
@@ -240,6 +242,8 @@
 	let referrers = $derived(referrersQuery.data);
 	let funnel = $derived(funnelQuery.data);
 	let userPlan = $derived(planQuery.data ?? 'free');
+	let userProfile = $derived(profileQuery.data);
+	let showFullDashboard = $derived(userProfile?.showFullDashboard ?? false);
 	let primaryTask = $derived(tasks[0] ?? null);
 	let groupedTasks = $derived.by(() => {
 		const secondary = tasks.slice(1);
@@ -482,6 +486,10 @@
 			keepFocus: true
 		});
 	}
+
+	async function enableFullDashboard() {
+		await client.mutation(api.todayView.toggleFullDashboard, { showFull: true });
+	}
 </script>
 
 <svelte:head>
@@ -523,8 +531,7 @@
 					{isDisconnecting ? LABELS.DISCONNECTING : LABELS.DISCONNECT}
 				</Button>
 			</div>
-		{/if}
-	</div>
+	{/if}
 
 	{#if isLoading}
 		<div class="space-y-6">
@@ -715,6 +722,10 @@
 			</div>
 		</div>
 
+		<!-- Today View: simplified dashboard for new users -->
+		{#if !showFullDashboard}
+			<TodayView repoId={repoId as string} onExplore={enableFullDashboard} />
+		{:else}
 		<div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-2">
 			<div
 				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white/[0.03] to-transparent"
@@ -1429,8 +1440,10 @@
 			</div>
 		{/if}
 	{/if}
+	{/if}
+</div>
 
-	{#if GrowthCardModal}
+{#if GrowthCardModal}
 		{@const GrowthCard = GrowthCardModal}
 		<GrowthCard repoId={repoId as string} bind:open={showGrowthCard} />
 	{/if}

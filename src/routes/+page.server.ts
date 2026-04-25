@@ -5,7 +5,7 @@ import { PUBLIC_CONVEX_URL } from '$env/static/public';
 
 export const load: PageServerLoad = async () => {
 	let foundingMemberCount = 0;
-	let stats = { totalUsers: 0, totalRepos: 0, totalLeads: 0, totalTracked: 0 };
+	let stats = { totalUsers: 0, totalRepos: 0, totalLeads: 0, totalInsights: 0, totalTracked: 0 };
 
 	try {
 		const client = new ConvexHttpClient(PUBLIC_CONVEX_URL);

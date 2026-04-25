@@ -40,6 +40,7 @@ import type * as settings from "../settings.js";
 import type * as sharePrompts from "../sharePrompts.js";
 import type * as streakTracker from "../streakTracker.js";
 import type * as taskGenerator from "../taskGenerator.js";
+import type * as todayView from "../todayView.js";
 import type * as trafficIntelligence from "../trafficIntelligence.js";
 import type * as users from "../users.js";
 import type * as watchlist from "../watchlist.js";
@@ -83,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   sharePrompts: typeof sharePrompts;
   streakTracker: typeof streakTracker;
   taskGenerator: typeof taskGenerator;
+  todayView: typeof todayView;
   trafficIntelligence: typeof trafficIntelligence;
   users: typeof users;
   watchlist: typeof watchlist;

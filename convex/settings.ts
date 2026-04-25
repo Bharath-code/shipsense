@@ -33,6 +33,7 @@ export const getMyProfile = query({
 			dodoCustomerId: profile.dodoCustomerId ?? null,
 			dodoSubscriptionId: profile.dodoSubscriptionId ?? null,
 			emailReportsEnabled: profile.emailReportsEnabled,
+			showFullDashboard: profile.showFullDashboard ?? false,
 			githubUsername: profile.githubUsername,
 			activeRepoCount: repoCount.length
 		};

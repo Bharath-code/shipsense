@@ -21,7 +21,9 @@
 		Check,
 		Sparkles,
 		Zap,
-		Rocket
+		Rocket,
+		Eye,
+		LayoutDashboard
 	} from 'lucide-svelte';
 
 	const client = useConvexClient();
@@ -32,6 +34,7 @@
 	let loading = $state(false);
 	let upgrading = $state<string | null>(null);
 	let showPlanPicker = $state(false);
+	let dashboardViewLoading = $state(false);
 
 	// Debug: log what we actually get
 	$effect(() => {
@@ -73,6 +76,18 @@
 			console.error('Failed to update preference:', err);
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function handleDashboardViewToggle(checked: boolean | string) {
+		const showFull = Boolean(checked);
+		dashboardViewLoading = true;
+		try {
+			await client.mutation(api.todayView.toggleFullDashboard, { showFull });
+		} catch (err) {
+			console.error('Failed to update dashboard view preference:', err);
+		} finally {
+			dashboardViewLoading = false;
 		}
 	}
 
@@ -332,6 +347,45 @@
 					<span>Last report sent: {lastReportDate}</span>
 				</div>
 			{/if}
+		</CardContent>
+	</Card>
+
+	<!-- Dashboard View -->
+	<Card class="border-white/10 bg-white/5">
+		<CardHeader>
+			<div class="flex items-center gap-3">
+				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+					<LayoutDashboard class="h-5 w-5 text-primary" />
+				</div>
+				<div>
+					<CardTitle>Dashboard View</CardTitle>
+					<CardDescription>Choose how you see your repo data</CardDescription>
+				</div>
+			</div>
+		</CardHeader>
+		<CardContent class="space-y-6">
+			<div class="flex items-center justify-between">
+				<div class="space-y-1">
+					<p class="text-sm font-medium">Full Dashboard</p>
+					<p class="text-xs text-muted-foreground">
+						Show all tabs (Brief, Growth, Health, Tasks, Share) instead of the simplified Today view
+					</p>
+				</div>
+				<div class="flex items-center gap-3">
+					{#if dashboardViewLoading || profileQuery.isLoading}
+						<Loader2 class="h-4 w-4 animate-spin text-muted-foreground" />
+					{:else}
+						<div class="flex items-center gap-2">
+							<Checkbox
+								id="full-dashboard"
+								checked={profileQuery.data?.showFullDashboard ?? false}
+								onCheckedChange={handleDashboardViewToggle}
+							/>
+							<label for="full-dashboard" class="cursor-pointer text-sm font-normal">Enabled</label>
+						</div>
+					{/if}
+				</div>
+			</div>
 		</CardContent>
 	</Card>
 

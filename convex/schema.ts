@@ -16,6 +16,7 @@ export default defineSchema({
 		dodoCustomerId: v.optional(v.string()),
 		dodoSubscriptionId: v.optional(v.string()),
 		emailReportsEnabled: v.boolean(),
+		showFullDashboard: v.optional(v.boolean()),
 		lastReportSentAt: v.optional(v.number()),
 		lastDailyDigestSentAt: v.optional(v.number()),
 		investorReportsUsedThisMonth: v.optional(v.number()),

@@ -22,16 +22,18 @@ export const getFoundingMemberCount = query({
 export const getPlatformStats = query({
 	args: {},
 	handler: async (ctx) => {
-		const [userCount, repoCount, leadCount] = await Promise.all([
+		const [userCount, repoCount, leadCount, insightCount] = await Promise.all([
 			ctx.db.query('userProfiles').collect().then((rows) => rows.length),
 			ctx.db.query('repos').collect().then((rows) => rows.length),
-			ctx.db.query('emailLeads').collect().then((rows) => rows.length)
+			ctx.db.query('emailLeads').collect().then((rows) => rows.length),
+			ctx.db.query('repoInsights').collect().then((rows) => rows.length)
 		]);
 
 		return {
 			totalUsers: userCount,
 			totalRepos: repoCount,
 			totalLeads: leadCount,
+			totalInsights: insightCount,
 			totalTracked: userCount + leadCount // Combined reach
 		};
 	}
