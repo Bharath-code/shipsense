@@ -377,7 +377,7 @@
 		<!-- Hero Area -->
 		<section
 			id="hero-area"
-			class="container mx-auto flex max-w-6xl flex-col items-center px-4 py-12 text-center sm:px-6 sm:py-16 lg:py-24"
+			class="container mx-auto flex max-w-6xl flex-col items-center px-4 py-12 text-center sm:px-6 sm:py-16 lg:py-24 animate-fade-in-up"
 		>
 			<div
 				class="mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 sm:mb-8 sm:px-4 sm:py-1.5"
@@ -497,7 +497,7 @@
 		</section>
 
 		<!-- Social Proof Stats -->
-		<section class="container mx-auto max-w-6xl px-6 py-12" style="content-visibility: auto;">
+		<section class="container mx-auto max-w-6xl px-6 py-12 animate-fade-in-up" style="content-visibility: auto;">
 			<div class="flex flex-col items-center justify-center gap-8 sm:flex-row sm:gap-12">
 				<div class="text-center">
 					<p class="text-4xl font-black text-primary">{stats.totalRepos}</p>
@@ -522,7 +522,7 @@
 		</section>
 
 		<!-- Free Health Report (Email Capture) -->
-		<section class="container mx-auto max-w-6xl px-6 py-16" style="content-visibility: auto;">
+		<section class="container mx-auto max-w-6xl px-6 py-16 animate-fade-in-up" style="content-visibility: auto;">
 			<div class="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-primary/20 bg-primary/5 p-8 text-center sm:p-10">
 				<div class="mb-4 flex items-center justify-center gap-2">
 					<Sparkles size={16} class="text-primary" />
@@ -588,7 +588,7 @@
 		</section>
 
 		<!-- Maintainer's Weekly Checklist (Secondary Lead Magnet) -->
-		<section class="relative container mx-auto max-w-6xl px-6 py-16" style="content-visibility: auto;">
+		<section class="relative container mx-auto max-w-6xl px-6 py-16 animate-fade-in-up" style="content-visibility: auto;">
 			<div class="mx-auto max-w-4xl rounded-3xl border border-border bg-gradient-to-br from-card to-background/50 p-8 md:p-12">
 				<div class="grid gap-8 md:grid-cols-2 md:gap-12">
 					<div>
@@ -641,7 +641,7 @@
 		</section>
 
 		<!-- Capabilities Section -->
-		<section id="capabilities" class="relative container mx-auto max-w-6xl px-6 py-24" style="content-visibility: auto;">
+		<section id="capabilities" class="relative container mx-auto max-w-6xl px-6 py-24 animate-fade-in-up" style="content-visibility: auto;">
 			<div class="mb-16 text-center">
 				<h2 class="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
 					Six signals. One page. Zero guesswork.
@@ -745,7 +745,7 @@
 		</section>
 
 		<!-- Testimonials / Social Proof -->
-		<section class="container mx-auto max-w-6xl px-6 py-24" style="content-visibility: auto;">
+		<section class="container mx-auto max-w-6xl px-6 py-24 animate-fade-in-up" style="content-visibility: auto;">
 			<div class="mb-12 text-center">
 				<h2 class="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
 					Built for people who ship
@@ -787,7 +787,7 @@
 		<!-- Vision Section -->
 		<section
 			id="vision"
-			class="container mx-auto max-w-6xl px-6 py-24"
+			class="container mx-auto max-w-6xl px-6 py-24 animate-fade-in-up"
 			style="content-visibility: auto;"
 		>
 			<div class="mx-auto max-w-3xl text-center">
@@ -818,7 +818,7 @@
 		<!-- Pricing Section -->
 		<section
 			id="pricing"
-			class="container mx-auto max-w-6xl px-6 py-24"
+			class="container mx-auto max-w-6xl px-6 py-24 animate-fade-in-up"
 			style="content-visibility: auto;"
 		>
 			<div class="mb-16 text-center">
@@ -1184,7 +1184,7 @@
 		</script>
 
 		<!-- Final CTA -->
-		<section class="container mx-auto max-w-6xl px-6 py-24" style="content-visibility: auto;">
+		<section class="container mx-auto max-w-6xl px-6 py-24 animate-fade-in-up" style="content-visibility: auto;">
 			<div
 				class="relative flex flex-col items-center overflow-hidden rounded-[3rem] bg-foreground p-12 text-center text-background shadow-2xl md:p-20"
 			>
