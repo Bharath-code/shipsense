@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import { Star, TrendingUp, Users, GitPullRequest, Plus, Trash2, Eye } from 'lucide-svelte';
+	import { Star, TrendingUp, Users, GitPullRequest, Plus, Trash2, Eye, ArrowUpRight, ArrowDownRight } from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+
+	let { repoId } = $props<{ repoId: any }>();
 
 	let showAddForm = $state(false);
 	let watchOwner = $state('');
@@ -13,9 +15,11 @@
 
 	const watchlistQuery = useQuery(api.watchlist.getMyWatchlist, {});
 	const limitQuery = useQuery(api.watchlist.getWatchlistLimit, {});
+	const userRepoQuery = useQuery(api.dashboard.getRepoDetails, { repoId });
 
 	let watchlist = $derived(watchlistQuery.data ?? []);
 	let limit = $derived(limitQuery.data ?? { limit: 0, used: 0 });
+	let userRepo = $derived(userRepoQuery.data);
 	let isLoading = $derived(watchlistQuery.isLoading);
 
 	function openForm() {
@@ -152,24 +156,43 @@
 									<Star class="h-3.5 w-3.5 text-warning" />
 									{formatStars(entry.starsCount)} total
 								</span>
-								{#if entry.starsLast7d && entry.starsLast7d > 0}
-									<span class="flex items-center gap-1.5 rounded-full bg-success/10 px-2 py-0.5 text-success">
-										<TrendingUp class="h-3 w-3" />
-										+{entry.starsLast7d} this week
-									</span>
+
+								{#if entry.starsLast7d !== undefined}
+									<div class="flex items-center gap-1.5">
+										<span class="flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-0.5 border border-white/10">
+											<TrendingUp class="h-3 w-3 {entry.starsLast7d > 0 ? 'text-success' : 'text-muted-foreground'}" />
+											<span class={entry.starsLast7d > 0 ? 'text-success' : 'text-muted-foreground'}>
+												+{entry.starsLast7d}
+											</span>
+										</span>
+										{#if userRepo}
+											<span class="flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold {entry.starsLast7d > (userRepo.starsLast7d ?? 0) ? 'text-success' : 'text-destructive'}">
+												{#if entry.starsLast7d > (userRepo.starsLast7d ?? 0)}
+													<ArrowUpRight class="h-3 w-3" />
+													Winning
+												{:else}
+												<ArrowDownRight class="h-3 w-3" />
+												Lagging
+												{/if}
+											</span>
+										{/if}
+									</div>
 								{/if}
+
 								{#if entry.contributors14d}
 									<span class="flex items-center gap-1.5">
 										<Users class="h-3.5 w-3.5" />
 										{entry.contributors14d} active
 									</span>
 								{/if}
+
 								{#if entry.prsMerged7d}
 									<span class="flex items-center gap-1.5">
 										<GitPullRequest class="h-3.5 w-3.5" />
 										{entry.prsMerged7d} merged
 									</span>
 								{/if}
+
 								{#if !entry.lastSyncedAt}
 									<span class="text-muted-foreground/60">Syncing...</span>
 								{/if}
@@ -199,7 +222,7 @@
 					placeholder="owner/repo or https://github.com/..."
 					bind:value={watchOwner}
 					onkeydown={(e) => e.key === 'Enter' && addRepo()}
-					class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+					class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
 					aria-label="GitHub repository URL"
 				/>
 				<div class="flex gap-2">

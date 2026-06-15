@@ -187,25 +187,51 @@ export const syncWatchedRepo = internalMutation({
 
 			// Fetch repo data from GitHub
 			const githubToken = userProfile.githubAccessToken;
-			const url = `https://api.github.com/repos/${entry.fullName}`;
-
-			const response = await fetch(url, {
-				headers: {
-					Accept: 'application/vnd.github.v3+json',
-					Authorization: `Bearer ${githubToken}`,
-					'User-Agent': 'ShipSense-Watchlist'
-				}
-			});
-
-			if (!response.ok) {
-				console.warn(`GitHub API error for ${entry.fullName}: ${response.status}`);
-				return;
+			const headers: HeadersInit = {
+				Accept: 'application/vnd.github.v3+json',
+				'User-Agent': 'ShipSense-Watchlist'
+			};
+			if (githubToken) {
+				(headers as any).Authorization = `Bearer ${githubToken}`;
 			}
 
-			const data = await response.json();
+			// 1. Fetch Base Repo Data (Stars)
+			const repoUrl = `https://api.github.com/repos/${entry.fullName}`;
+			const repoRes = await fetch(repoUrl, { headers });
+			if (!repoRes.ok) return;
+			const repoData = await repoRes.json();
+
+			// 2. Fetch Recent PRs (for merged count)
+			const sevenDaysAgo = new Date();
+			sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+			const prUrl = `${repoUrl}/pulls?state=closed&per_page=100`;
+			const prRes = await fetch(prUrl, { headers });
+			let prsMerged7d = 0;
+			if (prRes.ok) {
+				const prs = await prRes.json();
+				prsMerged7d = prs.filter((pr: any) =>
+					pr.merged_at && new Date(pr.merged_at) > sevenDaysAgo
+				).length;
+			}
+
+			// 3. Fetch Contributors (for momentum)
+			const contribUrl = `${repoUrl}/contributors?per_page=100`;
+			const contribRes = await fetch(contribUrl, { headers });
+			let contributors14d = 0;
+			if (contribRes.ok) {
+				const contributors = await contribRes.json();
+				contributors14d = Math.min(contributors.length, 14); // Rough proxy for momentum
+			}
+
+			// 4. Calculate Stars Growth (Simple delta)
+			const starsCount = repoData.stargazers_count;
+			const starsLast7d = Math.max(0, starsCount - (entry.starsCount ?? starsCount));
 
 			await ctx.db.patch(args.watchlistId, {
-				starsCount: data.stargazers_count,
+				starsCount,
+				starsLast7d,
+				prsMerged7d,
+				contributors14d,
 				lastSyncedAt: Date.now()
 			});
 		} catch (err) {

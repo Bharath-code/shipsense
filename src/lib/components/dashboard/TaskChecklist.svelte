@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import { ListTodo, CheckCircle2, Circle } from 'lucide-svelte';
+	import { ListTodo, CheckCircle2, Circle, Sparkles, MessageSquare } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
 	import { LABELS } from '$lib/constants/labels';
+	import IssueReplyModal from '$lib/components/dashboard/IssueReplyModal.svelte';
 
 	let { repoId } = $props<{ repoId: string }>();
 
@@ -15,6 +16,57 @@
 	let isLoading = $derived(tasksQuery.isLoading);
 	let primaryTask = $derived(tasks[0] ?? null);
 	let secondaryTasks = $derived(tasks.slice(1));
+
+	// AI Draft state
+	let isGeneratingDraft = $state(false);
+	let activeDraft = $state<{
+		draft: string;
+		issueTitle: string;
+		issueNumber: number;
+		taskId: string;
+	} | null>(null);
+	let showModal = $state(false);
+
+	function handleGenerateDraft(task: any) {
+		if (task.taskType !== 'issue') return;
+		isGeneratingDraft = true;
+
+		client.action(api.issueReplyDraft.generateIssueReplyDraft, {
+			repoId: repoId as any,
+			issueNumber: task.issueNumber
+		}).then(async (res) => {
+			await client.mutation(api.issueReplyDraft.storeIssueDraft, {
+				taskId: task._id,
+				draft: res.draft,
+				issueTitle: res.issueTitle,
+				issueNumber: res.issueNumber
+			});
+
+			activeDraft = {
+				draft: res.draft,
+				issueTitle: res.issueTitle,
+				issueNumber: res.issueNumber,
+				taskId: task._id
+			};
+			showModal = true;
+			isGeneratingDraft = false;
+		}).catch((err) => {
+			console.error(err);
+			isGeneratingDraft = false;
+			alert('Failed to generate draft. Please try again.');
+		});
+	}
+
+	function handleCompleteDraft() {
+		showModal = false;
+		activeDraft = null;
+		tasksQuery.refresh();
+	}
+
+	function closeModal() {
+		showModal = false;
+		activeDraft = null;
+	}
 
 	function sourceLabel(source: string | null | undefined): string {
 		if (source === 'anomaly') return 'Anomaly';
@@ -36,7 +88,7 @@
 			<div>
 				<h3 class="text-xl font-bold text-foreground">{LABELS.PRIORITY_DELTA}</h3>
 				<p class="text-xs font-medium tracking-tight text-muted-foreground">
-					{LABELS.DETERMININISTIC_STEPS}
+					{LABELS.DETERMINISTIC_STEPS}
 				</p>
 			</div>
 		</div>
@@ -69,23 +121,41 @@
 				{#if primaryTask}
 					<div
 						class="rounded-3xl border border-primary/20 bg-primary/5 p-5 shadow-[0_0_20px_rgba(var(--primary-rgb),0.08)]"
-						transition:fade={{ duration: 200 }}
 					>
 						<div class="mb-3 flex items-center justify-between gap-3">
-							<div>
-								<p class="text-[10px] font-black tracking-[0.2em] text-primary uppercase">
-									Do This Today
-								</p>
-								<p class="mt-1 text-sm font-medium text-foreground">{primaryTask.taskText}</p>
+							<div class="min-w-0">
+								<div class="flex items-center gap-2">
+									<p class="text-sm font-medium text-foreground">{primaryTask.taskText}</p>
+									<button
+										type="button"
+										onclick={() =>
+											client.mutation(api.dashboard.completeTask, { taskId: primaryTask._id })
+										}
+										class="shrink-0 transition-transform active:scale-95"
+										aria-label="Mark primary task as complete"
+									>
+										<Circle class="h-6 w-6 text-primary/50 transition-colors hover:text-success" />
+									</button>
+								</div>
 							</div>
-							<button
-								class="shrink-0 transition-transform active:scale-95"
-								aria-label="Mark primary task as complete"
-								onclick={() =>
-									client.mutation(api.dashboard.completeTask, { taskId: primaryTask._id })}
-							>
-								<Circle class="h-6 w-6 text-primary/50 transition-colors hover:text-success" />
-							</button>
+
+							<div class="flex items-center gap-2">
+								{#if primaryTask.taskType === 'issue'}
+									<button
+										type="button"
+										disabled={isGeneratingDraft}
+										onclick={() => handleGenerateDraft(primaryTask)}
+										class="flex h-8 items-center gap-1.5 rounded-full bg-primary/10 px-3 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+									>
+										{#if isGeneratingDraft}
+											<div class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+										{:else}
+											<Sparkles class="h-3.5 w-3.5" />
+										</div>
+										Draft Reply
+									</button>
+								{/if}
+							</div>
 						</div>
 
 						<div class="flex flex-wrap items-center gap-2">
@@ -96,7 +166,7 @@
 								Priority {primaryTask.priority}
 							</span>
 							{#if primaryTask.impactScore}
-								<span class="flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[10px] font-black tracking-widest text-success uppercase shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+								<span class="ml-auto flex items-center gap-1 rounded-full border border-success/20 bg-success/5 px-2 py-0.5 text-[9px] font-black tracking-widest text-success uppercase shadow-[0_0_15px_rgba(34,197,94,0.15)]">
 									+{primaryTask.impactScore} Health
 								</span>
 							{/if}
@@ -121,7 +191,6 @@
 				{#each secondaryTasks as task (task._id)}
 					<div
 						class="group flex items-start gap-4 rounded-3xl border bg-muted/50 p-5 transition-all duration-300 hover:bg-muted"
-						transition:fade={{ duration: 200 }}
 					>
 						<button
 							class="mt-1 shrink-0 transition-transform active:scale-95"
@@ -134,9 +203,26 @@
 						</button>
 
 						<div class="flex-1 space-y-3">
-							<p class="text-sm leading-relaxed font-medium text-foreground">
-								{task.taskText}
-							</p>
+							<div class="flex items-center justify-between gap-3">
+								<p class="text-sm leading-relaxed font-medium text-foreground">
+									{task.taskText}
+								</p>
+								{#if task.taskType === 'issue'}
+									<button
+										type="button"
+										disabled={isGeneratingDraft}
+										onclick={() => handleGenerateDraft(task)}
+										class="flex h-7 items-center gap-1.5 rounded-full bg-primary/10 px-2 text-[10px] font-bold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+									>
+										{#if isGeneratingDraft}
+											<div class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+										{:else}
+											<Sparkles class="h-3 w-3" />
+										</div>
+										Draft
+									</button>
+								{/if}
+							</div>
 
 							<div class="flex flex-wrap items-center gap-3">
 								<span
@@ -166,7 +252,7 @@
 										CRITICAL
 									</span>
 								{/if}
-								
+
 								{#if task.impactScore}
 									<span class="ml-auto flex items-center gap-1 rounded-full border border-success/20 bg-success/5 px-2 py-0.5 text-[9px] font-black tracking-widest text-success uppercase">
 										+{task.impactScore} Health
@@ -176,7 +262,7 @@
 
 							{#if task.expectedImpact}
 								<p class="text-xs leading-relaxed text-muted-foreground">
-									{task.expectedImpact}
+									Expected impact: {task.expectedImpact}
 								</p>
 							{/if}
 						</div>
@@ -185,4 +271,12 @@
 			</div>
 		{/if}
 	</div>
+
+	{#if showModal && activeDraft}
+		<IssueReplyModal
+			{...activeDraft}
+			onComplete={handleCompleteDraft}
+			onClose={closeModal}
+		/>
+	{/if}
 </div>
