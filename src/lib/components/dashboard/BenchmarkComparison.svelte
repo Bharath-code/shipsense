@@ -28,12 +28,12 @@
 		if (p >= 85) return 'bg-amber-400';
 		if (p >= 65) return 'bg-emerald-400';
 		if (p >= 35) return 'bg-blue-400';
-		return 'bg-white/30';
+		return 'bg-foreground/30';
 	}
 </script>
 
 {#if data}
-	<div class="rounded-[2rem] border border-white/10 glass-panel p-6 shadow-xl">
+	<div class="rounded-lg border border-border glass-panel p-6">
 		<div class="mb-5 flex flex-wrap items-start justify-between gap-4">
 			<div>
 				<div class="mb-2 flex items-center gap-2">
@@ -57,18 +57,18 @@
 		</div>
 
 		<!-- Overall score comparison -->
-		<div class="mb-6 rounded-2xl border border-white/5 bg-white/[0.03] p-4">
+		<div class="mb-6 rounded-2xl border border-border bg-card p-4">
 			<div class="mb-3 flex items-center justify-between">
 				<span class="text-sm font-medium text-foreground">Overall Health Score</span>
 				<span class="text-sm font-black {percentileTone(data.overall.percentile)}">
 					{data.overall.percentile}th percentile
 				</span>
 			</div>
-			<div class="relative h-2 overflow-hidden rounded-full bg-white/5">
-				<div class="absolute inset-y-0 left-0 w-1/4 rounded-full bg-white/10"></div>
-				<div class="absolute inset-y-0 left-1/4 w-1/4 rounded-full bg-white/15"></div>
-				<div class="absolute inset-y-0 left-2/4 w-1/4 rounded-full bg-white/20"></div>
-				<div class="absolute inset-y-0 left-3/4 w-1/4 rounded-full bg-white/25"></div>
+			<div class="relative h-2 overflow-hidden rounded-full bg-muted">
+				<div class="absolute inset-y-0 left-0 w-1/4 rounded-full bg-foreground/10"></div>
+				<div class="absolute inset-y-0 left-1/4 w-1/4 rounded-full bg-foreground/15"></div>
+				<div class="absolute inset-y-0 left-2/4 w-1/4 rounded-full bg-foreground/20"></div>
+				<div class="absolute inset-y-0 left-3/4 w-1/4 rounded-full bg-foreground/25"></div>
 				<div
 					class="absolute inset-y-0 left-0 rounded-full transition-all duration-700 {percentileBarColor(data.overall.percentile)}"
 					style="width: {barWidth(data.overall.score, data.overall.p90)}"
@@ -100,7 +100,7 @@
 							</span>
 						</div>
 					</div>
-					<div class="relative h-1.5 overflow-hidden rounded-full bg-white/5">
+					<div class="relative h-1.5 overflow-hidden rounded-full bg-muted">
 						<div
 							class="absolute inset-y-0 left-0 rounded-full transition-all duration-700 {percentileBarColor(comp.percentile)}"
 							style="width: {barWidth(comp.score, comp.p90)}"

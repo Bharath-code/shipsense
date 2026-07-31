@@ -112,10 +112,10 @@
 	</div>
 
 	{#if isLoading}
-		<div class="h-24 animate-pulse rounded-2xl bg-white/5"></div>
+		<div class="h-24 animate-pulse rounded-2xl bg-muted"></div>
 	{:else if watchlist.length === 0}
 		<!-- Empty state -->
-		<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
+		<div class="rounded-2xl border border-border bg-card p-8 text-center">
 			<Eye class="mx-auto h-10 w-10 text-muted-foreground/40" />
 			<p class="mt-3 text-sm font-semibold text-foreground">No repos being watched yet</p>
 			<p class="mt-1 text-sm text-muted-foreground">
@@ -136,7 +136,7 @@
 		<!-- Watchlist cards -->
 		<div class="space-y-3">
 			{#each watchlist as entry}
-				<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+				<div class="rounded-2xl border border-border bg-card p-4">
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0">
 							<div class="flex items-center gap-2">
@@ -159,7 +159,7 @@
 
 								{#if entry.starsLast7d !== undefined}
 									<div class="flex items-center gap-1.5">
-										<span class="flex items-center gap-1.5 rounded-full bg-white/5 px-2 py-0.5 border border-white/10">
+										<span class="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 border border-border">
 											<TrendingUp class="h-3 w-3 {entry.starsLast7d > 0 ? 'text-success' : 'text-muted-foreground'}" />
 											<span class={entry.starsLast7d > 0 ? 'text-success' : 'text-muted-foreground'}>
 												+{entry.starsLast7d}
@@ -222,7 +222,7 @@
 					placeholder="owner/repo or https://github.com/..."
 					bind:value={watchOwner}
 					onkeydown={(e) => e.key === 'Enter' && addRepo()}
-					class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
+					class="flex-1 rounded-xl border border-border bg-muted px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
 					aria-label="GitHub repository URL"
 				/>
 				<div class="flex gap-2">
@@ -236,7 +236,7 @@
 					<button
 						type="button"
 						onclick={closeForm}
-						class="h-11 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-muted-foreground transition-colors hover:bg-white/10"
+						class="h-11 rounded-xl border border-border bg-muted px-4 text-sm text-muted-foreground transition-colors hover:bg-foreground/10"
 					>
 						Cancel
 					</button>

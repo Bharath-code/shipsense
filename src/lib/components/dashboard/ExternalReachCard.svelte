@@ -13,7 +13,7 @@
 			case 'weak':
 				return { text: 'Weak', cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' };
 			default:
-				return { text: 'None', cls: 'text-muted-foreground bg-white/5 border-white/10' };
+				return { text: 'None', cls: 'text-muted-foreground bg-muted border-border' };
 		}
 	}
 
@@ -50,7 +50,7 @@
 	}
 </script>
 
-<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+<div class="rounded-lg border border-border bg-card p-5">
 	<div class="mb-3 flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<Globe class="h-4 w-4 text-muted-foreground" />
@@ -59,7 +59,7 @@
 		{#if onViewAll}
 			<button
 				type="button"
-				class="rounded-lg px-3 py-2 text-xs font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+				class="rounded-lg px-3 py-2 text-xs font-medium text-primary hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
 				style="min-height: 44px;"
 				onclick={onViewAll}
 			>

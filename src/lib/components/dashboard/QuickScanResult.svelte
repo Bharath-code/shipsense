@@ -15,7 +15,7 @@
 	}
 </script>
 
-<div class="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
+<div class="relative overflow-hidden rounded-lg border border-border bg-card p-6">
 	<!-- Subtle animated gradient behind -->
 	<div
 		class="pointer-events-none absolute inset-0 opacity-20"
@@ -52,7 +52,7 @@
 
 	<!-- Progress dots -->
 	<div class="relative mt-5 flex items-center gap-3">
-		<div class="h-1.5 flex-1 overflow-hidden rounded-full bg-white/5">
+		<div class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
 			<div
 				class="h-full w-2/3 rounded-full bg-primary/60"
 				style="animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"

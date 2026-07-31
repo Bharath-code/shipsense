@@ -77,11 +77,11 @@
 	}
 </script>
 
-<div class="group flex flex-col rounded-[2rem] border glass-panel p-8 shadow-2xl">
+<div class="group flex flex-col rounded-lg border glass-panel p-8">
 	<div class="mb-8 flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<div
-				class="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]"
+				class="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"
 			>
 				<ListTodo class="h-6 w-6" />
 			</div>
@@ -120,7 +120,7 @@
 			<div class="space-y-4">
 				{#if primaryTask}
 					<div
-						class="rounded-3xl border border-primary/20 bg-primary/5 p-5 shadow-[0_0_20px_rgba(var(--primary-rgb),0.08)]"
+						class="rounded-3xl border border-primary/20 bg-primary/5 p-5"
 					>
 						<div class="mb-3 flex items-center justify-between gap-3">
 							<div class="min-w-0">
@@ -151,7 +151,7 @@
 											<div class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
 										{:else}
 											<Sparkles class="h-3.5 w-3.5" />
-										</div>
+										{/if}
 										Draft Reply
 									</button>
 								{/if}
@@ -162,7 +162,7 @@
 							<span class="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-primary uppercase">
 								{sourceLabel(primaryTask.taskSource)}
 							</span>
-							<span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/70 uppercase">
+							<span class="rounded-full bg-foreground/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/70 uppercase">
 								Priority {primaryTask.priority}
 							</span>
 							{#if primaryTask.impactScore}
@@ -218,7 +218,7 @@
 											<div class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
 										{:else}
 											<Sparkles class="h-3 w-3" />
-										</div>
+										{/if}
 										Draft
 									</button>
 								{/if}

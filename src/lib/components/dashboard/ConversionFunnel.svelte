@@ -26,7 +26,7 @@
 		if (s === 'excellent') return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
 		if (s === 'good') return 'text-primary bg-primary/10 border-primary/20';
 		if (s === 'weak') return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
-		return 'text-muted-foreground bg-white/5 border-white/10';
+		return 'text-muted-foreground bg-muted border-border';
 	}
 
 	function valueColor(s: 'excellent' | 'good' | 'weak' | 'none') {
@@ -58,7 +58,7 @@
 	}
 </script>
 
-<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl overflow-hidden relative">
+<div class="rounded-lg border glass-panel border-border p-6 overflow-hidden relative">
 	<!-- subtle bg glow -->
 	<div class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
 
@@ -91,7 +91,7 @@
 	{#if isLoading}
 		<div class="space-y-3">
 			{#each Array(4) as _}
-				<div class="h-24 animate-pulse rounded-2xl bg-white/5"></div>
+				<div class="h-24 animate-pulse rounded-2xl bg-muted"></div>
 			{/each}
 		</div>
 	{:else if !funnel}
@@ -102,7 +102,7 @@
 			<button
 				type="button"
 				onclick={() => activeTab = 'weekly'}
-				class="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition-colors {activeTab === 'weekly' ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}"
+				class="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition-colors {activeTab === 'weekly' ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}"
 				style="min-height: 44px;"
 			>
 				Weekly
@@ -110,7 +110,7 @@
 			<button
 				type="button"
 				onclick={() => activeTab = 'cumulative'}
-				class="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition-colors {activeTab === 'cumulative' ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}"
+				class="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition-colors {activeTab === 'cumulative' ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}"
 				style="min-height: 44px;"
 			>
 				Cumulative
@@ -124,9 +124,9 @@
 				{@const Icon = stageIcon(stage.label)}
 				<div class="group">
 					<!-- Stage card -->
-					<div class="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]">
+					<div class="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-card">
 						<!-- Icon -->
-						<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 {valueColor(stage.sentiment)}">
+						<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted {valueColor(stage.sentiment)}">
 							<Icon class="h-5 w-5" />
 						</div>
 
@@ -172,7 +172,7 @@
 		{/if}
 
 		<!-- Momentum reason -->
-		<div class="mt-4 rounded-xl bg-white/5 px-4 py-2.5">
+		<div class="mt-4 rounded-xl bg-muted px-4 py-2.5">
 			<p class="text-xs text-muted-foreground">
 				<span class="font-semibold text-foreground">Momentum signal:</span>
 				{funnel.momentumReason}
@@ -190,7 +190,7 @@
 
 		<!-- No traffic data nudge -->
 		{#if !funnel.hasData}
-			<div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+			<div class="mt-4 rounded-xl border border-border bg-muted p-4 text-center">
 				<p class="text-sm text-muted-foreground">
 					Traffic data hasn't been collected yet. Run a sync and check back in 24 hours to see
 					your full funnel.
@@ -219,7 +219,7 @@
 						<p class="text-muted-foreground mb-1">Snapshots: {diagnostic.snapshotCount}</p>
 					</div>
 
-					<div class="border-t border-white/10 pt-3">
+					<div class="border-t border-border pt-3">
 						<p class="font-bold text-foreground mb-2">Latest Snapshot</p>
 						<p>Captured: {diagnostic.latestSnapshot.capturedAt}</p>
 						<p>stars: <span class="text-amber-400">{diagnostic.latestSnapshot.stars}</span></p>
@@ -231,7 +231,7 @@
 					</div>
 
 					{#if diagnostic.previousSnapshot}
-						<div class="border-t border-white/10 pt-3">
+						<div class="border-t border-border pt-3">
 							<p class="font-bold text-foreground mb-2">Previous Snapshot</p>
 							<p>Captured: {diagnostic.previousSnapshot.capturedAt}</p>
 							<p>stars: {diagnostic.previousSnapshot.stars}</p>
@@ -240,13 +240,13 @@
 							<p>clones: {diagnostic.previousSnapshot.clones ?? 0}</p>
 						</div>
 					{:else}
-						<div class="border-t border-white/10 pt-3">
+						<div class="border-t border-border pt-3">
 							<p class="font-bold text-amber-400">⚠️ No previous snapshot - this is first sync</p>
 						</div>
 					{/if}
 
 					{#if diagnostic.weeklyFunnel}
-						<div class="border-t border-white/10 pt-3">
+						<div class="border-t border-border pt-3">
 							<p class="font-bold text-foreground mb-2">Weekly Funnel (Computed)</p>
 							<p>Views: <span class="text-blue-400">{diagnostic.weeklyFunnel.viewsThisPeriod}</span></p>
 							<p>Stars: <span class="text-amber-400">{diagnostic.weeklyFunnel.starsThisPeriod}</span></p>
@@ -256,13 +256,13 @@
 						</div>
 					{/if}
 
-					<div class="border-t border-white/10 pt-3">
+					<div class="border-t border-border pt-3">
 						<p class="font-bold text-foreground mb-2">Cumulative Traffic (Tracked from first sync)</p>
 						<p>Cumulative Views: <span class="text-blue-400">{diagnostic.repoCumulativeTraffic.cumulativeViews}</span></p>
 						<p>Cumulative Clones: <span class="text-purple-400">{diagnostic.repoCumulativeTraffic.cumulativeClones}</span></p>
 					</div>
 
-					<div class="border-t border-white/10 pt-3">
+					<div class="border-t border-border pt-3">
 						<p class="font-bold text-foreground mb-2">Diagnosis</p>
 						<p class="text-amber-400">⭐ {diagnostic.diagnosis.starsIssue}</p>
 						<p class="text-blue-400">👁️ {diagnostic.diagnosis.viewsIssue}</p>
@@ -271,7 +271,7 @@
 					</div>
 
 					{#if diagnostic.trafficDetails}
-						<div class="border-t border-white/10 pt-3">
+						<div class="border-t border-border pt-3">
 							<p class="font-bold text-foreground mb-2">Traffic Details (from GitHub API)</p>
 							<p>Total Views: <span class="text-blue-400">{diagnostic.trafficDetails.totalViews}</span></p>
 							<p>Unique Visitors: <span class="text-blue-400">{diagnostic.trafficDetails.totalUniques}</span></p>
@@ -288,7 +288,7 @@
 						</div>
 					{/if}
 
-					<div class="border-t border-white/10 pt-3">
+					<div class="border-t border-border pt-3">
 						<p class="font-bold text-emerald-400">✅ Recommendation</p>
 						<p>{diagnostic.recommendation}</p>
 					</div>

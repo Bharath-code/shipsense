@@ -37,7 +37,7 @@
 	}
 </script>
 
-<div class="overflow-hidden rounded-[2rem] border glass-panel shadow-2xl">
+<div class="overflow-hidden rounded-lg border glass-panel">
 	<div class="p-6 sm:p-8">
 		<div class="mb-5 flex items-start justify-between gap-4">
 			<div class="flex items-center gap-3">

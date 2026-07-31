@@ -125,7 +125,7 @@
 				class="flex cursor-pointer items-center gap-1.5 font-mono font-bold tracking-tighter transition-opacity hover:opacity-80 sm:gap-2"
 			>
 				<div
-					class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] sm:h-7 sm:w-7 lg:h-8 lg:w-8 lg:rounded-lg"
+					class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs sm:h-7 sm:w-7 lg:h-8 lg:w-8 lg:rounded-lg"
 				>
 					S
 				</div>

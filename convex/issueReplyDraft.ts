@@ -44,7 +44,7 @@ export const generateIssueReplyDraft = action({
 		if (!profile) throw new Error('User profile not found');
 
 		// Fetch issue from GitHub
-		const query = `
+		const query = \`
 			query($owner: String!, $name: String!, $number: Int!) {
 				repository(owner: $owner, name: $name) {
 					issue(number: $number) {
@@ -63,13 +63,13 @@ export const generateIssueReplyDraft = action({
 					}
 				}
 			}
-		`;
+		\`;
 
 		const githubResponse = await fetch('https://api.github.com/graphql', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer ${profile.githubAccessToken}`,
+				Authorization: \`Bearer \${profile.githubAccessToken}\`,
 				'User-Agent': 'ShipSense-IssueDrafts'
 			},
 			body: JSON.stringify({
@@ -83,21 +83,21 @@ export const generateIssueReplyDraft = action({
 		});
 
 		if (!githubResponse.ok) {
-			throw new Error(`Failed to fetch issue from GitHub: ${githubResponse.status}`);
+			throw new Error(\`Failed to fetch issue from GitHub: \${githubResponse.status}\`);
 		}
 
 		const githubData = await githubResponse.json();
 		const issue = githubData.data?.repository?.issue;
-		if (!issue) throw new Error(`Issue #${args.issueNumber} not found`);
+		if (!issue) throw new Error(\`Issue #\${args.issueNumber} not found\`);
 
 		// Build context for Gemini
 		const commentsContext = (issue.comments?.nodes ?? [])
-			.map((c: any) => `${c.author?.login ?? 'User'}: ${c.body.substring(0, 300)}`)
-			.join('\n\n');
+			.map((c: any) => \`\${c.author?.login ?? 'User'}: \${c.body.substring(0, 300)}\`)
+			.join('\\n\\n');
 
 		const labels = (issue.labels?.nodes ?? []).map((l: any) => l.name).join(', ');
 
-		const prompt = `You are a helpful, professional open-source maintainer. Draft a reply to the following GitHub issue.
+		const prompt = \`You are a helpful, professional open-source maintainer. Draft a reply to the following GitHub issue.
 
 **Rules:**
 - Be friendly, professional, and concise
@@ -110,26 +110,26 @@ export const generateIssueReplyDraft = action({
 - Do NOT make promises about timelines
 - If you don't have enough info, ask clarifying questions
 
-**Repo:** ${repo.name} (${repo.language ?? 'unknown'})
-${repo.description ? `**Description:** ${repo.description}` : ''}
+**Repo:** \${repo.name} (\${repo.language ?? 'unknown'})
+\${repo.description ? \`**Description:** \${repo.description}\` : ''}
 
-**Issue #${args.issueNumber}: ${issue.title}**
-${labels ? `**Labels:** ${labels}` : ''}
-**Author:** ${issue.author?.login ?? 'Unknown'}
+**Issue #\${args.issueNumber}: \${issue.title}**
+\${labels ? \`**Labels:** \${labels}\` : ''}
+**Author:** \${issue.author?.login ?? 'Unknown'}
 
 **Issue body:**
-${issue.body?.substring(0, 2000) ?? 'No body provided.'}
+\${issue.body?.substring(0, 2000) ?? 'No body provided.'}
 
-${commentsContext ? `**Recent comments:**\n${commentsContext.substring(0, 1000)}` : ''}
+\${commentsContext ? \`**Recent comments:**\\n\${commentsContext.substring(0, 1000)}\` : ''}
 
-**Draft reply:**`;
+**Draft reply:\`;
 
 		// Call OpenRouter (openrouter/free auto-routes across available models)
 		const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+				Authorization: \`Bearer \${OPENROUTER_API_KEY}\`,
 				'HTTP-Referer': 'https://shipsense.app',
 				'X-Title': 'ShipSense'
 			},
@@ -146,7 +146,7 @@ ${commentsContext ? `**Recent comments:**\n${commentsContext.substring(0, 1000)}
 
 		if (!response.ok) {
 			const errorText = await response.text();
-			throw new Error(`OpenRouter API error: ${errorText}`);
+			throw new Error(\`OpenRouter API error: \${errorText}\`);
 		}
 
 		const data = await response.json();
@@ -223,5 +223,49 @@ export const getTaskDraft = query({
 		}
 
 		return null;
+	}
+});
+
+/**
+ * Post a drafted reply to a GitHub issue.
+ */
+export const postIssueReply = action({
+	args: {
+		repoId: v.id('repos'),
+		issueNumber: v.number(),
+		replyText: v.string()
+	},
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) throw new Error('Not authenticated');
+
+		const repo = await ctx.runQuery((internal as any).repos.getRepoById, { repoId: args.repoId });
+		if (!repo) throw new Error('Repo not found');
+
+		const profile = await ctx.runQuery((internal as any).users.getUserProfile, { userId });
+		if (!profile) throw new Error('User profile not found');
+
+		const githubToken = profile.githubAccessToken;
+		if (!githubToken) throw new Error('GitHub access token not found');
+
+		const url = \`https://api.github.com/repos/\${repo.owner}/\${repo.name}/issues/\${args.issueNumber}/comments\`;
+		const response = await fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: \`Bearer \${githubToken}\`,
+				'User-Agent': 'ShipSense-IssueDrafts'
+			},
+			body: JSON.stringify({
+				body: replyText
+			})
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text();
+			throw new Error(\`Failed to post comment to GitHub: \${errorText}\`);
+		}
+
+		return { success: true };
 	}
 });

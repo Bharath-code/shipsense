@@ -37,7 +37,7 @@
 	function sentimentColor(sentiment: 'positive' | 'neutral' | 'warning') {
 		if (sentiment === 'positive') return 'bg-success/10 text-success';
 		if (sentiment === 'warning') return 'bg-destructive/10 text-destructive';
-		return 'bg-white/5 text-muted-foreground';
+		return 'bg-muted text-muted-foreground';
 	}
 
 	function conversionTrendTone(trend: 'improving' | 'declining' | 'stable') {
@@ -54,15 +54,15 @@
 
 {#if isLoading}
 	<div class="space-y-6">
-		<div class="h-8 w-full animate-pulse rounded-xl bg-white/5"></div>
+		<div class="h-8 w-full animate-pulse rounded-xl bg-muted"></div>
 		<div class="grid gap-4 sm:grid-cols-3">
 			{#each [1, 2, 3] as _}
-				<div class="h-32 animate-pulse rounded-2xl bg-white/5"></div>
+				<div class="h-32 animate-pulse rounded-2xl bg-muted"></div>
 			{/each}
 		</div>
 	</div>
 {:else if !report}
-	<div class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+	<div class="rounded-2xl border border-border bg-muted p-8 text-center">
 		<Globe class="mx-auto mb-4 h-10 w-10 text-muted-foreground/30" />
 		<p class="text-sm text-muted-foreground">No traffic intelligence available yet.</p>
 		<p class="mt-1 text-xs text-muted-foreground/60">Sync your repo to start collecting data.</p>
@@ -71,7 +71,7 @@
 	<div class="space-y-6">
 		<!-- ── One Thing ──────────────────────────────────────────── -->
 		<div
-			class="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 shadow-2xl"
+			class="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6"
 		>
 			<div class="flex items-start gap-3">
 				<div class="rounded-xl bg-primary/15 p-2.5 text-primary">
@@ -96,7 +96,7 @@
 		<!-- ── Three Key Metrics ──────────────────────────────────── -->
 		<div class="grid gap-4 sm:grid-cols-3">
 			<!-- Conversion -->
-			<div class="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-5">
+			<div class="rounded-[1.25rem] border border-border bg-card p-5">
 				<div class="flex items-center justify-between">
 					<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
 						Traffic → Stars
@@ -125,7 +125,7 @@
 			</div>
 
 			<!-- Clone Interest -->
-			<div class="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-5">
+			<div class="rounded-[1.25rem] border border-border bg-card p-5">
 				<div class="flex items-center justify-between">
 					<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
 						Developer Interest
@@ -146,7 +146,7 @@
 			</div>
 
 			<!-- Velocity -->
-			<div class="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-5">
+			<div class="rounded-[1.25rem] border border-border bg-card p-5">
 				<div class="flex items-center justify-between">
 					<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
 						Traffic Trend
@@ -183,9 +183,9 @@
 
 		<!-- ── Top Sources ────────────────────────────────────────── -->
 		{#if report.topSources.length > 0}
-			<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
+			<div class="rounded-lg border border-border bg-card p-6">
 				<div class="mb-5 flex items-center gap-3">
-					<div class="rounded-xl bg-white/10 p-2.5 text-muted-foreground">
+					<div class="rounded-xl bg-foreground/10 p-2.5 text-muted-foreground">
 						<Globe class="h-4 w-4" />
 					</div>
 					<div>
@@ -242,7 +242,7 @@
 							</div>
 
 							<!-- Bar -->
-							<div class="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+							<div class="h-1.5 w-full overflow-hidden rounded-full bg-muted">
 								<div
 									class="h-full rounded-full bg-gradient-to-r from-primary/60 to-primary transition-all duration-500"
 									style="width: {topSourceWidth(source, report.topSources)}%"
@@ -260,7 +260,7 @@
 
 		<!-- ── Not Enough Data ────────────────────────────────────── -->
 		{#if !report.hasEnoughData}
-			<div class="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
+			<div class="rounded-2xl border border-border bg-muted p-6 text-center">
 				<Sparkles class="mx-auto mb-3 h-8 w-8 text-muted-foreground/30" />
 				<p class="text-sm font-medium text-muted-foreground">
 					Collecting more data to improve intelligence.

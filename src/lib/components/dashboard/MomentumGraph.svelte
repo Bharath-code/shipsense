@@ -23,11 +23,11 @@
 	}
 </script>
 
-<div class="group relative flex flex-col rounded-[2rem] border glass-panel p-8 shadow-2xl">
+<div class="group relative flex flex-col rounded-lg border glass-panel p-8">
 	<div class="mb-10 flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<div
-				class="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]"
+				class="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"
 			>
 				<Activity class="h-6 w-6" />
 			</div>
@@ -81,9 +81,9 @@
 				<div
 					class="pointer-events-none absolute inset-x-0 top-0 bottom-12 flex flex-col justify-between"
 				>
-					<div class="w-full border-t border-white/5"></div>
-					<div class="w-full border-t border-white/5"></div>
-					<div class="w-full border-t border-white/5"></div>
+					<div class="w-full border-t border-border"></div>
+					<div class="w-full border-t border-border"></div>
+					<div class="w-full border-t border-border"></div>
 				</div>
 
 				<!-- Bars Container -->
@@ -100,11 +100,11 @@
 
 							<!-- The Bar -->
 							<div
-								class="relative w-full overflow-hidden rounded-t-3xl border-t border-white/20 bg-gradient-to-t from-primary/10 via-primary/30 to-primary/60 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/bar:brightness-125"
+								class="relative w-full overflow-hidden rounded-t-3xl border-t border-border bg-gradient-to-t from-primary/10 via-primary/30 to-primary/60 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/bar:brightness-125"
 								style={`height: ${(point.healthScore / maxScore) * 100}%`}
 							>
 								<!-- Internal Shimmer -->
-								<div class="absolute inset-x-0 top-0 h-1 bg-white/20"></div>
+								<div class="absolute inset-x-0 top-0 h-1 bg-foreground/20"></div>
 							</div>
 
 							<!-- Floating Tooltip -->
@@ -114,7 +114,7 @@
 								<div class="rounded-xl border border-border bg-background px-3 py-1.5 shadow-2xl">
 									<span class="text-xs font-bold text-foreground">{point.healthScore}</span>
 								</div>
-								<div class="h-2 w-px bg-white/20"></div>
+								<div class="h-2 w-px bg-foreground/20"></div>
 							</div>
 
 							<!-- X Label -->

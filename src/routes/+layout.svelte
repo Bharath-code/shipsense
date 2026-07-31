@@ -24,7 +24,7 @@
 	<link rel="canonical" href="https://shipsense.app/" />
 </svelte:head>
 
-<ModeWatcher />
+<ModeWatcher defaultMode="dark" />
 
 <a
 	href="#main-content"

@@ -52,7 +52,7 @@
 	let showDetails = $state(false);
 </script>
 
-<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+<div class="rounded-lg border border-border bg-card p-5">
 	<div class="mb-3 flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<TierIcon class="h-4 w-4 {cfg.color}" />
@@ -68,7 +68,7 @@
 			{#if onViewAll && riskStack.tier !== 'clean'}
 				<button
 					type="button"
-					class="rounded-lg px-3 py-2 text-xs font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+					class="rounded-lg px-3 py-2 text-xs font-medium text-primary hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
 					style="min-height: 44px;"
 					onclick={onViewAll}
 				>
@@ -93,7 +93,7 @@
 	{#if riskStack.topRisk}
 		<button
 			type="button"
-			class="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-left transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+			class="w-full rounded-xl border border-border bg-muted p-3 text-left transition-colors hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
 			onclick={() => showDetails = !showDetails}
 		>
 			<div class="flex items-start justify-between gap-2">
@@ -109,9 +109,9 @@
 		</button>
 
 		{#if showDetails}
-			<div class="mt-2 rounded-xl border border-white/10 bg-white/5 p-3">
+			<div class="mt-2 rounded-xl border border-border bg-muted p-3">
 				<div class="mb-2 flex items-center gap-2">
-					<span class="rounded-full border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] font-bold uppercase text-muted-foreground">
+					<span class="rounded-full border border-border bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase text-muted-foreground">
 						{itemTypeLabel(riskStack.topRisk.type)}
 					</span>
 					<span class="text-[10px] font-medium {itemSeverityColor(riskStack.topRisk.severity)} uppercase">

@@ -50,11 +50,11 @@
 
 	<!-- Modal Container -->
 	<div
-		class="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-card shadow-2xl transition-all animate-in fade-in zoom-in duration-300"
+		class="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl transition-all animate-in fade-in zoom-in duration-300"
 	>
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b border-white/10 bg-white/5 px-6 py-4">
-			<div class            class="flex items-center gap-3">
+		<div class="flex items-center justify-between border-b border-border bg-muted px-6 py-4">
+			<div class="flex items-center gap-3">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
 					<MessageSquare size={18} />
 				</div>
@@ -65,7 +65,7 @@
 			</div>
 			<button
 				onclick={onClose}
-				class="rounded-full p-2 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+				class="rounded-full p-2 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
 				aria-label="Close"
 			>
 				<X size={20} />
@@ -77,7 +77,7 @@
 			<div class="relative min-h-[300px]">
 				<textarea
 					bind:value={editedDraft}
-					class="w-full h-[300px] resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-0"
+					class="w-full h-[300px] resize-none rounded-2xl border border-border bg-muted px-4 py-3 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-0"
 					placeholder="Edit your AI-generated draft here..."
 				></textarea>
 
@@ -97,11 +97,11 @@
 		</div>
 
 		<!-- Footer -->
-		<div class="flex items-center justify-end gap-3 border-t border-white/10 bg-white/5 px-6 py-4">
+		<div class="flex items-center justify-end gap-3 border-t border-border bg-muted px-6 py-4">
 			<button
 				type="button"
 				onclick={onClose}
-				class="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+				class="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
 			>
 				Cancel
 			</button>

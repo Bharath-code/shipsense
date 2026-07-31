@@ -33,10 +33,10 @@
 			glow: 'bg-blue-400/8'
 		},
 		developing: {
-			badge: 'bg-white/10 border-white/20 text-muted-foreground',
+			badge: 'bg-foreground/10 border-border text-muted-foreground',
 			ring: 'stroke-muted-foreground',
 			text: 'text-muted-foreground',
-			glow: 'bg-white/5'
+			glow: 'bg-muted'
 		}
 	};
 
@@ -51,7 +51,7 @@
 
 {#if bm}
 	<div
-		class="relative overflow-hidden rounded-[2rem] border border-white/10 glass-panel p-6 shadow-xl {style.glow}"
+		class="relative overflow-hidden rounded-lg border border-border glass-panel p-6 {style.glow}"
 	>
 		<!-- Gradient ambient -->
 		<div
@@ -120,20 +120,20 @@
 			</div>
 		</div>
 
-		<div class="relative mt-5 h-1.5 overflow-hidden rounded-full bg-white/5">
+		<div class="relative mt-5 h-1.5 overflow-hidden rounded-full bg-muted">
 			<div
 				class={[
 					'h-full rounded-full transition-all duration-700',
 					bm.tier === 'elite' ? 'bg-amber-400' : '',
 					bm.tier === 'strong' ? 'bg-emerald-400' : '',
 					bm.tier === 'average' ? 'bg-blue-400' : '',
-					bm.tier === 'developing' ? 'bg-white/30' : ''
+					bm.tier === 'developing' ? 'bg-foreground/30' : ''
 				].filter(Boolean).join(' ')}
 				style="width: {bm.percentile}%"
 			></div>
 			<!-- Pointer tick -->
 			<div
-				class="absolute top-1/2 h-3 w-0.5 -translate-y-1/2 rounded-full bg-white/60"
+				class="absolute top-1/2 h-3 w-0.5 -translate-y-1/2 rounded-full bg-foreground/60"
 				style="left: {bm.percentile}%"
 			></div>
 		</div>

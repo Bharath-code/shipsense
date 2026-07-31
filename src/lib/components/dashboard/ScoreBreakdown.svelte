@@ -100,7 +100,7 @@
 	const syncStatus = $derived(breakdown?.syncStatus);
 </script>
 
-<div class="overflow-hidden rounded-[2rem] border glass-panel shadow-2xl">
+<div class="overflow-hidden rounded-lg border glass-panel">
 	<div class="p-6">
 		<div class="mb-6 flex items-start justify-between">
 			<div class="flex items-center gap-3">

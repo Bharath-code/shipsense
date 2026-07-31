@@ -119,7 +119,7 @@
 	>
 		<div
 			bind:this={modalRef}
-			class="relative mx-4 w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-background p-8 shadow-2xl"
+			class="relative mx-4 w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-background p-8 shadow-2xl"
 		>
 			<!-- Close button -->
 			<button

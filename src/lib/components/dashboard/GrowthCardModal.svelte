@@ -171,7 +171,7 @@
 						</div>
 					</div>
 					<div
-						class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5"
+						class="flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5"
 					>
 						{#if repo?.language}
 							<span class="text-[10px] font-medium text-white/80">{repo.language}</span>
@@ -184,7 +184,7 @@
 				<!-- Repo Name & Badge -->
 				<div class="mb-8">
 					<div
-						class="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1"
+						class="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1"
 					>
 						<span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
 						<span class="text-[10px] font-bold tracking-widest text-emerald-400 uppercase"
@@ -196,7 +196,7 @@
 					</h2>
 					<p class="text-sm font-medium text-white/40">{repo?.owner}</p>
 					{#if growthMoments[0]}
-						<div class="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+						<div class="mt-3 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1">
 							<TrendingUp class="h-3 w-3 text-emerald-400" />
 							<span class="text-[10px] font-bold tracking-widest text-emerald-400 uppercase">
 								{growthMoments[0].title}
@@ -248,7 +248,7 @@
 					<!-- Stats Grid -->
 					<div class="grid grid-cols-2 gap-4">
 						<!-- Streak -->
-						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+						<div class="rounded-2xl border border-border bg-muted p-4">
 							<div class="mb-1 flex items-center gap-1">
 								<Flame class="h-3 w-3 text-orange-500" />
 								<span class="text-[10px] font-medium text-white/40">STREAK</span>
@@ -260,7 +260,7 @@
 						</div>
 
 						<!-- Stars -->
-						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+						<div class="rounded-2xl border border-border bg-muted p-4">
 							<div class="mb-1 flex items-center gap-1">
 								<Star class="h-3 w-3 text-amber-400" />
 								<span class="text-[10px] font-medium text-white/40">STARS</span>
@@ -277,7 +277,7 @@
 						</div>
 
 						<!-- Forks -->
-						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+						<div class="rounded-2xl border border-border bg-muted p-4">
 							<div class="mb-1 flex items-center gap-1">
 								<GitFork class="h-3 w-3 text-blue-400" />
 								<span class="text-[10px] font-medium text-white/40">FORKS</span>
@@ -286,7 +286,7 @@
 						</div>
 
 						<!-- Description -->
-						<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+						<div class="rounded-2xl border border-border bg-muted p-4">
 							<div class="mb-1">
 								<span class="text-[10px] font-medium text-white/40">STATUS</span>
 							</div>
@@ -298,7 +298,7 @@
 				</div>
 
 				<!-- Bottom Footer -->
-				<div class="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
+				<div class="mt-auto flex items-center justify-between border-t border-border pt-4">
 					<div class="text-[10px] text-white/30">
 						Track your OSS journey at <span class="text-white/50">shipsense.dev</span>
 					</div>
@@ -311,7 +311,7 @@
 		</div>
 
 		<!-- Action Buttons - Share Primary -->
-		<div class="grid grid-cols-1 gap-3 border-t border-white/10 bg-black/60 p-6">
+		<div class="grid grid-cols-1 gap-3 border-t border-border bg-black/60 p-6">
 			<Button
 				size="lg"
 				class="w-full rounded-xl bg-[#000000] text-base font-bold text-white transition-all hover:bg-[#1a1a1a] active:scale-[0.98]"
@@ -333,7 +333,7 @@
 			<Button
 				variant="outline"
 				size="default"
-				class="w-full rounded-xl border-white/20 bg-white/5 font-medium text-white/80 hover:bg-white/10"
+				class="w-full rounded-xl border-border bg-muted font-medium text-white/80 hover:bg-foreground/10"
 				onclick={downloadCard}
 				disabled={downloading}
 				aria-label={LABELS.DOWNLOAD_IMAGE}

@@ -1,0 +1,320 @@
+<title>ShipSense — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-background: #0A0A0B;
+    --color-surface: #131316;
+    --color-surface-raised: #18181D;
+    --color-surface-hover: #1D1D23;
+    --color-on-background: #F2F2F5;
+    --color-on-surface: #F2F2F5;
+    --color-on-surface-muted: #8B8B95;
+    --color-on-surface-subtle: #5C5C66;
+    --color-border: #232329;
+    --color-border-strong: #33333C;
+    --color-primary: #6D5EF5;
+    --color-on-primary: #FFFFFF;
+    --color-primary-muted: #211E3D;
+    --color-accent: #22D3EE;
+    --color-on-accent: #04262B;
+    --color-success: #34D399;
+    --color-on-success: #04231A;
+    --color-warning: #FBBF24;
+    --color-on-warning: #2B1B02;
+    --color-danger: #F2555F;
+    --color-on-danger: #FFFFFF;
+    --color-info: #60A5FA;
+    --color-on-info: #04182E;
+
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --rounded-none: 0px;
+    --rounded-sm: 6px;
+    --rounded-md: 8px;
+    --rounded-lg: 12px;
+    --rounded-xl: 16px;
+    --rounded-full: 9999px;
+
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+    --space-12: 48px; --space-16: 64px; --space-20: 80px;
+  }
+  :root[data-theme="light"] {
+    --color-background: #FFFFFF;
+    --color-surface: #F7F7F9;
+    --color-surface-raised: #FFFFFF;
+    --color-surface-hover: #EFEFF2;
+    --color-on-background: #151519;
+    --color-on-surface: #151519;
+    --color-on-surface-muted: #6B6B76;
+    --color-on-surface-subtle: #9B9BA5;
+    --color-border: #E7E7EC;
+    --color-border-strong: #D5D5DC;
+    --color-primary-muted: #ECE9FF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-on-background);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: var(--space-12) var(--space-6) var(--space-20); }
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-6); margin-bottom: var(--space-16); }
+  .page-header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.015em; margin: 0 0 var(--space-2); }
+  .page-header p { color: var(--color-on-surface-muted); max-width: 46ch; margin: 0; font-size: 0.875rem; }
+  .mirror-note { font-size: 0.75rem; color: var(--color-on-surface-subtle); margin-top: var(--space-4); }
+  .theme-toggle {
+    background: var(--color-surface-raised); border: 1px solid var(--color-border);
+    color: var(--color-on-surface); border-radius: var(--rounded-md);
+    padding: var(--space-2) var(--space-3); font-family: var(--font-sans); font-size: 0.8125rem;
+    cursor: pointer; flex-shrink: 0;
+  }
+  section { margin-bottom: var(--space-16); }
+  section h2 {
+    font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--color-on-surface-muted); margin: 0 0 var(--space-5); padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .grid { display: grid; gap: var(--space-4); }
+  .grid-colors { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .swatch { border-radius: var(--rounded-lg); overflow: hidden; border: 1px solid var(--color-border); }
+  .swatch-color { height: 72px; display: flex; align-items: flex-end; padding: var(--space-2); font-family: var(--font-mono); font-size: 0.75rem; }
+  .swatch-meta { padding: var(--space-3); background: var(--color-surface); }
+  .swatch-meta .name { font-weight: 600; font-size: 0.8125rem; }
+  .swatch-meta .hex { color: var(--color-on-surface-muted); font-family: var(--font-mono); font-size: 0.75rem; margin-top: 2px; }
+
+  .type-row { display: flex; align-items: baseline; gap: var(--space-6); padding: var(--space-5) 0; border-bottom: 1px solid var(--color-border); }
+  .type-row:last-child { border-bottom: none; }
+  .type-sample { flex: 1; color: var(--color-on-surface); }
+  .type-spec { width: 260px; flex-shrink: 0; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-on-surface-muted); line-height: 1.8; }
+  .type-spec .name { color: var(--color-primary); font-weight: 600; }
+
+  .tnum { font-feature-settings: 'tnum'; font-variant-numeric: tabular-nums; }
+
+  .space-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) 0; }
+  .space-bar { background: var(--color-primary); height: 16px; border-radius: 3px; }
+  .space-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-on-surface-muted); width: 140px; }
+
+  .radius-row { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+  .radius-box { width: 88px; height: 88px; background: var(--color-surface); border: 1px solid var(--color-border-strong); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-on-surface-muted); flex-direction: column; gap: 4px; }
+
+  .elevation-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-5); }
+  .elevation-card { background: var(--color-surface); border-radius: var(--rounded-lg); padding: var(--space-5); font-size: 0.8125rem; color: var(--color-on-surface-muted); }
+  .el-flat { border: 1px solid var(--color-border); }
+  .el-floating { border: 1px solid var(--color-border); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .el-modal { border: 1px solid var(--color-border-strong); box-shadow: 0 16px 48px rgba(0,0,0,0.55); }
+  .elevation-card strong { display: block; color: var(--color-on-surface); font-size: 0.875rem; margin-bottom: var(--space-1); }
+
+  .comp-block { margin-bottom: var(--space-8); }
+  .comp-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-on-surface-muted); margin-bottom: var(--space-3); }
+  .comp-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+
+  .btn { font-family: var(--font-sans); font-size: 0.875rem; font-weight: 500; height: 40px; padding: 0 16px; border-radius: var(--rounded-md); border: 1px solid transparent; cursor: pointer; display: inline-flex; align-items: center; }
+  .btn-primary { background: var(--color-primary); color: var(--color-on-primary); }
+  .btn-primary:hover, .btn-primary.hover { background: #7C6EFF; }
+  .btn-secondary { background: var(--color-surface-raised); color: var(--color-on-surface); border-color: var(--color-border-strong); }
+  .btn-ghost { background: transparent; color: var(--color-on-surface-muted); padding: 0 12px; }
+  .btn-destructive { background: var(--color-danger); color: var(--color-on-danger); }
+
+  .demo-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--rounded-lg); padding: 20px; width: 260px; }
+  .demo-card.interactive:hover, .demo-card.interactive.hover { background: var(--color-surface-hover); border-color: var(--color-border-strong); cursor: pointer; }
+  .demo-card .title { font-weight: 600; font-size: 0.9375rem; margin-bottom: var(--space-2); }
+  .demo-card .desc { color: var(--color-on-surface-muted); font-size: 0.8125rem; }
+
+  .badge { display: inline-flex; align-items: center; height: 22px; padding: 2px 10px; border-radius: var(--rounded-full); font-family: var(--font-sans); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .badge-neutral { background: var(--color-surface-raised); color: var(--color-on-surface-muted); border: 1px solid var(--color-border); }
+  .badge-success { background: var(--color-success); color: var(--color-on-success); }
+  .badge-warning { background: var(--color-warning); color: var(--color-on-warning); }
+  .badge-danger { background: var(--color-danger); color: var(--color-on-danger); }
+
+  .demo-input { height: 40px; padding: 0 12px; border-radius: var(--rounded-md); background: var(--color-surface); border: 1px solid var(--color-border-strong); color: var(--color-on-surface); font-family: var(--font-sans); font-size: 0.875rem; width: 240px; }
+  .demo-input::placeholder { color: var(--color-on-surface-subtle); }
+  .demo-input:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+  .metric-tile { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--rounded-lg); padding: 20px; width: 220px; }
+  .metric-tile .cap { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-on-surface-muted); margin-bottom: var(--space-2); }
+  .metric-tile .num { font-family: var(--font-mono); font-size: 2.75rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
+  .metric-tile .delta { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; margin-top: var(--space-2); }
+
+  .tabs { display: inline-flex; gap: var(--space-1); background: var(--color-surface); padding: 4px; border-radius: var(--rounded-md); border: 1px solid var(--color-border); }
+  .tab { padding: 8px 14px; border-radius: var(--rounded-sm); font-size: 0.8125rem; color: var(--color-on-surface-muted); cursor: pointer; }
+  .tab.active { background: var(--color-surface-raised); color: var(--color-on-surface); }
+
+  .dd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+  .dd-cols ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: var(--space-2); font-size: 0.8125rem; }
+  .dd-do { color: var(--color-success); }
+  .dd-dont { color: var(--color-danger); }
+  @media (max-width: 640px) { .dd-cols { grid-template-columns: 1fr; } .type-row { flex-direction: column; gap: var(--space-2); } .type-spec { width: auto; } }
+</style>
+
+<div class="wrap">
+  <div class="page-header">
+    <div>
+      <h1>ShipSense Design System</h1>
+      <p>Dark-first founder intelligence dashboard — dense, precise, and quiet, so the score and the one action that matters are the only things competing for attention.</p>
+      <p class="mirror-note">This is the human-readable mirror of <code>docs/design.md</code>, the source of truth for coding agents. Same tokens, rendered live.</p>
+    </div>
+    <button class="theme-toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'">Toggle theme</button>
+  </div>
+
+  <section>
+    <h2>Colors</h2>
+    <div class="grid grid-colors">
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-background); color:var(--color-on-background)">Aa</div><div class="swatch-meta"><div class="name">background</div><div class="hex">#0A0A0B</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-surface); color:var(--color-on-surface)">Aa</div><div class="swatch-meta"><div class="name">surface</div><div class="hex">#131316</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-surface-raised); color:var(--color-on-surface)">Aa</div><div class="swatch-meta"><div class="name">surface-raised</div><div class="hex">#18181D</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-border); color:var(--color-on-surface)">Aa</div><div class="swatch-meta"><div class="name">border</div><div class="hex">#232329</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-primary); color:var(--color-on-primary)">Aa</div><div class="swatch-meta"><div class="name">primary</div><div class="hex">#6D5EF5</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-accent); color:var(--color-on-accent)">Aa</div><div class="swatch-meta"><div class="name">accent</div><div class="hex">#22D3EE</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-on-surface-muted); color:var(--color-background)">Aa</div><div class="swatch-meta"><div class="name">on-surface-muted</div><div class="hex">#8B8B95</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-success); color:var(--color-on-success)">Aa</div><div class="swatch-meta"><div class="name">success</div><div class="hex">#34D399</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-warning); color:var(--color-on-warning)">Aa</div><div class="swatch-meta"><div class="name">warning</div><div class="hex">#FBBF24</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-danger); color:var(--color-on-danger)">Aa</div><div class="swatch-meta"><div class="name">danger</div><div class="hex">#F2555F</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--color-info); color:var(--color-on-info)">Aa</div><div class="swatch-meta"><div class="name">info</div><div class="hex">#60A5FA</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Typography</h2>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-sans); font-size:2.5rem; font-weight:700; letter-spacing:-0.02em; line-height:1.1;">Ship with confidence</div><div class="type-spec"><span class="name">display</span><br>Inter · 40px / 700<br>line-height 1.1 · -0.02em</div></div>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-sans); font-size:1.75rem; font-weight:700; letter-spacing:-0.015em; line-height:1.2;">Repo health, explained</div><div class="type-spec"><span class="name">h1</span><br>Inter · 28px / 700<br>line-height 1.2</div></div>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-sans); font-size:1.375rem; font-weight:600; line-height:1.3;">Today's momentum</div><div class="type-spec"><span class="name">h2</span><br>Inter · 22px / 600<br>line-height 1.3</div></div>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-sans); font-size:1.0625rem; font-weight:600; line-height:1.4;">Suggested action</div><div class="type-spec"><span class="name">h3</span><br>Inter · 17px / 600<br>line-height 1.4</div></div>
+    <div class="type-row"><div class="type-sample" style="font-size:0.875rem; line-height:1.6; color:var(--color-on-surface);">Your star velocity slowed 22% yesterday. Consider shipping a small update or posting a feature highlight.</div><div class="type-spec"><span class="name">body</span><br>Inter · 14px / 400<br>line-height 1.6</div></div>
+    <div class="type-row"><div class="type-sample" style="font-size:0.6875rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--color-on-surface-muted);">Repo Health</div><div class="type-spec"><span class="name">caption</span><br>Inter · 11px / 600<br>uppercase · 0.06em</div></div>
+    <div class="type-row"><div class="type-sample tnum" style="font-family:var(--font-mono); font-size:2.75rem; font-weight:600; letter-spacing:-0.02em;">68</div><div class="type-spec"><span class="name">metric-lg</span><br>JetBrains Mono · 44px / 600<br>tabular-nums</div></div>
+    <div class="type-row"><div class="type-sample tnum" style="font-family:var(--font-mono); font-size:1.25rem; font-weight:600;">+12 stars</div><div class="type-spec"><span class="name">metric</span><br>JetBrains Mono · 20px / 600<br>tabular-nums</div></div>
+    <div class="type-row"><div class="type-sample tnum" style="font-family:var(--font-mono); font-size:0.8125rem; font-weight:500; color:var(--color-on-surface-muted);">3 PRs merged</div><div class="type-spec"><span class="name">metric-sm</span><br>JetBrains Mono · 13px / 500<br>tabular-nums</div></div>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-mono); font-size:0.8125rem; color:var(--color-on-surface-muted);">npm install shipsense-cli</div><div class="type-spec"><span class="name">code</span><br>JetBrains Mono · 13px / 400</div></div>
+  </section>
+
+  <section>
+    <h2>Spacing</h2>
+    <div class="space-row"><div class="space-label">1 — 4px</div><div class="space-bar" style="width:4px"></div></div>
+    <div class="space-row"><div class="space-label">2 — 8px</div><div class="space-bar" style="width:8px"></div></div>
+    <div class="space-row"><div class="space-label">3 — 12px</div><div class="space-bar" style="width:12px"></div></div>
+    <div class="space-row"><div class="space-label">4 — 16px</div><div class="space-bar" style="width:16px"></div></div>
+    <div class="space-row"><div class="space-label">5 — 20px</div><div class="space-bar" style="width:20px"></div></div>
+    <div class="space-row"><div class="space-label">6 — 24px</div><div class="space-bar" style="width:24px"></div></div>
+    <div class="space-row"><div class="space-label">8 — 32px</div><div class="space-bar" style="width:32px"></div></div>
+    <div class="space-row"><div class="space-label">10 — 40px</div><div class="space-bar" style="width:40px"></div></div>
+    <div class="space-row"><div class="space-label">12 — 48px</div><div class="space-bar" style="width:48px"></div></div>
+    <div class="space-row"><div class="space-label">16 — 64px</div><div class="space-bar" style="width:64px"></div></div>
+    <div class="space-row"><div class="space-label">20 — 80px</div><div class="space-bar" style="width:80px"></div></div>
+  </section>
+
+  <section>
+    <h2>Radius</h2>
+    <div class="radius-row">
+      <div class="radius-box" style="border-radius:var(--rounded-none)">none<span>0px</span></div>
+      <div class="radius-box" style="border-radius:var(--rounded-sm)">sm<span>6px</span></div>
+      <div class="radius-box" style="border-radius:var(--rounded-md)">md<span>8px</span></div>
+      <div class="radius-box" style="border-radius:var(--rounded-lg)">lg<span>12px</span></div>
+      <div class="radius-box" style="border-radius:var(--rounded-xl)">xl<span>16px</span></div>
+      <div class="radius-box" style="border-radius:var(--rounded-full)">full<span>pill</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Elevation &amp; Depth</h2>
+    <div class="elevation-row">
+      <div class="elevation-card el-flat"><strong>Flat (default)</strong>1px border + surface step. Used for every card in normal document flow.</div>
+      <div class="elevation-card el-floating"><strong>Floating</strong>Border + soft shadow. Dropdowns, popovers, tooltips.</div>
+      <div class="elevation-card el-modal"><strong>Modal</strong>Stronger border + deep shadow. Dialogs and confirm sheets only.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Components</h2>
+
+    <div class="comp-block">
+      <div class="comp-label">button — primary / secondary / ghost / destructive</div>
+      <div class="comp-row">
+        <button class="btn btn-primary">Send reply</button>
+        <button class="btn btn-primary hover">Send reply (hover)</button>
+        <button class="btn btn-secondary">Connect repo</button>
+        <button class="btn btn-ghost">Dismiss</button>
+        <button class="btn btn-destructive">Disconnect</button>
+      </div>
+    </div>
+
+    <div class="comp-block">
+      <div class="comp-label">card — default / interactive</div>
+      <div class="comp-row">
+        <div class="demo-card"><div class="title">README score</div><div class="desc">82/100 — strong docs, missing badges.</div></div>
+        <div class="demo-card interactive"><div class="title">Task: reply to #214</div><div class="desc">High-intent user waiting 2 days.</div></div>
+        <div class="demo-card interactive hover"><div class="title">Task: reply to #214 (hover)</div><div class="desc">Surface lifts, border strengthens.</div></div>
+      </div>
+    </div>
+
+    <div class="comp-block">
+      <div class="comp-label">badge — neutral / success / warning / danger</div>
+      <div class="comp-row">
+        <span class="badge badge-neutral">Baseline</span>
+        <span class="badge badge-success">Improving</span>
+        <span class="badge badge-warning">Slowing</span>
+        <span class="badge badge-danger">At risk</span>
+      </div>
+    </div>
+
+    <div class="comp-block">
+      <div class="comp-label">input — default / focus</div>
+      <div class="comp-row">
+        <input class="demo-input" placeholder="owner/repo">
+      </div>
+    </div>
+
+    <div class="comp-block">
+      <div class="comp-label">metric-tile</div>
+      <div class="comp-row">
+        <div class="metric-tile">
+          <div class="cap">Repo Health</div>
+          <div class="num tnum" style="color:var(--color-success)">68</div>
+          <div class="delta tnum" style="color:var(--color-success)">+4 this week</div>
+        </div>
+        <div class="metric-tile">
+          <div class="cap">Star Velocity</div>
+          <div class="num tnum" style="color:var(--color-warning)">12</div>
+          <div class="delta tnum" style="color:var(--color-danger)">−22% vs. avg</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comp-block">
+      <div class="comp-label">tabs</div>
+      <div class="tabs">
+        <div class="tab active">Brief</div>
+        <div class="tab">Growth</div>
+        <div class="tab">Health</div>
+        <div class="tab">Tasks</div>
+        <div class="tab">Share</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Do's and Don'ts</h2>
+    <div class="dd-cols">
+      <ul>
+        <li class="dd-do">✓ Use mono tabular numerals for every comparable metric.</li>
+        <li class="dd-do">✓ Exactly one primary button per screen.</li>
+        <li class="dd-do">✓ success = up, danger = down, muted = flat — always.</li>
+        <li class="dd-do">✓ Borders + surface steps for card elevation.</li>
+        <li class="dd-do">✓ Let whitespace separate sections.</li>
+      </ul>
+      <ul>
+        <li class="dd-dont">✗ Default shadcn gray neutrals.</li>
+        <li class="dd-dont">✗ Mixing rounded-none and rounded components in one view.</li>
+        <li class="dd-dont">✗ Primary violet used decoratively.</li>
+        <li class="dd-dont">✗ A second accent color competing with cyan.</li>
+        <li class="dd-dont">✗ Gamification chrome outranking the score itself.</li>
+      </ul>
+    </div>
+  </section>
+</div>

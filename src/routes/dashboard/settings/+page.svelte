@@ -226,7 +226,7 @@
 	</div>
 
 	<!-- Current Plan Card -->
-	<Card class="border-white/10 bg-white/5">
+	<Card class="border-border bg-muted">
 		<CardHeader>
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-3">
@@ -308,7 +308,7 @@
 
 	<!-- Plan Picker (expandable) -->
 	{#if showPlanPicker}
-		<Card class="border-primary/30 bg-white/5">
+		<Card class="border-primary/30 bg-muted">
 			<CardHeader>
 				<CardTitle>Choose your plan</CardTitle>
 				<CardDescription>Upgrade or downgrade at any time. Changes take effect immediately.</CardDescription>
@@ -374,7 +374,7 @@
 	{/if}
 
 	<!-- Email Reports -->
-	<Card class="border-white/10 bg-white/5">
+	<Card class="border-border bg-muted">
 		<CardHeader>
 			<div class="flex items-center gap-3">
 				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
@@ -420,7 +420,7 @@
 	</Card>
 
 	<!-- Dashboard View -->
-	<Card class="border-white/10 bg-white/5">
+	<Card class="border-border bg-muted">
 		<CardHeader>
 			<div class="flex items-center gap-3">
 				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
@@ -459,7 +459,7 @@
 	</Card>
 
 	<!-- Benchmark Privacy -->
-	<Card class="border-white/10 bg-white/5">
+	<Card class="border-border bg-muted">
 		<CardHeader>
 			<div class="flex items-center gap-3">
 				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
@@ -498,7 +498,7 @@
 	</Card>
 
 	<!-- Slack Integration -->
-	<Card class="border-white/10 bg-white/5">
+	<Card class="border-border bg-muted">
 		<CardHeader>
 			<div class="flex items-center gap-3">
 		<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20">
@@ -597,7 +597,7 @@
 	</Card>
 
 	<!-- Notifications -->
-	<Card class="border-white/10 bg-white/5">
+	<Card class="border-border bg-muted">
 		<CardHeader>
 			<div class="flex items-center gap-3">
 				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/20">

@@ -15,7 +15,7 @@
 	let error = $derived(insightsQuery.error);
 </script>
 
-<div class="overflow-hidden rounded-[2rem] border glass-panel p-8 shadow-2xl">
+<div class="overflow-hidden rounded-lg border glass-panel p-8">
 	<div class="mb-8 flex items-center justify-between border-b pb-6">
 		<div class="flex items-center gap-4">
 			<div
@@ -41,9 +41,9 @@
 	<div class="space-y-8">
 		{#if isLoading}
 			<div class="animate-pulse space-y-4">
-				<div class="h-4 w-3/4 rounded-full bg-white/10"></div>
-				<div class="h-4 w-full rounded-full bg-white/10"></div>
-				<div class="h-4 w-5/6 rounded-full bg-white/10"></div>
+				<div class="h-4 w-3/4 rounded-full bg-foreground/10"></div>
+				<div class="h-4 w-full rounded-full bg-foreground/10"></div>
+				<div class="h-4 w-5/6 rounded-full bg-foreground/10"></div>
 			</div>
 		{:else if error}
 			<div class="flex flex-col items-center py-12 text-center">
@@ -70,7 +70,7 @@
 
 			<!-- Risk Assessment -->
 			<div
-				class="group relative overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:bg-white/[0.04]"
+				class="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 transition-all hover:bg-card"
 			>
 				<div class="relative z-10 flex items-start gap-4">
 					{#if insights.risk.toLowerCase().includes('high') || insights.risk
@@ -113,7 +113,7 @@
 								class="flex items-center gap-3 rounded-2xl border bg-muted/50 p-4 text-sm text-foreground transition-all hover:bg-muted"
 							>
 								<div
-									class="h-1.5 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]"
+									class="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
 								></div>
 								{action}
 							</div>

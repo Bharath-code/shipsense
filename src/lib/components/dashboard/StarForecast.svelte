@@ -67,7 +67,7 @@
 	});
 </script>
 
-<div class="relative overflow-hidden rounded-[2rem] border border-white/10 glass-panel p-6 shadow-2xl">
+<div class="relative overflow-hidden rounded-lg border border-border glass-panel p-6">
 	<!-- Ambient glow -->
 	<div class="pointer-events-none absolute -top-20 -left-20 h-56 w-56 rounded-full bg-warning/5 blur-3xl"></div>
 
@@ -93,14 +93,14 @@
 	{#if isLoading}
 		<div class="space-y-4">
 			{#each Array(3) as _}
-				<div class="h-16 animate-pulse rounded-2xl bg-white/5"></div>
+				<div class="h-16 animate-pulse rounded-2xl bg-muted"></div>
 			{/each}
 		</div>
 	{:else if !forecast}
 		<p class="text-sm text-muted-foreground">Unable to load forecast.</p>
 	{:else}
 		<!-- Current + next milestone progress -->
-		<div class="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+		<div class="mb-6 rounded-2xl border border-border bg-card p-5">
 			<div class="mb-4 flex items-center justify-between">
 				<div class="flex items-center gap-3">
 					<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-warning">
@@ -126,7 +126,7 @@
 			</div>
 
 			<!-- Progress bar -->
-			<div class="relative h-2 overflow-hidden rounded-full bg-white/5">
+			<div class="relative h-2 overflow-hidden rounded-full bg-muted">
 				<div
 					class="h-full rounded-full bg-gradient-to-r from-warning/60 to-warning transition-all duration-700"
 					style="width: {progress}%"
@@ -144,13 +144,13 @@
 
 		<!-- Velocity + projection stats -->
 		<div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-			<div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+			<div class="rounded-xl border border-border bg-card p-4">
 				<p class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Weekly</p>
 				<p class="mt-2 text-xl font-black text-warning">+{forecast.weeklyVelocity}</p>
 				<p class="text-xs text-muted-foreground">stars this week</p>
 			</div>
 
-			<div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+			<div class="rounded-xl border border-border bg-card p-4">
 				<p class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Daily avg</p>
 				<p class="mt-2 text-xl font-black text-foreground">
 					{forecast.velocityPerDay > 0
@@ -164,7 +164,7 @@
 				</p>
 			</div>
 
-			<div class="col-span-2 rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:col-span-1">
+			<div class="col-span-2 rounded-xl border border-border bg-card p-4 sm:col-span-1">
 				<p class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">ETA</p>
 				{#if forecast.projectedDate && forecast.daysUntilMilestone !== null}
 					<p class="mt-2 text-xl font-black text-primary">
@@ -193,7 +193,7 @@
 		</div>
 
 		{#if !forecast.hasEnoughData}
-			<div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+			<div class="mt-4 rounded-xl border border-border bg-muted p-4 text-center">
 				<p class="text-sm text-muted-foreground">
 					Sync daily for 3+ days to unlock a calibrated star projection.
 				</p>

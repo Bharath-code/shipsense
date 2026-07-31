@@ -52,7 +52,7 @@
 			<Button
 				size="sm"
 				variant="ghost"
-				class="rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
+				class="rounded-lg text-white/70 hover:bg-foreground/10 hover:text-white"
 				onclick={dismiss}
 			>
 				Not now

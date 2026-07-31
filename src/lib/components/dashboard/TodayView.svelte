@@ -54,7 +54,7 @@
 		const map: Record<string, { emoji: string; label: string; cls: string }> = {
 			critical: { emoji: '🔴', label: 'Critical', cls: 'text-red-400 bg-red-400/10 border-red-400/20' },
 			high: { emoji: '🟡', label: 'High', cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
-			medium: { emoji: '⚪', label: 'Medium', cls: 'text-muted-foreground bg-white/5 border-white/10' },
+			medium: { emoji: '⚪', label: 'Medium', cls: 'text-muted-foreground bg-muted border-border' },
 			low: { emoji: '💬', label: 'Low', cls: 'text-blue-400 bg-blue-400/10 border-blue-400/20' }
 		};
 		return map[urgency] ?? { emoji: '', label: '', cls: '' };
@@ -86,12 +86,12 @@
 
 {#if isLoading}
 	<div class="space-y-4 sm:space-y-6">
-		<div class="h-40 animate-pulse rounded-2xl border border-white/10 bg-white/5 sm:h-48 sm:rounded-[2rem]"></div>
-		<div class="h-28 animate-pulse rounded-2xl border border-white/10 bg-white/5 sm:h-32 sm:rounded-[1.5rem]"></div>
-		<div class="h-20 animate-pulse rounded-2xl border border-white/10 bg-white/5 sm:h-24 sm:rounded-[1.5rem]"></div>
+		<div class="h-40 animate-pulse rounded-2xl border border-border bg-muted sm:h-48 sm:rounded-lg"></div>
+		<div class="h-28 animate-pulse rounded-2xl border border-border bg-muted sm:h-32 sm:rounded-lg"></div>
+		<div class="h-20 animate-pulse rounded-2xl border border-border bg-muted sm:h-24 sm:rounded-lg"></div>
 	</div>
 {:else if !data}
-	<div class="flex h-64 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-center sm:h-80 sm:rounded-[2rem]">
+	<div class="flex h-64 flex-col items-center justify-center rounded-2xl border border-border bg-muted text-center sm:h-80 sm:rounded-lg">
 		<p class="text-lg font-semibold text-foreground">No data yet</p>
 		<p class="mt-2 text-sm text-muted-foreground">Run a sync to get your first health brief.</p>
 		<Button class="mt-4 rounded-full" onclick={handleSync}>
@@ -108,7 +108,7 @@
 				<h1 class="mt-1 text-xl font-black text-foreground sm:text-2xl">{data.repo.name}</h1>
 				<div class="mt-1 flex flex-wrap items-center gap-1.5">
 					{#if data.repo.language}
-						<span class="rounded-full border border-white/5 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-primary sm:px-2.5 sm:text-xs">{data.repo.language}</span>
+						<span class="rounded-full border border-border bg-muted px-2 py-0.5 font-mono text-[10px] text-primary sm:px-2.5 sm:text-xs">{data.repo.language}</span>
 					{/if}
 					<span class="flex items-center gap-1 text-[10px] text-muted-foreground sm:text-xs">
 						<Clock size={10} />
@@ -151,7 +151,7 @@
 		</div>
 
 		<!-- NARRATIVE -->
-		<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:rounded-[1.5rem] sm:p-5">
+		<div class="rounded-2xl border border-border bg-card p-4 sm:rounded-lg sm:p-5">
 			<p class="text-sm leading-relaxed text-foreground sm:text-base">{data.summaryLine}</p>
 			{#if data.topWin}
 				<div class="mt-3 flex items-start gap-2 rounded-xl border border-emerald-400/15 bg-emerald-400/5 p-3 sm:mt-4">
@@ -166,7 +166,7 @@
 
 		<!-- ONE THING TO DO -->
 		{#if data.topTask}
-			<div class="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:rounded-[1.5rem] sm:p-5">
+			<div class="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:rounded-lg sm:p-5">
 				<div class="mb-3 flex items-center gap-2">
 					<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
 						<Zap size={14} />
@@ -215,7 +215,7 @@
 				{/if}
 			</div>
 		{:else}
-			<div class="rounded-2xl border border-emerald-400/15 bg-emerald-400/5 p-4 text-center sm:rounded-[1.5rem] sm:p-5">
+			<div class="rounded-2xl border border-emerald-400/15 bg-emerald-400/5 p-4 text-center sm:rounded-lg sm:p-5">
 				<p class="text-lg font-semibold text-emerald-400">All clear</p>
 				<p class="mt-1 text-sm text-muted-foreground">Nothing urgent. Keep shipping and check back tomorrow.</p>
 			</div>
@@ -223,14 +223,14 @@
 
 		<!-- ACTIVE ANOMALIES -->
 		{#if data.anomalies.length > 0}
-			<div class="rounded-2xl border border-red-400/15 bg-red-400/5 p-4 sm:rounded-[1.5rem] sm:p-5">
+			<div class="rounded-2xl border border-red-400/15 bg-red-400/5 p-4 sm:rounded-lg sm:p-5">
 				<div class="mb-3 flex items-center gap-2">
 					<AlertTriangle size={16} class="text-red-400" />
 					<p class="text-sm font-bold text-red-400">{data.anomalies.length} active signal{data.anomalies.length > 1 ? 's' : ''}</p>
 				</div>
 				<div class="space-y-2">
 					{#each data.anomalies as anomaly}
-						<div class="rounded-xl border border-white/5 bg-white/5 p-3">
+						<div class="rounded-xl border border-border bg-muted p-3">
 							<p class="text-sm font-medium text-foreground">{anomaly.title}</p>
 							<p class="mt-0.5 text-xs text-muted-foreground">{anomaly.description}</p>
 						</div>
@@ -244,7 +244,7 @@
 		{/if}
 
 		<!-- EXPLORE FULL DASHBOARD CTA -->
-		<div class="rounded-2xl border border-border bg-card p-5 text-center sm:rounded-[1.5rem] sm:p-6">
+		<div class="rounded-2xl border border-border bg-card p-5 text-center sm:rounded-lg sm:p-6">
 			<p class="text-sm font-semibold text-foreground">Want the full picture?</p>
 			<p class="mt-1 text-sm text-muted-foreground">Growth intelligence, health breakdown, share tools, and more.</p>
 			<Button class="mt-4 w-full rounded-full sm:w-auto" onclick={onExplore}>

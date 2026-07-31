@@ -48,6 +48,7 @@
 	import RiskStackCard from '$lib/components/dashboard/RiskStackCard.svelte';
 	import PaywallBlur from '$lib/components/ui/PaywallBlur.svelte';
 	import WatchlistCard from '$lib/components/dashboard/WatchlistCard.svelte';
+import CompetitorComparison from '$lib/components/dashboard/CompetitorComparison.svelte';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { FileText as FileTextIcon, Download } from 'lucide-svelte';
 	import {
@@ -157,7 +158,7 @@
 		const map: Record<string, { emoji: string; label: string; cls: string }> = {
 			critical: { emoji: '🔴', label: 'Critical', cls: 'text-red-400 bg-red-400/10 border-red-400/20' },
 			high: { emoji: '🟡', label: 'High', cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
-			medium: { emoji: '⚪', label: 'Medium', cls: 'text-muted-foreground bg-white/5 border-white/10' },
+			medium: { emoji: '⚪', label: 'Medium', cls: 'text-muted-foreground bg-muted border-border' },
 			low: { emoji: '💬', label: 'Low', cls: 'text-blue-400 bg-blue-400/10 border-blue-400/20' }
 		};
 		return map[urgency] ?? { emoji: '', label: '', cls: '' };
@@ -205,7 +206,7 @@
 		if (sentiment === 'excellent') return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
 		if (sentiment === 'good') return 'text-primary bg-primary/10 border-primary/20';
 		if (sentiment === 'weak') return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
-		return 'text-muted-foreground bg-white/5 border-white/10';
+		return 'text-muted-foreground bg-muted border-border';
 	}
 
 	let repoId = $derived($page.params.repoId as string);
@@ -309,6 +310,7 @@
 	let draftText = $state('');
 	let draftLoading = $state(false);
 	let draftError = $state('');
+		let postingDraftLoading = $state(false);
 
 	async function generateDraft(task: any) {
 		draftForTaskId = task._id;
@@ -525,7 +527,7 @@
 			variant="ghost"
 			size="default"
 			href="/dashboard"
-			class="group rounded-full bg-white/5 text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
+			class="group rounded-full bg-muted text-muted-foreground transition-all hover:bg-foreground/10 hover:text-foreground"
 		>
 			<ArrowLeft class="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
 			Back to Ecosystem
@@ -536,7 +538,7 @@
 				<Button
 					variant="outline"
 					size="default"
-					class="rounded-full border-white/10 bg-white/5 hover:bg-white/10"
+					class="rounded-full border-border bg-muted hover:bg-foreground/10"
 					disabled={isSyncing}
 					onclick={triggerSync}
 				>
@@ -558,16 +560,16 @@
 
 	{#if isLoading}
 		<div class="space-y-6">
-			<div class="h-56 animate-pulse rounded-[2rem] border border-white/10 bg-white/5"></div>
-			<div class="h-14 animate-pulse rounded-2xl border border-white/10 bg-white/5"></div>
-			<div class="h-[28rem] animate-pulse rounded-[2rem] border border-white/10 bg-white/5"></div>
+			<div class="h-56 animate-pulse rounded-lg border border-border bg-muted"></div>
+			<div class="h-14 animate-pulse rounded-2xl border border-border bg-muted"></div>
+			<div class="h-[28rem] animate-pulse rounded-lg border border-border bg-muted"></div>
 		</div>
 	{:else if !repo}
 		<div
-			class="flex h-96 flex-col items-center justify-center space-y-6 rounded-3xl border glass-panel border-white/10 text-center"
+			class="flex h-96 flex-col items-center justify-center space-y-6 rounded-3xl border glass-panel border-border text-center"
 		>
 			<div
-				class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 text-muted-foreground"
+				class="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground"
 			>
 				<Activity class="h-8 w-8" />
 			</div>
@@ -580,20 +582,20 @@
 			<Button
 				href="/dashboard"
 				variant="outline"
-				class="rounded-full border-white/10 bg-white/5 hover:bg-white/10"
+				class="rounded-full border-border bg-muted hover:bg-foreground/10"
 			>
 				Return to Ecosystem
 			</Button>
 		</div>
 	{:else}
-		<div class="overflow-hidden rounded-[2.5rem] border glass-panel border-white/10 shadow-2xl">
+		<div class="overflow-hidden rounded-lg border glass-panel border-border">
 			<div
 				class="grid gap-6 p-6 sm:p-8 xl:grid-cols-[minmax(0,1.45fr)_minmax(22rem,0.95fr)] xl:p-10"
 			>
 				<div class="space-y-5">
 					<div class="flex flex-wrap items-center gap-3">
 						<div
-							class="hidden h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-transparent sm:flex"
+							class="hidden h-16 w-16 items-center justify-center rounded-3xl border border-border bg-gradient-to-br from-white/10 to-transparent sm:flex"
 						>
 							<GitBranch class="h-8 w-8 text-primary" />
 						</div>
@@ -606,7 +608,7 @@
 								{#if repo.isPrivate}
 									<Badge
 										variant="outline"
-										class="rounded-full border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+										class="rounded-full border-border bg-muted px-3 py-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
 									>
 										<Lock class="-mt-0.5 mr-1 inline h-3 w-3" /> Private
 									</Badge>
@@ -625,9 +627,9 @@
 							>
 								<span class="font-medium text-foreground/60">{repo.owner}</span>
 								{#if repo.language}
-									<span class="h-1.5 w-1.5 rounded-full bg-white/20"></span>
+									<span class="h-1.5 w-1.5 rounded-full bg-foreground/20"></span>
 									<span
-										class="rounded-full border border-white/5 bg-white/5 px-3 py-1 font-mono text-xs text-primary sm:text-sm"
+										class="rounded-full border border-border bg-muted px-3 py-1 font-mono text-xs text-primary sm:text-sm"
 									>
 										{repo.language}
 									</span>
@@ -644,7 +646,7 @@
 
 					<div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
 						<div
-							class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2"
+							class="flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-2"
 						>
 							<Star class="h-4 w-4 text-warning" />
 							<span class="font-medium text-foreground">{repo.starsCount}</span>
@@ -659,7 +661,7 @@
 						</div>
 
 						<div
-							class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2"
+							class="flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-2"
 						>
 							<GitFork class="h-4 w-4 text-primary" />
 							<span class="font-medium text-foreground">{repo.forksCount}</span>
@@ -668,7 +670,7 @@
 
 						{#if repo.lastSyncedAt}
 							<div
-								class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2"
+								class="flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-2"
 							>
 								<Clock class="h-4 w-4 text-muted-foreground" />
 								<span>Synced {formatTimeAgo(repo.lastSyncedAt)}</span>
@@ -690,7 +692,7 @@
 				</div>
 
 				<div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-3">
-					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+					<div class="rounded-lg border border-border bg-card p-5">
 						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
 							Health
 						</p>
@@ -706,7 +708,7 @@
 						</p>
 					</div>
 
-					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+					<div class="rounded-lg border border-border bg-card p-5">
 						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
 							Trend
 						</p>
@@ -734,7 +736,7 @@
 						{/if}
 					</div>
 
-					<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+					<div class="rounded-lg border border-border bg-card p-5">
 						<p class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
 							Freshness
 						</p>
@@ -751,7 +753,7 @@
 		{#if !showFullDashboard}
 			<TodayView repoId={repoId as string} onExplore={enableFullDashboard} />
 		{:else}
-		<div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+		<div class="relative overflow-hidden rounded-2xl border border-border bg-card p-2">
 			<div
 				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white/[0.03] to-transparent"
 			></div>
@@ -765,8 +767,8 @@
 						id={`tab-${tab.value}`}
 						class={`min-h-[44px] shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none ${
 							activeTab === tab.value
-								? 'bg-background text-foreground shadow-sm'
-								: 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+								? 'bg-secondary text-foreground'
+								: 'text-muted-foreground hover:bg-muted hover:text-foreground'
 						}`}
 						onclick={() => switchTab(tab.value)}
 					>
@@ -786,7 +788,7 @@
 				<!-- ═══════════════════════════════════════════════════════════ -->
 
 				<!-- 1. Momentum headline + streak -->
-				<div class="overflow-hidden rounded-[2rem] border glass-panel shadow-2xl">
+				<div class="overflow-hidden rounded-lg border glass-panel">
 					<div class="p-6 sm:p-8">
 						<div class="mb-6 flex items-start justify-between gap-4">
 							<div class="space-y-1">
@@ -853,7 +855,7 @@
 
 				<!-- Critical Issue Alert (if any) -->
 				{#if tasks.some((t) => t.urgency === 'critical')}
-					<div class="rounded-[1.5rem] border border-red-500/20 bg-red-500/5 p-5">
+					<div class="rounded-lg border border-red-500/20 bg-red-500/5 p-5">
 						<div class="flex items-start gap-3">
 							<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
 								<AlertTriangle class="h-5 w-5" />
@@ -865,7 +867,7 @@
 								</p>
 								<button
 									type="button"
-									class="mt-2 min-h-[44px] inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-red-400 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-red-400/50 focus-visible:outline-none"
+									class="mt-2 min-h-[44px] inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-red-400 hover:bg-muted focus-visible:ring-2 focus-visible:ring-red-400/50 focus-visible:outline-none"
 									onclick={() => switchTab('tasks')}
 								>
 									View critical tasks <ChevronRight class="h-3 w-3" />
@@ -876,7 +878,7 @@
 				{/if}
 
 				{#if primaryTask}
-					<div class="rounded-[1.5rem] border border-primary/20 bg-primary/5 p-6">
+					<div class="rounded-lg border border-primary/20 bg-primary/5 p-6">
 						<div class="mb-4 flex items-center gap-3">
 							<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
 								<Zap class="h-4 w-4" />
@@ -938,7 +940,7 @@
 
 				<!-- 4. WIN (when there's one to celebrate) -->
 				{#if dailyBrief?.topWin}
-					<div class="rounded-[1.5rem] border border-success/15 bg-success/5 p-5">
+					<div class="rounded-lg border border-success/15 bg-success/5 p-5">
 						<div class="mb-2 flex items-center gap-2">
 							<Sparkles class="h-4 w-4 text-success" />
 							<h3 class="text-sm font-bold text-foreground">Win</h3>
@@ -946,7 +948,7 @@
 						<p class="text-sm text-foreground">{dailyBrief.topWin}</p>
 						<button
 							type="button"
-							class="mt-2 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-success hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-success/50 focus-visible:outline-none"
+							class="mt-2 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-success hover:bg-muted focus-visible:ring-2 focus-visible:ring-success/50 focus-visible:outline-none"
 							onclick={() => switchTab('share')}
 						>
 							Share this <ChevronRight class="h-3 w-3" />
@@ -968,7 +970,7 @@
 					<div class="space-y-6">
 						<!-- Mini funnel (weekly view) -->
 						{#if funnel && funnel.weekly.stages.length > 0}
-							<div class="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+							<div class="rounded-lg border border-border bg-card p-5">
 								<div class="mb-4 flex items-center justify-between">
 									<div class="flex items-center gap-2">
 										<TrendUpIcon class="h-4 w-4 text-muted-foreground" />
@@ -976,7 +978,7 @@
 									</div>
 									<button
 										type="button"
-										class="min-h-[44px] rounded-lg px-2 py-1 text-sm font-medium text-primary hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+										class="min-h-[44px] rounded-lg px-2 py-1 text-sm font-medium text-primary hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
 										onclick={() => switchTab('growth')}
 									>
 										Full view <ChevronRight class="ml-0.5 inline h-3 w-3" />
@@ -986,7 +988,7 @@
 									{#each funnel.weekly.stages as stage, i}
 										{@const StageIcon = funnelStageIcon(stage.label)}
 										<div class="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
-											<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 {funnelValueColor(stage.sentiment)}">
+											<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted {funnelValueColor(stage.sentiment)}">
 												<StageIcon class="h-4 w-4" />
 											</div>
 											<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{stage.label}</p>
@@ -1020,7 +1022,7 @@
 		{:else if activeTab === 'growth'}
 			<div role="tabpanel" id="panel-growth" aria-labelledby="tab-growth" class="space-y-6">
 				<!-- Growth header -->
-				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+				<div class="rounded-lg border glass-panel border-border p-6">
 					<h2 class="text-2xl font-black text-foreground">Growth Intelligence</h2>
 					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
 						Your full conversion funnel, traffic intelligence, and anomaly signals — combined into
@@ -1050,7 +1052,7 @@
 						<PaywallBlur plan={userPlan} feature="AI Traffic Intelligence">
 							<TrafficIntelligence repoId={repoId as string} />
 						</PaywallBlur>
-						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+						<div class="rounded-lg border glass-panel border-border p-6">
 							<h3 class="mb-4 text-lg font-bold text-foreground">Views &amp; Clones (14 days)</h3>
 							{#if snapshot}
 								<div class="grid grid-cols-2 gap-4">
@@ -1073,7 +1075,7 @@
 								<p class="text-sm text-muted-foreground">No traffic data available yet.</p>
 							{/if}
 						</div>
-						<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+						<div class="rounded-lg border glass-panel border-border p-6">
 							<h3 class="mb-4 text-lg font-bold text-foreground">Top Referrers</h3>
 							{#if referrers && referrers.referrers && referrers.referrers.length > 0}
 								<div class="space-y-3">
@@ -1122,7 +1124,8 @@
 
 					<TabsContent value="competitors" class="space-y-6">
 						<ErrorBoundary>
-							<WatchlistCard />
+					<CompetitorComparison repoId={repoId as string} />
+					<WatchlistCard />
 						</ErrorBoundary>
 					</TabsContent>
 				</Tabs>
@@ -1134,7 +1137,7 @@
 						<p class="text-sm text-red-400">{githubActionError}</p>
 					</div>
 				{/if}
-				<div class="rounded-[2rem] border border-primary/15 bg-primary/5 p-6 shadow-2xl">
+				<div class="rounded-lg border border-primary/15 bg-primary/5 p-6">
 					<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 						<div class="max-w-2xl">
 							<p class="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">
@@ -1144,17 +1147,17 @@
 								<h2 class="mt-2 text-2xl font-black text-foreground">{primaryTask.taskText}</h2>
 								<div class="mt-3 flex flex-wrap items-center gap-2">
 									<span
-										class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
+										class="rounded-full bg-foreground/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
 									>
 										{sourceLabel(primaryTask.taskSource)}
 									</span>
 									<span
-										class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
+										class="rounded-full bg-foreground/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
 									>
 										{taskTypeLabel(primaryTask.taskType)}
 									</span>
 									<span
-										class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
+										class="rounded-full bg-foreground/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
 									>
 										Priority {primaryTask.priority}
 									</span>
@@ -1185,11 +1188,11 @@
 										{/if}
 									</div>
 									{#if draftLoading}
-										<div class="mt-3 animate-pulse rounded-xl bg-white/5 p-3 text-sm text-muted-foreground">Reading issue context and drafting a reply...</div>
+										<div class="mt-3 animate-pulse rounded-xl bg-muted p-3 text-sm text-muted-foreground">Reading issue context and drafting a reply...</div>
 									{:else if draftError}
 										<p class="mt-3 text-sm {draftError.includes('Copied') ? 'text-success' : 'text-destructive'}">{draftError}</p>
 									{:else if draftText}
-										<div class="mt-3 rounded-xl bg-white/5 p-3 text-sm leading-relaxed text-foreground whitespace-pre-wrap">{draftText}</div>
+										<div class="mt-3 rounded-xl bg-muted p-3 text-sm leading-relaxed text-foreground whitespace-pre-wrap">{draftText}</div>
 									{/if}
 								</div>
 							{/if}
@@ -1223,7 +1226,7 @@
 				</div>
 
 				{#if tasks.length === 0}
-					<div class="rounded-[2rem] border glass-panel border-white/10 p-8 text-center shadow-2xl">
+					<div class="rounded-lg border glass-panel border-border p-8 text-center">
 						<p class="text-lg font-semibold text-foreground">Task queue is clear.</p>
 						<p class="mt-2 text-sm text-muted-foreground">
 							Ship some work, sync again, and ShipSense will surface the next operational move.
@@ -1232,7 +1235,7 @@
 				{:else}
 					<div class="grid gap-6 xl:grid-cols-2">
 						{#each groupedTasks as group}
-							<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+							<div class="rounded-lg border glass-panel border-border p-6">
 								<div class="mb-5 flex items-center justify-between">
 									<div>
 										<h3 class="text-lg font-bold text-foreground">{group.label}</h3>
@@ -1240,14 +1243,14 @@
 											Operational queue
 										</p>
 									</div>
-									<span class="rounded-full bg-white/10 px-2.5 py-1 text-xs text-muted-foreground">
+									<span class="rounded-full bg-foreground/10 px-2.5 py-1 text-xs text-muted-foreground">
 										{group.items.length}
 									</span>
 								</div>
 
 								<div class="space-y-3">
 									{#each group.items as task}
-										<div class="rounded-2xl border border-white/10 bg-background/30 p-4">
+										<div class="rounded-2xl border border-border bg-background/30 p-4">
 											<div class="flex items-start justify-between gap-4">
 												<div>
 													<p class="text-sm font-medium text-foreground">{task.taskText}</p>
@@ -1259,12 +1262,12 @@
 															</span>
 														{/if}
 														<span
-															class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
+															class="rounded-full bg-foreground/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
 														>
 															{taskTypeLabel(task.taskType)}
 														</span>
 														<span
-															class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
+															class="rounded-full bg-foreground/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-foreground/80 uppercase"
 														>
 															Priority {task.priority}
 														</span>
@@ -1288,7 +1291,7 @@
 																			href={`https://github.com/${repo?.owner}/${repo?.name}/issues/${task.issueNumber}`}
 																			target="_blank"
 																			rel="noreferrer"
-																			class="min-h-[32px] flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs text-muted-foreground hover:bg-white/10"
+																			class="min-h-[32px] flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground hover:bg-foreground/10"
 																		>
 																			↗ Open on GitHub
 																		</a>
@@ -1309,7 +1312,7 @@
 																{/if}
 															</div>
 															{#if draftForTaskId === task._id && draftText}
-																<div class="rounded-xl bg-white/5 p-3 text-xs leading-relaxed text-foreground whitespace-pre-wrap border border-white/5">{draftText}</div>
+																<div class="rounded-xl bg-muted p-3 text-xs leading-relaxed text-foreground whitespace-pre-wrap border border-border">{draftText}</div>
 															{/if}
 															{#if draftForTaskId === task._id && draftError && !draftError.includes('Copied')}
 																<p class="text-xs text-destructive">{draftError}</p>
@@ -1348,7 +1351,7 @@
 			</div>
 		{:else if activeTab === 'health'}
 			<div role="tabpanel" id="panel-health" aria-labelledby="tab-health" class="space-y-6">
-				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+				<div class="rounded-lg border glass-panel border-border p-6">
 					<h2 class="text-2xl font-black text-foreground">Repo hygiene and maintainability</h2>
 					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
 						Check your README quality, dependency health, score breakdown, and recent wins.
@@ -1381,7 +1384,7 @@
 			</div>
 		{:else if activeTab === 'share'}
 			<div role="tabpanel" id="panel-share" aria-labelledby="tab-share" class="space-y-6">
-				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+				<div class="rounded-lg border glass-panel border-border p-6">
 					<h2 class="text-2xl font-black text-foreground">Share and external surfaces</h2>
 					<p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
 						Sharing stays available, but secondary to day-to-day repo operations. Use these tools
@@ -1390,7 +1393,7 @@
 				</div>
 
 				<div class="grid gap-6 xl:grid-cols-2">
-					<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+					<div class="rounded-lg border glass-panel border-border p-6">
 						<div class="mb-4 flex items-center gap-3">
 							<div
 								class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary"
@@ -1420,7 +1423,7 @@
 						{/if}
 					</div>
 
-					<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+					<div class="rounded-lg border glass-panel border-border p-6">
 						<div class="mb-4 flex items-center gap-3">
 							<div
 								class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary"
@@ -1464,7 +1467,7 @@
 							</Button>
 						</div>
 
-						<div class="mt-4 rounded-2xl border border-white/10 bg-background/30 p-4">
+						<div class="mt-4 rounded-2xl border border-border bg-background/30 p-4">
 							<p class="text-xs font-medium text-muted-foreground">Public link</p>
 							<p class="mt-2 text-sm break-all text-foreground">{publicUrl}</p>
 							<Button
@@ -1480,7 +1483,7 @@
 				</div>
 
 				<!-- Investor Report -->
-				<div class="rounded-[2rem] border glass-panel border-white/10 p-6 shadow-2xl">
+				<div class="rounded-lg border glass-panel border-border p-6">
 					<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 						<div class="flex items-start gap-4">
 							<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-success/10 text-success">
@@ -1541,7 +1544,7 @@
 			<Button
 				size="default"
 				variant="ghost"
-				class="rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
+				class="rounded-lg text-white/60 hover:bg-foreground/10 hover:text-white"
 				onclick={dismissToast}
 			>
 				{LABELS.TOAST_LATER}

@@ -82,16 +82,16 @@
 	});
 </script>
 
-<div class="group overflow-hidden rounded-[2rem] glass-panel border-white/10 p-8 shadow-2xl">
+<div class="group overflow-hidden rounded-lg glass-panel border-border p-8">
 	{#if isLoading}
 		<div class="flex h-full animate-pulse flex-col items-center justify-center space-y-6 py-8">
-			<div class="h-24 w-24 rounded-full bg-white/10"></div>
-			<div class="h-4 w-32 rounded-full bg-white/10"></div>
+			<div class="h-24 w-24 rounded-full bg-foreground/10"></div>
+			<div class="h-4 w-32 rounded-full bg-foreground/10"></div>
 		</div>
 	{:else if !hasHistory}
 		<div class="flex flex-col items-center justify-center space-y-4 py-8 text-center">
 			<div
-				class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-muted text-muted-foreground"
+				class="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-muted text-muted-foreground"
 			>
 				<Flame class="h-8 w-8" />
 			</div>
@@ -111,10 +111,10 @@
 					></div>
 
 					<div
-						class={`relative z-10 flex h-32 w-32 scale-100 flex-col items-center justify-center rounded-full border-4 bg-muted shadow-2xl transition-all duration-500 group-hover:scale-105 ${
+						class={`relative z-10 flex h-32 w-32 scale-100 flex-col items-center justify-center rounded-full border-4 bg-muted transition-all duration-500 group-hover:scale-105 ${
 							currentStreak > 0
-								? 'border-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]'
-								: 'border-white/10 opacity-75'
+								? 'border-primary'
+								: 'border-border opacity-75'
 						}`}
 					>
 						<span
@@ -131,7 +131,7 @@
 
 					{#if currentStreak > 0}
 						<div
-							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-background shadow-xl"
+							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-background"
 						>
 							<Flame
 								class={`h-6 w-6 ${streakStatus().color} animate-pulse`}
@@ -140,7 +140,7 @@
 						</div>
 					{:else}
 						<div
-							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-background shadow-xl"
+							class="absolute -top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-background"
 						>
 							<Snowflake class={`h-5 w-5 ${streakStatus().color}`} />
 						</div>
@@ -150,7 +150,7 @@
 				<h3 class="text-lg font-bold text-foreground">{streakHeadline()}</h3>
 
 				<div
-					class={`rounded-full border px-4 py-1.5 text-xs font-bold tracking-tight shadow-lg ${
+					class={`rounded-full border px-4 py-1.5 text-xs font-bold tracking-tight ${
 						streakStatus().bg
 					} flex items-center gap-2`}
 				>
@@ -163,7 +163,7 @@
 			</div>
 
 			<!-- Divider -->
-			<div class="h-px w-full bg-white/10"></div>
+			<div class="h-px w-full bg-foreground/10"></div>
 
 			<!-- Details -->
 			<div class="w-full space-y-6 text-center">
