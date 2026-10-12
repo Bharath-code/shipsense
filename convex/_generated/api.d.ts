@@ -37,6 +37,8 @@ import type * as orchestrator from "../orchestrator.js";
 import type * as plan from "../plan.js";
 import type * as quickScan from "../quickScan.js";
 import type * as readmeAnalyzer from "../readmeAnalyzer.js";
+import type * as reports from "../reports.js";
+import type * as reports_action from "../reports_action.js";
 import type * as repos from "../repos.js";
 import type * as scorer from "../scorer.js";
 import type * as settings from "../settings.js";
@@ -48,6 +50,7 @@ import type * as todayView from "../todayView.js";
 import type * as trafficIntelligence from "../trafficIntelligence.js";
 import type * as users from "../users.js";
 import type * as watchlist from "../watchlist.js";
+import type * as webhookAuth from "../webhookAuth.js";
 
 import type {
   ApiFromModules,
@@ -85,6 +88,8 @@ declare const fullApi: ApiFromModules<{
   plan: typeof plan;
   quickScan: typeof quickScan;
   readmeAnalyzer: typeof readmeAnalyzer;
+  reports: typeof reports;
+  reports_action: typeof reports_action;
   repos: typeof repos;
   scorer: typeof scorer;
   settings: typeof settings;
@@ -96,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   trafficIntelligence: typeof trafficIntelligence;
   users: typeof users;
   watchlist: typeof watchlist;
+  webhookAuth: typeof webhookAuth;
 }>;
 
 /**

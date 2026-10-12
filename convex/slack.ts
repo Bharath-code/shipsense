@@ -437,7 +437,7 @@ export const buildSlackBrief = internalQuery({
 });
 
 async function sendSlackBrief(ctx: ActionCtx, userId: Id<'users'>): Promise<{ sent: boolean }> {
-	const brief = await ctx.runQuery(internal.slack.buildSlackBrief, { userId });
+	const brief: SlackBrief = await ctx.runQuery(internal.slack.buildSlackBrief, { userId });
 	if (!brief.ready) return { sent: false };
 
 	const response = await fetch(SLACK_CHAT_URL, {
