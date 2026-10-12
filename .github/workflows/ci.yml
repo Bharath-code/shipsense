@@ -28,6 +28,9 @@ jobs:
       - name: Typecheck Convex functions
         run: npx tsc -p convex --noEmit
       - run: npm run build
+        env:
+          # $env/static/public requires it at build time; CI builds are never deployed.
+          PUBLIC_CONVEX_URL: https://ci-placeholder.convex.cloud
 
   # ponytail: non-blocking until the existing 18 svelte-check and 330 lint errors are cleared;
   # then delete continue-on-error so new debt fails the PR.
