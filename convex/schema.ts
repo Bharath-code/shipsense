@@ -419,5 +419,12 @@ export default defineSchema({
 	})
 		.index('by_email', ['email'])
 		.index('by_repoUrl', ['repoUrl'])
-		.index('by_createdAt', ['createdAt'])
+		.index('by_createdAt', ['createdAt']),
+
+	// Single-use CSRF nonces for the Slack OAuth flow
+	slackOAuthStates: defineTable({
+		state: v.string(),
+		userId: v.id('users'),
+		expiresAt: v.number()
+	}).index('by_state', ['state'])
 });

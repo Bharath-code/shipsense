@@ -38,10 +38,7 @@
 		}
 
 		try {
-			const result = await client.mutation(api.slack.exchangeSlackCode, {
-				code,
-				userId: state as any
-			});
+			const result = await client.action(api.slack.exchangeSlackCode, { code, state });
 
 			if (result.success) {
 				status = 'success';

@@ -2,6 +2,7 @@ import { httpRouter } from 'convex/server';
 import { auth } from './auth';
 import { httpAction } from './_generated/server';
 import { internal } from './_generated/api';
+import { verifySlackSignature, verifyStandardWebhook } from './webhookAuth';
 
 const http = httpRouter();
 
@@ -14,7 +15,22 @@ http.route({
 	method: 'POST',
 	handler: httpAction(async (ctx, request) => {
 		const body = await request.text();
-		const signature = request.headers.get('webhook-signature') ?? '';
+
+		const webhookKey = process.env.DODO_PAYMENTS_WEBHOOK_KEY;
+		if (!webhookKey) {
+			console.error('[dodo] DODO_PAYMENTS_WEBHOOK_KEY is not set; rejecting webhook');
+			return new Response('Webhook not configured', { status: 500 });
+		}
+		const verified = await verifyStandardWebhook(
+			webhookKey,
+			{
+				id: request.headers.get('webhook-id'),
+				timestamp: request.headers.get('webhook-timestamp'),
+				signature: request.headers.get('webhook-signature')
+			},
+			body
+		);
+		if (!verified) return new Response('Invalid signature', { status: 401 });
 
 		let payload: Record<string, unknown>;
 		try {
@@ -69,6 +85,19 @@ http.route({
 	method: 'POST',
 	handler: httpAction(async (ctx, request) => {
 		const body = await request.text();
+
+		const signingSecret = process.env.SLACK_SIGNING_SECRET;
+		if (!signingSecret) {
+			console.error('[slack] SLACK_SIGNING_SECRET is not set; rejecting webhook');
+			return new Response('Webhook not configured', { status: 500 });
+		}
+		const verified = await verifySlackSignature(
+			signingSecret,
+			request.headers.get('x-slack-request-timestamp'),
+			request.headers.get('x-slack-signature'),
+			body
+		);
+		if (!verified) return new Response('Invalid signature', { status: 401 });
 
 		let payload: Record<string, unknown>;
 		try {

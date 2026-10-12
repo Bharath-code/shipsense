@@ -25,12 +25,6 @@
 	let watchlist = $derived(watchlistQuery.data ?? []);
 	let isLoading = $derived(userRepoQuery.isLoading || watchlistQuery.isLoading);
 
-	// Comparison Logic
-	$: if (userRepo && watchlist.length > 0) {
-		// Ensure we are comparing against the correct repo if userRepo is actually a watchlist entry
-		// (though in this context userRepo is the repo the dashboard is for)
-	}
-
 	function formatNumber(n: number | null | undefined): string {
 		if (n == null) return '—';
 		if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;

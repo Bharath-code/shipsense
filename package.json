@@ -61,5 +61,10 @@
 		"html-to-image": "^1.11.13",
 		"layerchart": "^1.0.13",
 		"mode-watcher": "^1.1.0"
+	},
+	"overrides": {
+		"@mmailaender/convex-auth-svelte": {
+			"@convex-dev/auth": "$@convex-dev/auth"
+		}
 	}
 }

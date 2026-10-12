@@ -205,7 +205,7 @@ export function determineTasks(
 				'Improves responsiveness and makes the project feel easier to join and trust.',
 			impactScore: Math.min(Math.round(snapshot.issuesOpen / 5), 8),
 			issueNumber: null,
-			staleKey: commitGapKey(commitGapHours)
+			staleKey: issuesKey(snapshot.issuesOpen)
 		});
 	} else if (!isPrivate && snapshot.issuesOpen > 0) {
 		tasks.push({
