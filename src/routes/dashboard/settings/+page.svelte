@@ -129,7 +129,7 @@
 	async function handleConnectSlack() {
 		slackConnecting = true;
 		try {
-			const { url } = await client.mutation(api.slack.getSlackOAuthUrl, {});
+			const { url } = await client.action(api.slack.getSlackOAuthUrl, {});
 			window.location.href = url;
 		} catch (err) {
 			console.error('Failed to connect Slack:', err);

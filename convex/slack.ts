@@ -1,4 +1,13 @@
-import { query, mutation, internalMutation, internalAction, internalQuery } from './_generated/server';
+import {
+	query,
+	mutation,
+	action,
+	internalMutation,
+	internalAction,
+	internalQuery,
+	type ActionCtx
+} from './_generated/server';
+import type { Id } from './_generated/dataModel';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { internal } from './_generated/api';
@@ -51,17 +60,25 @@ export const getSlackStatus = query({
 	}
 });
 
-// ── Mutation: Generate Slack OAuth URL ────────────────────────────────────
+// ── Action: Generate Slack OAuth URL ──────────────────────────────────────
+// An action so the CSRF nonce comes from real randomness (mutations are seeded deterministically).
 
-export const getSlackOAuthUrl = mutation({
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+
+export const getSlackOAuthUrl = action({
 	args: {},
-	handler: async (ctx) => {
+	handler: async (ctx): Promise<{ url: string }> => {
 		const userId = await getAuthUserId(ctx);
 		if (!userId) throw new Error('Not authenticated');
 
 		const clientId = getSlackClientId();
 		const redirectUri = getSlackRedirectUri();
-		const state = userId; // Pass userId as state for callback verification
+		const state = crypto.randomUUID();
+		await ctx.runMutation(internal.slack.saveOAuthState, {
+			state,
+			userId,
+			expiresAt: Date.now() + OAUTH_STATE_TTL_MS
+		});
 
 		const scopes = ['chat:write', 'channels:read'];
 		const userScopes: string[] = [];
@@ -129,18 +146,24 @@ export const toggleSlackBrief = mutation({
 	}
 });
 
-// ── Mutation: Exchange OAuth code for token (public — called from callback) ─
+// ── Action: Exchange OAuth code for token (public — called from callback) ─
+// Network I/O is not allowed in mutations, so the token exchange runs here
+// and the result is written through an internal mutation.
 
-export const exchangeSlackCode = mutation({
+export const exchangeSlackCode = action({
 	args: {
-		userId: v.id('users'),
-		code: v.string()
+		code: v.string(),
+		state: v.string()
 	},
-	handler: async (ctx, args) => {
-		// Verify this user is the authenticated user, or the state param matches
-		const authUserId = await getAuthUserId(ctx);
-		if (!authUserId) throw new Error('Not authenticated');
-		if (authUserId !== args.userId) throw new Error('User mismatch');
+	handler: async (ctx, args): Promise<{ success: boolean; workspaceName: string | null; channelName: string | null }> => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) throw new Error('Not authenticated');
+
+		const stateValid: boolean = await ctx.runMutation(internal.slack.consumeOAuthState, {
+			state: args.state,
+			userId
+		});
+		if (!stateValid) throw new Error('Slack connection link expired or invalid. Start again from Settings.');
 
 		const clientId = getSlackClientId();
 		const clientSecret = getSlackClientSecret();
@@ -163,26 +186,16 @@ export const exchangeSlackCode = mutation({
 			throw new Error(`Slack OAuth failed: ${data.error}`);
 		}
 
-		const profile = await ctx.db
-			.query('userProfiles')
-			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
-			.unique();
+		const teamName: string | null = data.team?.name ?? null;
+		const incomingChannelName: string | null = data.incoming_webhook?.channel ?? null;
 
-		if (!profile) throw new Error('Profile not found');
-
-		const botToken = data.access_token;
-		const teamId = data.team?.id ?? null;
-		const teamName = data.team?.name ?? null;
-		const incomingChannelId = data.incoming_webhook?.channel_id ?? null;
-		const incomingChannelName = data.incoming_webhook?.channel ?? null;
-
-		await ctx.db.patch(profile._id, {
-			slackAccessToken: botToken,
-			slackWorkspaceId: teamId,
-			slackWorkspaceName: teamName,
-			slackChannelId: incomingChannelId,
-			slackChannelName: incomingChannelName,
-			slackBriefEnabled: true
+		await ctx.runMutation(internal.slack.saveSlackConnection, {
+			userId,
+			slackAccessToken: data.access_token,
+			slackWorkspaceId: data.team?.id ?? undefined,
+			slackWorkspaceName: teamName ?? undefined,
+			slackChannelId: data.incoming_webhook?.channel_id ?? undefined,
+			slackChannelName: incomingChannelName ?? undefined
 		});
 
 		return {
@@ -193,20 +206,78 @@ export const exchangeSlackCode = mutation({
 	}
 });
 
-// ── Internal: Send a Slack brief to a user ─────────────────────────────────
+export const saveOAuthState = internalMutation({
+	args: { state: v.string(), userId: v.id('users'), expiresAt: v.number() },
+	handler: async (ctx, args) => {
+		await ctx.db.insert('slackOAuthStates', args);
+	}
+});
 
-export const sendSlackBrief = internalMutation({
+/** Deletes the nonce (single use) and reports whether it belonged to this user and was unexpired. */
+export const consumeOAuthState = internalMutation({
+	args: { state: v.string(), userId: v.id('users') },
+	handler: async (ctx, args): Promise<boolean> => {
+		const record = await ctx.db
+			.query('slackOAuthStates')
+			.withIndex('by_state', (q) => q.eq('state', args.state))
+			.unique();
+		if (!record) return false;
+		await ctx.db.delete(record._id);
+		return record.userId === args.userId && record.expiresAt > Date.now();
+	}
+});
+
+export const saveSlackConnection = internalMutation({
 	args: {
-		userId: v.id('users')
+		userId: v.id('users'),
+		slackAccessToken: v.string(),
+		slackWorkspaceId: v.optional(v.string()),
+		slackWorkspaceName: v.optional(v.string()),
+		slackChannelId: v.optional(v.string()),
+		slackChannelName: v.optional(v.string())
 	},
+	handler: async (ctx, { userId, ...slack }) => {
+		const profile = await ctx.db
+			.query('userProfiles')
+			.withIndex('by_userId', (q) => q.eq('userId', userId))
+			.unique();
+
+		if (!profile) throw new Error('Profile not found');
+
+		await ctx.db.patch(profile._id, { ...slack, slackBriefEnabled: true });
+	}
+});
+
+export const disableSlackBrief = internalMutation({
+	args: { userId: v.id('users') },
 	handler: async (ctx, args) => {
 		const profile = await ctx.db
 			.query('userProfiles')
 			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
 			.unique();
+		if (profile) await ctx.db.patch(profile._id, { slackBriefEnabled: false });
+	}
+});
 
-		if (!profile || !profile.slackAccessToken || !profile.slackChannelId) return { sent: false };
-		if (profile.slackBriefEnabled === false) return { sent: false, reason: 'disabled' };
+// ── Internal: Build a user's Slack brief (reads only; sending happens in an action) ─
+
+type SlackBrief =
+	| { ready: false; reason: string }
+	| { ready: true; token: string; channel: string; blocks: Array<Record<string, unknown>> };
+
+export const buildSlackBrief = internalQuery({
+	args: {
+		userId: v.id('users')
+	},
+	handler: async (ctx, args): Promise<SlackBrief> => {
+		const profile = await ctx.db
+			.query('userProfiles')
+			.withIndex('by_userId', (q) => q.eq('userId', args.userId))
+			.unique();
+
+		if (!profile || !profile.slackAccessToken || !profile.slackChannelId)
+			return { ready: false, reason: 'not_connected' };
+		if (profile.slackBriefEnabled === false) return { ready: false, reason: 'disabled' };
 
 		// Get all active repos for this user
 		const repos = await ctx.db
@@ -216,7 +287,7 @@ export const sendSlackBrief = internalMutation({
 			)
 			.collect();
 
-		if (repos.length === 0) return { sent: false, reason: 'no_repos' };
+		if (repos.length === 0) return { ready: false, reason: 'no_repos' };
 
 		const repo = repos[0];
 		const today = new Date().toLocaleDateString('en-US', {
@@ -361,35 +432,40 @@ export const sendSlackBrief = internalMutation({
 			});
 		}
 
-		const response = await fetch(SLACK_CHAT_URL, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${profile.slackAccessToken}`
-			},
-			body: JSON.stringify({
-				channel: profile.slackChannelId,
-				text: fallbackText(),
-				blocks
-			})
-		});
-
-		const result = await response.json();
-
-		if (!result.ok) {
-			console.error(`[slack] Failed to send brief to user ${args.userId}:`, result.error);
-			// If token expired, disable
-			if (result.error === 'token_expired' || result.error === 'invalid_auth') {
-				await ctx.db.patch(profile._id, {
-					slackBriefEnabled: false
-				});
-			}
-			return { sent: false, error: result.error };
-		}
-
-		return { sent: true, channel: profile.slackChannelId };
+		return { ready: true, token: profile.slackAccessToken, channel: profile.slackChannelId, blocks };
 	}
 });
+
+async function sendSlackBrief(ctx: ActionCtx, userId: Id<'users'>): Promise<{ sent: boolean }> {
+	const brief = await ctx.runQuery(internal.slack.buildSlackBrief, { userId });
+	if (!brief.ready) return { sent: false };
+
+	const response = await fetch(SLACK_CHAT_URL, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${brief.token}`
+		},
+		body: JSON.stringify({
+			channel: brief.channel,
+			text: fallbackText(),
+			blocks: brief.blocks
+		})
+	});
+
+	const result = await response.json();
+
+	if (!result.ok) {
+		console.error(`[slack] Failed to send brief to user ${userId}:`, result.error);
+		// If token expired, disable
+		if (result.error === 'token_expired' || result.error === 'invalid_auth') {
+			await ctx.runMutation(internal.slack.disableSlackBrief, { userId });
+		}
+		return { sent: false };
+	}
+
+	return { sent: true };
+}
 
 function fallbackText(): string {
 	return '☀️ Good morning! Here\'s your ShipSense health brief.';
@@ -409,9 +485,7 @@ export const sendAllSlackBriefs = internalAction({
 
 		for (const p of profiles) {
 			try {
-				const result = await ctx.runMutation(internal.slack.sendSlackBrief, {
-					userId: p.userId
-				});
+				const result = await sendSlackBrief(ctx, p.userId);
 				if (result.sent) sent++;
 				else skipped++;
 			} catch (err) {
@@ -463,9 +537,7 @@ export const processSlackAction = internalMutation({
 		const actionId = blockAction.action_id;
 
 		if (actionId === 'snooze_brief') {
-			// Disable Slack brief for this user (find by Slack user ID)
-			const profiles = await ctx.db.query('userProfiles').collect();
-			// Simple approach: acknowledge the action
+			// ponytail: acknowledge only; mapping Slack user → profile needs a slackUserId index
 			return { handled: true, action: 'snoozed' };
 		}
 

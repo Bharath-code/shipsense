@@ -1,6 +1,7 @@
-import { mutation } from './_generated/server';
+import { internalMutation } from './_generated/server';
 
-export const backfillSlugs = mutation({
+// Run with: npx convex run migrations:backfillSlugs
+export const backfillSlugs = internalMutation({
 	args: {},
 	handler: async (ctx) => {
 		const repos = await ctx.db.query('repos').collect();
